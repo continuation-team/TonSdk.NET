@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 public class CoinsOptions
 {
@@ -129,6 +130,17 @@ public class Coins
 
     public string ToNano() => Value.ToString("F0");
 
+    public override string ToString()
+    {
+        var value = (Value / Multiplier).ToString($"F{Decimals}");
+
+        var re1 = new Regex($@"\.0{{{Decimals}}}$");
+        var re2 = new Regex(@"(\.[0-9]*?[0-9])0+$");
+        var coins = re2.Replace(re1.Replace(value, ""), "$1");
+
+        return coins;
+    }
+
     private static void CheckCoinsType(object value)
     {
         if (IsValid(value) && IsConvertable(value)) return;
@@ -216,6 +228,4 @@ public class Coins
 
         return new Coins(value, new CoinsOptions(false, decimals));
     }
-
-    // TODO: toString() method 
 }
