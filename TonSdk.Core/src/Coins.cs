@@ -53,7 +53,7 @@ public class Coins
         CheckCoins(coins);
         CompareCoinsDecimals(this, coins);
 
-        Value = decimal.Add(coins.Value, Value);
+        Value += coins.Value;
         return this;
     }
 
@@ -62,7 +62,7 @@ public class Coins
         CheckCoins(coins);
         CompareCoinsDecimals(this, coins);
 
-        Value = decimal.Subtract(Value, coins.Value);
+        Value += coins.Value;
         return this;
     }
 
@@ -73,7 +73,7 @@ public class Coins
 
         var multiplier = Convert.ToInt64(value);
 
-        Value = decimal.Multiply(Value, multiplier);
+        Value *= multiplier;
         return this;
     }
 
@@ -84,7 +84,7 @@ public class Coins
 
         var divider = Convert.ToInt64(value);
 
-        Value = decimal.Divide(Value, divider);
+        Value /= divider;
         return this;
     }
 

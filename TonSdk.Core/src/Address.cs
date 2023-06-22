@@ -50,16 +50,13 @@ public enum AddressType
 
 public class Address
 {
-    public static readonly byte FLAG_BOUNCEABLE = 0x11;
-    public static readonly byte FLAG_NON_BOUNCEABLE = 0x51;
-    public static readonly byte FLAG_TEST_ONLY = 0x80;
+    private const byte FLAG_BOUNCEABLE = 0x11;
+    private const byte FLAG_NON_BOUNCEABLE = 0x51;
+    private const byte FLAG_TEST_ONLY = 0x80;
 
     private readonly byte[] _hash;
-
     private readonly int _workchain;
-
     private readonly bool _bounceable;
-
     private readonly bool _testOnly;
 
     public Address(Address address, IAddressRewriteOptions? options = null)
@@ -178,32 +175,32 @@ public class Address
 
     private static AddressData ParseEncoded(string value)
     {
-        var base64 = value.Replace("-", "+").Replace("_", "/");
-        var bytes = Convert.FromBase64String(base64);
-        var data = new List<byte>(bytes);
-        var address = data.GetRange(0, 34);
-        var checksum = data.GetRange(34, 2).ToArray();
-        var crcBytes = Utils.Crc16BytesBigEndian(address.ToArray());
+        string base64 = value.Replace("-", "+").Replace("_", "/");
+        byte[] bytes = Convert.FromBase64String(base64);
+        List<byte> data = new List<byte>(bytes);
+        byte[] address = data.Take(34).ToArray();
+        data.RemoveRange(0, 34);
+        byte[] checksum = data.Take(2).ToArray();
+        data.RemoveRange(0, 2);
+        byte[] crc = Utils.Crc16BytesBigEndian(address);
 
-        if (!crcBytes.SequenceEqual(checksum))
+        if (!crc.SequenceEqual(checksum))
         {
             throw new Exception("Address: can't parse address. Wrong checksum.");
         }
 
-        var tag = (sbyte)address.Take(2).ToArray().ToLittleEndianInt16();
-        var workchain = tag >> 8;
-        var hash = address.Skip(2).Take(32).ToArray();
-        AddressTag addressTag = DecodeTag(tag);
-        var bounceable = addressTag.Bounceable;
-        var testOnly = addressTag.TestOnly;
+        byte[] firstTwoBytes = address.Take(2).ToArray();
+        address = address.Skip(2).ToArray();
+        byte tag = firstTwoBytes[0];
+        sbyte workchain = (sbyte)firstTwoBytes[1];
+        byte[] hash = address.Take(32).ToArray();
 
-        //var bounceable = (tag & 64) != 0;
-        //var testOnly = (tag & 128) != 0;
+        var decodeTagResult = Address.DecodeTag(tag);
 
-        return new AddressData()
+        return new AddressData
         {
-            Bounceable = bounceable,
-            TestOnly = testOnly,
+            Bounceable = decodeTagResult.Bounceable,
+            TestOnly = decodeTagResult.TestOnly,
             Workchain = workchain,
             Hash = hash
         };
@@ -214,7 +211,7 @@ public class Address
         var data = value.Split(':');
         var workchain = int.Parse(data[0]);
         var hash = HexToBytes(data[1]);
-        var bounceable = false;
+        var bounceable = true;
         var testOnly = false;
 
         return new AddressData()
@@ -243,7 +240,7 @@ public class Address
         return byteArray;
     }
 
-    public static string BytesToHex(byte[] bytes)
+    private static string BytesToHex(byte[] bytes)
     {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.Length; i++)
@@ -253,9 +250,35 @@ public class Address
         return sb.ToString();
     }
 
-    public bool Equals(Address address)
+    private static bool BytesCompare(byte[] a1, byte[] a2)
     {
-        return (address == this) || (_hash.SequenceEqual(address._hash) && _workchain == address._workchain);
+        if (a1 == null || a2 == null)
+        {
+            return false;
+        }
+
+        if (a1.Length != a2.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < a1.Length; i++)
+        {
+            if (a1[i] != a2[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool Equals (Address address)
+    {
+        return (address == this) || (
+            BytesCompare(_hash, address._hash) &&
+            _workchain == address._workchain
+        );
     }
 
     public string ToString(AddressType type = AddressType.Base64, IAddressStringifyOptions? options = null)
@@ -302,7 +325,7 @@ public class Address
 
         if (type == AddressType.Raw)
         {
-            return $"{workchain}:{BytesToHex(_hash)}";
+            return $"{workchain}:{BytesToHex(_hash)}".ToLower();
         }
 
         byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly});
