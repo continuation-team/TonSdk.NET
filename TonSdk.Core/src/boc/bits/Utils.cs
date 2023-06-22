@@ -84,7 +84,7 @@ public class BitsEqualityComparer : IEqualityComparer<Bits> {
 
      public int GetHashCode(Bits obj) {
           var bits = obj.hash().Parse().readBits(32);
-          return bits.getCopyTo(new int[1])[0];
+          return bits.getCopyTo(new int[8])[0];
      }
 }
 
