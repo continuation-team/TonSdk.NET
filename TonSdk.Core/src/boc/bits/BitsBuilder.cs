@@ -144,26 +144,53 @@ public class BitsBuilder {
 
     private BitsBuilder storeNumber(Int64 value, int size, bool needCheck) {
         var _value = (long)value;
-        BitArray bits = new BitArray(size);
-        for (int i = 0; i < size; i++) {
-            bits[size - 1 - i] = ((_value >> i) & 0x01) == 0x01;
+        byte[] bytes = BitConverter.GetBytes(_value);
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(bytes);
+        BitArray bitArray = new Bits(ref bytes).Data;
+        var change = size - bitArray.Count;
+        if (change < 0) {
+            bitArray.RightShift(-change);
+            bitArray.Length = size;
+        } else {
+            bitArray.Length = size;
+            bitArray.LeftShift(change);
         }
+        var bits = new Bits(bitArray);
         return storeBits(ref bits);
     }
 
     private BitsBuilder storeNumber(UInt64 value, int size, bool needCheck) {
-        var bits = new BitArray(size);
-        for (int i = 0; i < size; i++) {
-            bits[size - 1 - i] = ((value >> i) & 0x01) == 0x01;
+        byte[] bytes = BitConverter.GetBytes(value);
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(bytes);
+        BitArray bitArray = new Bits(ref bytes).Data;
+        var change = size - bitArray.Count;
+        if (change < 0) {
+            bitArray.RightShift(-change);
+            bitArray.Length = size;
+        } else {
+            bitArray.Length = size;
+            bitArray.LeftShift(change);
         }
+        var bits = new Bits(bitArray);
         return storeBits(ref bits);
     }
 
     private BitsBuilder storeNumber(BigInteger value, int size, bool needCheck) {
-        BitArray bits = new BitArray(size);
-        for (int i = 0; i < size; i++) {
-            bits[size - 1 - i] = ((value >> i) & 0x01) == 0x01;
+        byte[] bytes = value.ToByteArray();
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(bytes);
+        BitArray bitArray = new Bits(ref bytes).Data;
+        var change = size - bitArray.Count;
+        if (change < 0) {
+            bitArray.RightShift(-change);
+            bitArray.Length = size;
+        } else {
+            bitArray.Length = size;
+            bitArray.LeftShift(change);
         }
+        var bits = new Bits(bitArray);
         return storeBits(ref bits);
     }
 
@@ -189,7 +216,7 @@ public class BitsBuilder {
 
     private void write(BitArray newBits, int offset) {
         var _newBits = (BitArray)newBits.Clone();
-        _newBits.Length = this._data.Length;
+        _newBits.Length = _data.Length;
         _newBits.LeftShift(offset);
         _data.Or(_newBits);
     }
