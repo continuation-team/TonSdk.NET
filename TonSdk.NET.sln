@@ -1,0 +1,27 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Core", "TonSdk.Core\src\TonSdk.Core.csproj", "{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B94F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Core.Tests", "TonSdk.Core\test\TonSdk.Core.Tests.csproj", "{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B96F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Smc", "TonSdk.Smc\src\TonSdk.Smc.csproj", "{3DE6E205-F960-4D9E-8F33-FA0DCE197616}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Smc.Tests", "TonSdk.Smc\test\TonSdk.Smc.Tests.csproj", "{3DE6E205-F960-4D9E-8F33-FA0DCE197616}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B94F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B94F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B94F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B94F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DE6E205-F960-4D9E-8F33-FA0DCE197616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE6E205-F960-4D9E-8F33-FA0DCE197616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE6E205-F960-4D9E-8F33-FA0DCE197616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE6E205-F960-4D9E-8F33-FA0DCE197616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B96F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B96F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal
