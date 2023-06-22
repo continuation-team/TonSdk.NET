@@ -26,11 +26,11 @@ public class Cell {
 
 
     public Cell(Bits _bits, Cell[] _refs, CellType _type = CellType.ORDINARY) {
-        if (bits.Length > CellTraits.max_bits) {
+        if (_bits.Length > CellTraits.max_bits) {
             throw new ArgumentException($"Bits should have at most {CellTraits.max_bits} bits.", nameof(bits));
         }
 
-        if (refs.Length > CellTraits.max_refs) {
+        if (_refs.Length > CellTraits.max_refs) {
             throw new ArgumentException($"Refs should have at most {CellTraits.max_refs} elements.", nameof(refs));
         }
 
