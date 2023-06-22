@@ -8,5 +8,10 @@
 
     <ItemGroup>
       <PackageReference Include="JustCRC32C" Version="1.0.1" />
+	  <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="crypto\" />
     </ItemGroup>
 </Project>
