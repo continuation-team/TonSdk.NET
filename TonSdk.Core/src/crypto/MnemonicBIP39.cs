@@ -55,6 +55,9 @@ public class MnemonicBIP39
 
     public static byte[] GenerateSeed(string[] mnemonic, string? salt = null, int rounds = 2048, int keyLength = 64)
     {
+        if (mnemonic != null && mnemonic.Length != 24) throw new Exception("Mnemonic: must contain 24 bip39 words.");
+        if (mnemonic != null && !mnemonic.All(word => MnemonicWords.Bip0039En.Contains(word))) throw new Exception("Mnemonic: invalid mnemonic phrase words.");
+
         string s = "mnemonic" + (salt != null ? Utils.Normalize(salt) : "");
         byte[] seed = Utils.GenerateSeedBIP39(mnemonic, s, rounds, keyLength).Take(32).ToArray();
         return seed;

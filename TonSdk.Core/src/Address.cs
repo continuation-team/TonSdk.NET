@@ -210,7 +210,7 @@ public class Address
     {
         var data = value.Split(':');
         var workchain = int.Parse(data[0]);
-        var hash = HexToBytes(data[1]);
+        var hash = Utils.HexToBytes(data[1]);
         var bounceable = true;
         var testOnly = false;
 
@@ -221,33 +221,6 @@ public class Address
             Workchain = workchain,
             Hash = hash
         };
-    }
-
-    private static byte[] HexToBytes(string hexString)
-    {
-        if (hexString.Length % 2 != 0)
-        {
-            throw new ArgumentException("Hex string must have an even number of characters.");
-        }
-
-        var byteArray = new byte[hexString.Length / 2];
-
-        for (int i = 0; i < byteArray.Length; i++)
-        {
-            byteArray[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
-        }
-
-        return byteArray;
-    }
-
-    private static string BytesToHex(byte[] bytes)
-    {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            sb.Append(bytes[i].ToString("X2"));
-        }
-        return sb.ToString();
     }
 
     private static bool BytesCompare(byte[] a1, byte[] a2)
@@ -325,7 +298,7 @@ public class Address
 
         if (type == AddressType.Raw)
         {
-            return $"{workchain}:{BytesToHex(_hash)}".ToLower();
+            return $"{workchain}:{Utils.BytesToHex(_hash)}".ToLower();
         }
 
         byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly});

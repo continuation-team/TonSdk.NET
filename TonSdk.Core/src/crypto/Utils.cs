@@ -6,7 +6,6 @@ using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Macs;
 
 namespace TonSdk.Core.Crypto;
 public static class Utils
@@ -47,57 +46,43 @@ public static class Utils
         return bytes;
     }
 
-    public static uint Crc32c(byte[] data)
+    public static int BitArrayToInt(BitArray bitArray)
     {
-        const uint POLY = 0x82f63b78;
-        uint crc = 0xffffffff;
+        if (bitArray.Length > 32)
+            throw new ArgumentException("Argument length shall be at most 32 bits.");
 
-        for (int i = 0; i < data.Length; i++)
+        int[] array = new int[1];
+        bitArray.CopyTo(array, 0);
+        return array[0];
+    }
+
+    public static string BytesToHex(byte[] bytes)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.Length; i++)
         {
-            crc ^= data[i];
+            sb.Append(bytes[i].ToString("X2"));
+        }
+        return sb.ToString();
+    }
 
-            for (int j = 0; j < 8; j++)
-            {
-                if ((crc & 1) == 1)
-                {
-                    crc = (crc >> 1) ^ POLY;
-                }
-                else
-                {
-                    crc >>= 1;
-                }
-            }
+    public static byte[] HexToBytes(string hexString)
+    {
+        if (hexString.Length % 2 != 0)
+        {
+            throw new ArgumentException("Hex string must have an even number of characters.");
         }
 
-        crc ^= 0xffffffff;
+        var byteArray = new byte[hexString.Length / 2];
 
-        return crc;
-    }
-
-    public static byte[] Crc32cBytesLittleEndian(byte[] data)
-    {
-        uint crc = Crc32c(data);
-        byte[] bytes = new byte[4];
-
-        bytes[0] = (byte)crc;
-        bytes[1] = (byte)(crc >> 8);
-        bytes[2] = (byte)(crc >> 16);
-        bytes[3] = (byte)(crc >> 24);
-
-        return bytes;
-    }
-
-    public static short ToLittleEndianInt16(this byte[] bytes, int startIndex = 0)
-    {
-        if (bytes.Length - startIndex < 2)
+        for (int i = 0; i < byteArray.Length; i++)
         {
-            throw new ArgumentException("Byte array too small to convert to Int16");
+            byteArray[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
         }
 
-        return (short)(bytes[startIndex] | (bytes[startIndex + 1] << 8));
+        return byteArray;
     }
 
-    // Mnemonic Utils
     public static string[] GenerateWords()
     {
         byte[] entropy = GenerateRandomBytes(32);
@@ -252,17 +237,4 @@ public static class Utils
 
         return chunks;
     }
-
-    public static int BitArrayToInt(BitArray bitArray)
-    {
-        if (bitArray.Length > 32)
-            throw new ArgumentException("Argument length shall be at most 32 bits.");
-
-        int[] array = new int[1];
-        bitArray.CopyTo(array, 0);
-        return array[0];
-    }
-
-
-
 }
