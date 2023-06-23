@@ -6,10 +6,11 @@ namespace TonSdk.Core.Boc;
 
 public static partial class BitsPatterns {
      private const string BinaryString = @"^[01]+$";
-     private const string HexString = @"^([0-9a-fA-F]+|[0-9a-fA-F]*[1-9a-fA-F]+_?)$";
-     private const string FiftBinary = @"^b\{[01]+\}$";
-     private const string FiftHex = @"^x\{([0-9a-fA-F]+|[0-9a-fA-F]*[1-9a-fA-F]+_?)\}$";
-     private const string Base64 = @"^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$";
+     private const string HexString    = @"^([0-9a-fA-F]+|[0-9a-fA-F]*[1-9a-fA-F]+_?)$";
+     private const string FiftBinary   = @"^b\{[01]+\}$";
+     private const string FiftHex      = @"^x\{([0-9a-fA-F]+|[0-9a-fA-F]*[1-9a-fA-F]+_?)\}$";
+     private const string Base64       = @"^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$";
+     private const string Base64url    = @"^(?:[A-Za-z0-9-_]{4})*(?:[A-Za-z0-9-_]{2}==|[A-Za-z0-9-_]{3}=)?$";
 
      private static void throwUnlessMatch(this bool x, string description) {
           if (!x) {
@@ -36,6 +37,10 @@ public static partial class BitsPatterns {
           return Base64Regex().IsMatch(s);
      }
 
+     public static bool isBase64url(this string s) {
+          return Base64urlRegex().IsMatch(s);
+     }
+
      public static void checkIsBinaryString(this string s) {
           s.isBinaryString().throwUnlessMatch($"{s} is not BitString, BitString is 1000101101010");
      }
@@ -51,6 +56,10 @@ public static partial class BitsPatterns {
 
      public static void checkIsBase64(this string s) {
           s.isBase64().throwUnlessMatch($"{s} is not Base64, Base64 is te6ccuEBAQEAKwBWAFEAAAAyKam=");
+     }
+
+     public static void checkIsBase64url(this string s) {
+          s.isBase64().throwUnlessMatch($"{s} is not Base64url, Base64url is te6ccuEBAQEAKwBWAFEAAAAyKam=");
      }
 
      #pragma warning disable CS8625
@@ -69,6 +78,10 @@ public static partial class BitsPatterns {
      [GeneratedRegex(Base64)]
      private static partial Regex Base64Regex();
      #pragma warning restore CS8625
+
+     [GeneratedRegex(Base64url)]
+     private static partial Regex Base64urlRegex();
+     #pragma warning restore CS8625
 }
 
 public class BitsEqualityComparer : IEqualityComparer<Bits> {
@@ -83,8 +96,8 @@ public class BitsEqualityComparer : IEqualityComparer<Bits> {
      }
 
      public int GetHashCode(Bits obj) {
-          var bits = obj.hash().Parse().readBits(32);
-          return bits.getCopyTo(new int[8])[0];
+          var bits = obj.Hash();
+          return bits.GetCopyTo(new int[8])[0];
      }
 }
 

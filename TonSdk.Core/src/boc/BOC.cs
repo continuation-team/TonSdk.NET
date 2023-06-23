@@ -20,11 +20,11 @@ public class BagOfCells {
         var ret = cell.BitsWithDescriptors;
         refSize *= 8;
         var l = ret.Length + cell.refCount * refSize;
-        var b = new BitsBuilder(l).storeBits(ref ret);
+        var b = new BitsBuilder(l).StoreBits(ret);
         foreach (var refCell in cell.refs) {
             var refHash = refCell.Hash;
             var refIndex = cellsIndex[refHash];
-            b.storeUInt(refIndex, refSize);
+            b.StoreUInt(refIndex, refSize);
         }
         return b.Build();
     }
@@ -100,7 +100,7 @@ public class BagOfCells {
         var dataBuilder = new BitsBuilder(cellsNum * (16 + 1024 + sBytes * 8 * 4));
         for (var i = 0; i < cellsNum; i++) {
             var serializedCell = serializeCell(sortedCells[i].Item2, indexHashmap, sBytes);
-            dataBuilder.storeBits(serializedCell);
+            dataBuilder.StoreBits(serializedCell);
             totalSize += serializedCell.Length / 8;
             offsets[i] = totalSize;
         }
@@ -126,33 +126,33 @@ public class BagOfCells {
         var l = 32 + 1 + 1 + 1 + 2 + 3 + 8 + (sBytes * 8) + (sBytes * 8) + (sBytes * 8) + (offsetBytes * 8) +
                 (roots.Length * sBytes * 8) + ((hasIdx ? 1 : 0) * cellsNum * (offsetBytes * 8)) + dataBits.Length + ((hasCrc32C ? 1 : 0) * 32);
         var bocBuilder = new BitsBuilder(l)
-            .storeUInt(0xb5ee9c72, 32, false) // serialized_boc#b5ee9c72
-            .storeBit(hasIdx, false) // has_idx:(## 1)
-            .storeBit(hasCrc32C, false) // has_crc32c:(## 1)
-            .storeBit(hasCacheBits, false) // has_cache_bits:(## 1)
-            .storeUInt(flags, 2, false) // flags:(## 2) { flags = 0 }
-            .storeUInt(sBytes, 3, false) // size:(## 3) { size <= 4 }
-            .storeUInt(offsetBytes, 8, false) // off_bytes:(## 8) { off_bytes <= 8 }
-            .storeUInt(cellsNum, sBytes * 8, false) // cells:(##(size * 8))
-            .storeUInt(roots.Length, sBytes * 8) // roots:(##(size * 8)) { roots >= 1 }
-            .storeUInt(0, sBytes * 8, false) // ??? absent:(##(size * 8)) { roots + absent <= cells }
-            .storeUInt(dataBits.Length / 8, offsetBytes * 8, false); // tot_cells_size:(##(off_bytes * 8))
+            .StoreUInt(0xb5ee9c72, 32, false) // serialized_boc#b5ee9c72
+            .StoreBit(hasIdx, false) // has_idx:(## 1)
+            .StoreBit(hasCrc32C, false) // has_crc32c:(## 1)
+            .StoreBit(hasCacheBits, false) // has_cache_bits:(## 1)
+            .StoreUInt(flags, 2, false) // flags:(## 2) { flags = 0 }
+            .StoreUInt(sBytes, 3, false) // size:(## 3) { size <= 4 }
+            .StoreUInt(offsetBytes, 8, false) // off_bytes:(## 8) { off_bytes <= 8 }
+            .StoreUInt(cellsNum, sBytes * 8, false) // cells:(##(size * 8))
+            .StoreUInt(roots.Length, sBytes * 8) // roots:(##(size * 8)) { roots >= 1 }
+            .StoreUInt(0, sBytes * 8, false) // ??? absent:(##(size * 8)) { roots + absent <= cells }
+            .StoreUInt(dataBits.Length / 8, offsetBytes * 8, false); // tot_cells_size:(##(off_bytes * 8))
 
         foreach (var _rootCell in roots) {
-            bocBuilder.storeUInt(indexHashmap[_rootCell.Hash], sBytes * 8,
+            bocBuilder.StoreUInt(indexHashmap[_rootCell.Hash], sBytes * 8,
                 false); // root_list:(roots * ##(size * 8))
         }
 
         if (hasIdx) {
             foreach (var offset in offsets) {
-                bocBuilder.storeUInt(offset, offsetBytes * 8, false); // index:has_idx?(cells * ##(off_bytes * 8))
+                bocBuilder.StoreUInt(offset, offsetBytes * 8, false); // index:has_idx?(cells * ##(off_bytes * 8))
             }
         }
 
-        bocBuilder.storeBits(dataBits, false); // cell_data:(tot_cells_size * [ uint8 ])
+        bocBuilder.StoreBits(dataBits, false); // cell_data:(tot_cells_size * [ uint8 ])
 
         if (hasCrc32C) {
-            var crc32c = Crc32C.Calculate(bocBuilder.Build().augment().toBytes());
+            var crc32c = Crc32C.Calculate(bocBuilder.Build().Augment().ToBytes());
             bocBuilder.storeUInt32LE(crc32c); // crc32c:has_crc32c?uint32
         }
 

@@ -5,7 +5,7 @@ using TonSdk.Core.Boc.Utils;
 
 namespace TonSdk.Core.Boc;
 
-public class CellBuilder : BitsBuilder {
+public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
     private void CheckRefsOverflow(ref Cell[] refs) {
         if (_ref_en + refs.Length > CellTraits.max_refs) {
             throw new ArgumentException("CellBuilder refs overflow");
@@ -30,9 +30,7 @@ public class CellBuilder : BitsBuilder {
         get { return _refs.Length == _ref_en ? _refs :_refs.slice(0, _ref_en); }
     }
 
-
-
-    public CellBuilder storeRefs(ref Cell[] refs, bool needCheck = true) {
+    public CellBuilder StoreRefs(ref Cell[] refs, bool needCheck = true) {
         if (needCheck) CheckRefsOverflow(ref refs);
 
         foreach (var cell in refs) {
@@ -42,8 +40,7 @@ public class CellBuilder : BitsBuilder {
         return this;
     }
 
-
-    public CellBuilder storeRef(ref Cell cell, bool needCheck = true) {
+    public CellBuilder StoreRef(ref Cell cell, bool needCheck = true) {
         if (needCheck) CheckRefsOverflow(1);
 
         _refs[_ref_en++] = cell;
@@ -51,51 +48,12 @@ public class CellBuilder : BitsBuilder {
         return this;
     }
 
-
-    // public CellBuilder storeInt(Int64 value, int size) {
-    //     storeInt(value, size);
-    //     return this;
-    // }
-    //
-    //
-    // public CellBuilder storeUInt(UInt64 value, int size) {
-    //     _bits.storeUInt(value, size);
-    //     return this;
-    // }
-    //
-    //
-    // public CellBuilder storeBigInt(BigInteger value, int size) {
-    //     _bits.storeBigInt(value, size);
-    //     return this;
-    // }
-    //
-    //
-    //
-    // public CellBuilder storeBigUInt(BigInteger value, int size) {
-    //     _bits.storeBigUInt(value, size);
-    //     return this;
-    // }
-    //
-    //
-    //
-    // public CellBuilder storeBytes(ref byte[] bytes) {
-    //     BitArray bits = new BitArray(bytes);
-    //     return storeBits(ref bits);
-    // }
-    //
-    //
-    // public CellBuilder storeBuilder(CellBuilder b) {
-    //     return storeObject(b);
-    // }
-    //
-    //
-    // public CellBuilder storeSlice(CellSlice s) {
-    //     return storeObject(s);
-    // }
-
-
-    public Cell finalize() {
+    public override Cell Build() {
         return new Cell(Data, Refs);
+    }
+
+    public override CellBuilder Clone() {
+        throw new NotImplementedException();
     }
 
     // public Cell endExoticCell() {

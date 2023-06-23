@@ -75,14 +75,14 @@ public class Cell {
 
 
     private Bits buildBitsWithDescriptors() {
-        var augmented = bits.augment(8);
+        var augmented = bits.Augment(8);
         var l = 16 + augmented.Length;
         var d1 = refCount + (isExotic ? 8 : 0); // + MaxLevel * 32;
         var d2 = fullData;
         var bb = new BitsBuilder(l)
-                            .storeUInt(d1, 8)
-                            .storeUInt(d2, 8)
-                            .storeBits(augmented);
+                            .StoreUInt(d1, 8)
+                            .StoreUInt(d2, 8)
+                            .StoreBits(augmented);
 
         _bitsWithDescriptors = bb.Build();
         return _bitsWithDescriptors;
@@ -92,15 +92,15 @@ public class Cell {
     private Bits calcHash() {
         var bitsWithDescriptors = BitsWithDescriptors;
         var l = bitsWithDescriptors.Length + refCount * (16 + 256);
-        var bb = new BitsBuilder(l).storeBits(bitsWithDescriptors, false);
+        var bb = new BitsBuilder(l).StoreBits(bitsWithDescriptors, false);
         for (var i = 0; i < refCount; i++) {
-            bb.storeUInt(refs[i].depth, 16);
+            bb.StoreUInt(refs[i].depth, 16);
         }
         for (var i = 0; i < refCount; i++) {
-            bb.storeBits(refs[i].Hash, false);
+            bb.StoreBits(refs[i].Hash, false);
         }
 
-        _hash = bb.Build().hash();
+        _hash = bb.Build().Hash();
         return _hash;
     }
 }

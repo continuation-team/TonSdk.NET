@@ -2,7 +2,7 @@
 
 namespace TonSdk.Core.Boc;
 
-public class CellSlice : BitsSlice {
+public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
 
     private void CheckRefsUnderflow(int refEnd) {
         if (refEnd > _refs_en) {
@@ -47,6 +47,10 @@ public class CellSlice : BitsSlice {
         var refs = _cell.refs.slice(_refs_st, refEnd);
         _refs_st = refEnd;
         return refs;
+    }
+
+    public override Cell Restore() {
+        return _cell;
     }
 
 }

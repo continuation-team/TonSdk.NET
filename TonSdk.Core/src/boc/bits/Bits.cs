@@ -33,7 +33,7 @@ public class Bits {
     public Bits(BitArray b): this(ref b) { }
 
     public Bits(ref string s) : this(fromString(s)) { }
-    public Bits(string s) : this(fromString(s)) { }
+    public Bits(string s) : this(ref s) { }
 
     public Bits(ref byte[] bytes) {
         for (var i = 0; i < bytes.Length; i++) {
@@ -42,14 +42,16 @@ public class Bits {
         _data = new BitArray(bytes);
     }
 
-    protected Bits slice(int start, int end) {
+    public Bits(byte[] bytes) : this(ref bytes) { }
+
+    protected Bits Slice(int start, int end) {
         var ret = (BitArray)_data.Clone();
         ret.RightShift(start);
         ret.Length = end - start;
         return new Bits(ret);
     }
 
-    public Bits augment(int divider = 8) {
+    public Bits Augment(int divider = 8) {
         BitArray _bits = (BitArray)_data.Clone();
         if (divider != 4 && divider != 8) {
             throw new ArgumentException("Invalid divider. Can be (4 | 8)", nameof(divider));
@@ -111,12 +113,29 @@ public class Bits {
         static BitArray fromFiftHex(string fiftHex) {
             return fromHexString(fiftHex.Substring(2, fiftHex.Length - 3));
         }
+        static BitArray fromBase64(string base64, bool url = false) {
+            if (url) {
+                base64 = base64.Replace('-', '+').Replace('_', '/');
+            }
+            while (base64.Length % 4 != 0) {
+                base64 += "=";
+            }
+            var bytes = Convert.FromBase64String(base64);
+            for (var i = 0; i < bytes.Length; i++) {
+                bytes[i] = bytes[i].reverseBits();
+            }
+            return new BitArray(bytes);
+        }
 
         BitArray bits;
         if (s.isBinaryString()) {
             bits = fromBinaryString(s);
         } else if (s.isHexString()) {
             bits = fromHexString(s);
+        } else if (s.isBase64()) {
+            bits = fromBase64(s);
+        } else if (s.isBase64url()) {
+            bits = fromBase64(s, true);
         } else if (s.isFiftBinary()) {
             bits = fromFiftBinary(s);
         } else if (s.isFiftHex()) {
@@ -127,18 +146,18 @@ public class Bits {
         return bits;
     }
 
-    public Bits hash() {
-        var hashBytes = SHA256.HashData(toBytes());
+    public Bits Hash() {
+        var hashBytes = SHA256.HashData(ToBytes());
         return new Bits(ref hashBytes);
     }
 
-    public T[] getCopyTo<T>(T[] to) {
+    public T[] GetCopyTo<T>(T[] to) {
         _data.CopyTo(to, 0);
         return to;
     }
 
-    public byte[] toBytes(bool needReverse = true) {
-        var bytes = getCopyTo(new byte[(_data.Length + 7) / 8]);
+    public byte[] ToBytes(bool needReverse = true) {
+        var bytes = GetCopyTo(new byte[(_data.Length + 7) / 8]);
 
         if (!BitConverter.IsLittleEndian || !needReverse) return bytes;
 
@@ -165,7 +184,7 @@ public class Bits {
             var _bits = new Bits(Data);
             var length = _data.Length;
             var areDivisible = length % 4 == 0;
-            var augmented = areDivisible ? _bits.Data : _bits.augment(4).Data;
+            var augmented = areDivisible ? _bits.Data : _bits.Augment(4).Data;
             var charCount = augmented.Length / 4;
             var hexChars = new char[charCount + (areDivisible ? 0 : 1)];
             for (var i = 0; i < charCount; i++) {
@@ -185,13 +204,22 @@ public class Bits {
             var newStr = new string(hexChars);
             return fift ? $"x{{{newStr}}}" : newStr;
         }
+        string toBase64(bool url = false) {
+            var bytes = ToBytes();
+            var base64 = Convert.ToBase64String(bytes);
+            return url
+                ? base64.TrimEnd('=').Replace('+', '-').Replace('/', '_')
+                : base64;
+        }
 
         return mode switch {
             "bin" => toBinaryString(),
             "hex" => toHexString(),
             "fiftBin" => toBinaryString(true),
             "fiftHex" => toHexString(true),
-            _ => throw new ArgumentException("Unknown mode, supported: bin, hex, fiftBin, fiftHex")
+            "base64" => toBase64(),
+            "base64url" => toBase64(true),
+            _ => throw new ArgumentException("Unknown mode, supported: bin, hex, fiftBin, fiftHex, base64, base64url")
         };
     }
 
@@ -200,8 +228,7 @@ public class Bits {
     }
 
     public BitsSlice Parse() {
-        Bits me = this;
-        return new BitsSlice(ref me);
+        return new BitsSlice(this);
     }
 
     public BitArray Unwrap() {
