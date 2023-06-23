@@ -8,7 +8,7 @@ public class CoinsOptions
     public bool IsNano { get; set; }
     public int Decimals { get; set; }
 
-    public CoinsOptions(bool IsNano, int Decimals) 
+    public CoinsOptions(bool IsNano = false, int Decimals = 9) 
     {
         this.IsNano = IsNano;
         this.Decimals = Decimals;
@@ -32,10 +32,12 @@ public class Coins
             decimals = options?.Decimals != null ? options.Decimals : 9;
         }
 
+        if (value is string) value = value.ToString().Replace(".", ",");
+
         CheckCoinsType(value);
         CheckCoinsDecimals(decimals);
 
-        decimal decimalValue = decimal.Parse(value.ToString());
+        decimal decimalValue = Convert.ToDecimal(value.ToString());
 
         int digitsValue = GetDigitsAfterDecimalPoint(decimalValue);
         if (digitsValue > decimals)
@@ -44,7 +46,7 @@ public class Coins
         }
 
         Decimals = decimals;
-        Multiplier = (1 * 10) ^ Decimals;
+        Multiplier = new(Math.Pow(10, Decimals));
         Value = !isNano ? decimalValue * Multiplier : decimalValue;
     }
 
@@ -62,7 +64,7 @@ public class Coins
         CheckCoins(coins);
         CompareCoinsDecimals(this, coins);
 
-        Value += coins.Value;
+        Value -= coins.Value;
         return this;
     }
 
@@ -71,7 +73,7 @@ public class Coins
         CheckValue(value);
         CheckConvertability(value);
 
-        var multiplier = Convert.ToInt64(value);
+        var multiplier = Convert.ToDecimal(value);
 
         Value *= multiplier;
         return this;
@@ -82,7 +84,7 @@ public class Coins
         CheckValue(value);
         CheckConvertability(value);
 
-        var divider = Convert.ToInt64(value);
+        var divider = Convert.ToDecimal(value);
 
         Value /= divider;
         return this;
@@ -133,11 +135,14 @@ public class Coins
 
     public override string ToString()
     {
-        var value = (Value / Multiplier).ToString($"F{Decimals}");
+        decimal value = Value / Multiplier;
+        string formattedValue = value.ToString("F" + Decimals);
 
-        var re1 = new Regex($@"\.0{{{Decimals}}}$");
-        var re2 = new Regex(@"(\.[0-9]*?[0-9])0+$");
-        var coins = re2.Replace(re1.Replace(value, ""), "$1");
+        // Удалить все конечные нули
+        var re1 = new Regex($"\\.{new string('0', Decimals)}$");
+        var re2 = new Regex("(\\.[0-9]*?[0-9])0+$");
+
+        string coins = re2.Replace(re1.Replace(formattedValue, string.Empty), "$1");
 
         return coins;
     }
@@ -188,14 +193,14 @@ public class Coins
     private static bool IsValid(object value)
     {
         // TODO: узнать про тип данных
-        return value is string || value is int || value is decimal;
+        return value is string || value is int || value is decimal || value is double || value is float || value is long;
     }
 
     private static bool IsConvertable(object value)
     {
         try
         {
-            new decimal(Convert.ToDouble(value.ToString()));
+            Convert.ToDecimal(value.ToString());
             return true;
         }
         catch (Exception)
@@ -211,7 +216,7 @@ public class Coins
 
     private static int GetDigitsAfterDecimalPoint(decimal number)
     {
-        string[] parts = number.ToString().Split('.');
+        string[] parts = number.ToString().Split(',');
         if (parts.Length == 2)
         {
             return parts[1].Length;
@@ -227,6 +232,6 @@ public class Coins
         CheckCoinsType(value);
         CheckCoinsDecimals(decimals);
 
-        return new Coins(value, new CoinsOptions(false, decimals));
+        return new Coins(value, new CoinsOptions(true, decimals));
     }
 }
