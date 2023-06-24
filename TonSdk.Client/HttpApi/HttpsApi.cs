@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using TonSdk.Core;
-using static TonSdk.Client.HttpApi.Transformers;
+﻿using TonSdk.Core;
 
 namespace TonSdk.Client.HttpApi;
 
@@ -27,36 +25,10 @@ public class HttpApi
         };        
     }
 
-    public async Task<AddressInformationResult> GetAddressInformation(Address address)
+    public async Task<object> GetAddressInformation(Address address)
     {
         InAdressInformationBody requestBody = new(address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)));
         var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody, ApiOptions)).Call();
-        RootAddressInformation resultAddressInformation = JsonConvert.DeserializeObject<RootAddressInformation>(result);
-        AddressInformationResult addressInformationResult = new(resultAddressInformation.Result);
-        return addressInformationResult;
-    }
-
-    public async Task<TransactionsInformationResult[]> GetTransactions(Address address, int limit = 10, int? lt = null, string? hash = null, int? to_lt = null, bool? archival = null)
-    {
-        InTransactionsBody requestBody = new() 
-        { 
-            address = address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)),
-            limit = limit
-        };
-        if (lt != null) requestBody.lt = (int)lt;
-        if (hash != null) requestBody.hash = hash;
-        if (to_lt != null) requestBody.to_lt = (int)to_lt;
-        if (archival != null) requestBody.archival = (bool)archival;
-
-        var result = await new TonRequest(new RequestParameters("getTransactions", requestBody, ApiOptions)).Call();
-        RootTransactions resultRoot = JsonConvert.DeserializeObject<RootTransactions>(result);
-
-        TransactionsInformationResult[] transactionsInformationResult = new TransactionsInformationResult[resultRoot.Result.Length];
-        for (int i = 0; i < resultRoot.Result.Length; i++)
-        {
-            transactionsInformationResult[i] = new TransactionsInformationResult(resultRoot.Result[i]);
-        }
-
-        return transactionsInformationResult;
+        return result;
     }
 }
