@@ -59,4 +59,19 @@ public class HttpApi
 
         return transactionsInformationResult;
     }
+
+    public async Task<RunGetMethodResult> RunGetMethod(Address address, string method, string[][] stack)
+    {
+        InRunGetMethodBody requestBody = new InRunGetMethodBody()
+        {
+            address = address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)),
+            method = method,
+            stack = stack
+        };
+
+        var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody, ApiOptions)).Call();
+        RootRunGetMethod resultRoot = JsonConvert.DeserializeObject<RootRunGetMethod>(result);
+        RunGetMethodResult outRunGetMethod = new(resultRoot.Result);
+        return outRunGetMethod;
+    }
 }
