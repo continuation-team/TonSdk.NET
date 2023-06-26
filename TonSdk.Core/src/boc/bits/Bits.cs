@@ -44,7 +44,7 @@ public class Bits {
 
     public Bits(byte[] bytes) : this(ref bytes) { }
 
-    protected Bits Slice(int start, int end) {
+    public Bits Slice(int start, int end) {
         var ret = (BitArray)_data.Clone();
         ret.RightShift(start);
         ret.Length = end - start;
@@ -169,7 +169,7 @@ public class Bits {
     }
 
     public override string ToString() {
-        return ToString("fiftHex");
+        return ToString("base64");
     }
 
     public string ToString(string mode) {

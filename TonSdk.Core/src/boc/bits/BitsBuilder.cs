@@ -113,6 +113,12 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         return storeNumber(value, size, needCheck);
     }
 
+    public T StoreUInt32LE(uint value) {
+        var bytes = BitConverter.GetBytes(value);
+        var bits = new Bits(ref bytes);
+        return StoreBits(bits);
+    }
+
     private T storeNumber(BigInteger value, int size, bool needCheck) {
         return storeNumberInternal(value.ToByteArray(), size, needCheck);
     }
@@ -148,13 +154,6 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         }
 
         var bits = new Bits(bitArray);
-        return StoreBits(bits);
-    }
-
-    public T storeUInt32LE(uint value) {
-        // TODO add checks
-        var bytes = BitConverter.GetBytes(value);
-        var bits = new Bits(ref bytes);
         return StoreBits(bits);
     }
 

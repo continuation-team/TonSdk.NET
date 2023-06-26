@@ -103,6 +103,9 @@ public class BitsEqualityComparer : IEqualityComparer<Bits> {
 
 public static class BitArrayUtils {
      public static BitArray slice(this BitArray bits, int start, int end, bool inplace = false) {
+          if (start < 0 || end < 0 || start > end || end > bits.Length) {
+               throw new ArgumentException($"Invalid slice indexes: {start}, {end}");
+          }
           var ret = inplace ? bits : (BitArray)bits.Clone();
           ret.RightShift(start);
           ret.Length = end - start;

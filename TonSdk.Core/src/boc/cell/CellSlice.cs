@@ -28,20 +28,20 @@ public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
         get { return _cell.refs.slice(_refs_st, _refs_en); }
     }
 
-    public CellSlice skipRefs(int size) {
+    public CellSlice SkipRefs(int size) {
         var refEnd = _refs_st + size;
         CheckRefsUnderflow(refEnd);
         _refs_st = refEnd;
         return this;
     }
 
-    public Cell[] readRefs(int size) {
+    public Cell[] ReadRefs(int size) {
         var refEnd = _refs_st + size;
         CheckRefsUnderflow(refEnd);
         return _cell.refs.slice(_refs_st, refEnd);
     }
 
-    public Cell[] loadRefs(int size) {
+    public Cell[] LoadRefs(int size) {
         var refEnd = _refs_st + size;
         CheckRefsUnderflow(refEnd);
         var refs = _cell.refs.slice(_refs_st, refEnd);

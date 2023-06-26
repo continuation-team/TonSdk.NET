@@ -10,8 +10,14 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
             throw new ArgumentException("Bits underflow");
         }
     }
-    public bool CheckBitsUnderflowQ(int bitEnd) {
+    protected bool CheckBitsUnderflowQ(int bitEnd) {
         return bitEnd > _bits_en;
+    }
+
+    protected void CheckSize(int size) {
+        if (size < 0) {
+            throw new ArgumentException("Invalid size. Must be >= 0", nameof(size));
+        }
     }
 
     protected Bits _bits;
@@ -38,6 +44,7 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
 
 
     public T SkipBits(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         _bits_st = bitEnd;
@@ -45,12 +52,14 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
     }
 
     public Bits ReadBits(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         return new Bits(_bits.Data.slice(_bits_st, bitEnd));
     }
 
     public Bits LoadBits(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         var bits = _bits.Data.slice(_bits_st, bitEnd);
@@ -58,13 +67,33 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         return new Bits(bits);
     }
 
+    public T SkipBit() {
+        return SkipBits(1);
+    }
+
+    public bool ReadBit() {
+        var bitEnd = _bits_st + 1;
+        CheckBitsUnderflow(bitEnd);
+        return _bits.Data[_bits_st];
+    }
+
+    public bool LoadBit() {
+        var bitEnd = _bits_st + 1;
+        CheckBitsUnderflow(bitEnd);
+        var bit = _bits.Data[_bits_st];
+        _bits_st = bitEnd;
+        return bit;
+    }
+
     public BigInteger ReadUInt(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         return _unsafeReadBigInteger(size);
     }
 
     public BigInteger LoadUInt(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         var result = _unsafeReadBigInteger(size);
@@ -73,17 +102,24 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
     }
 
     public BigInteger ReadInt(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         return _unsafeReadBigInteger(size, true);
     }
 
     public BigInteger LoadInt(int size) {
+        CheckSize(size);
         var bitEnd = _bits_st + size;
         CheckBitsUnderflow(bitEnd);
         var result = _unsafeReadBigInteger(size, true);
         _bits_st = bitEnd;
         return result;
+    }
+
+    public BigInteger LoadUInt32LE() {
+        var bytes = LoadBits(32).ToBytes();
+        return new BigInteger(bytes);
     }
 
     public abstract U Restore();
