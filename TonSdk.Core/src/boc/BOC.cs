@@ -15,6 +15,87 @@ public class BagOfCells {
     // public BagOfCells(Cell cell) : this(new[] { cell }) {
     // }
 
+    private const uint BOC_CONSTRUCTOR = 0xb5ee9c72;
+
+    private struct BocHeader {
+        public bool   HasIdx;
+        public bool   HasCrc32C;
+        public bool   HasCacheBits;
+        public byte   Flags;
+        public byte   SizeBytes;
+        public byte   OffsetBytes;
+        public uint   CellsNum;
+        public uint   RootsNum;
+        public uint   AbsentNum;
+        public ulong  TotalCellsSize;
+        public uint[] RootList;
+        public Bits   CellsData;
+    }
+
+    private static BocHeader deserializeHeader(Bits headerBits) {
+        var hs = headerBits.Parse();
+        if ((uint)hs.LoadUInt(32) != BOC_CONSTRUCTOR) {
+            throw new Exception("Unknown BOC constructor");
+        }
+        var hasIdx = hs.LoadBit();
+        var hasCrc32C = hs.LoadBit();
+        var hasCacheBits = hs.LoadBit();
+        var flags = (byte)hs.LoadUInt(2);
+        if (flags != 0) throw new Exception("Unknown flags");
+        var sizeBytes = (byte)hs.LoadUInt(3);
+        if (sizeBytes > 4) throw new Exception("Invalid size");
+        var offsetBytes = (byte)hs.LoadUInt(8);
+        if (offsetBytes > 8) throw new Exception("Invalid offset");
+        var cellsNum = (uint)hs.LoadUInt(sizeBytes * 8);
+        var rootsNum = (uint)hs.LoadUInt(sizeBytes * 8);
+        if (rootsNum < 1) throw new Exception("Invalid rootsNum");
+        var absentNum = (uint)hs.LoadUInt(sizeBytes * 8);
+        if (rootsNum + absentNum > cellsNum) throw new Exception("Invalid absentNum");
+        var totalCellsSize = (ulong)hs.LoadUInt(offsetBytes * 8);
+
+        var calcRemainderBits = (rootsNum * sizeBytes * 8)
+                                   + (totalCellsSize * 8)
+                                   + (hasIdx ? cellsNum * offsetBytes * 8 : 0)
+                                   + (ulong)(hasCrc32C ? 32 : 0);
+
+        if ((ulong)hs.RemainderBits != calcRemainderBits) {
+            throw new Exception("Invalid BOC size");
+        }
+
+        var rootList = new uint[rootsNum];
+        for (var i = 0; i < rootsNum; i++) {
+            rootList[i] = (uint)hs.LoadUInt(sizeBytes * 8);
+        }
+
+        if (hasIdx) hs.SkipBits((int)(cellsNum * offsetBytes * 8));
+
+        var cellsData = hs.LoadBits((int)(totalCellsSize * 8));
+
+        if (hasCrc32C) {
+            var crc32bits = headerBits.Slice(0, -32);
+            var crc32c = (uint)hs.LoadUInt32LE();
+            var crc32c_calc = Crc32C.Calculate(crc32bits.ToBytes());
+            if (crc32c != crc32c_calc) {
+                throw new Exception("Invalid CRC32C");
+            }
+        }
+
+        return new BocHeader(){
+            HasIdx         = hasIdx,
+            HasCrc32C      = hasCrc32C,
+            HasCacheBits   = hasCacheBits,
+            Flags          = flags,
+            SizeBytes      = sizeBytes,
+            OffsetBytes    = offsetBytes,
+            CellsNum       = cellsNum,
+            RootsNum       = rootsNum,
+            AbsentNum      = absentNum,
+            TotalCellsSize = totalCellsSize,
+            RootList       = rootList,
+            CellsData      = cellsData
+        };
+    }
+
 
     private static Bits serializeCell(Cell cell, Dictionary<Bits, int> cellsIndex, int refSize) {
         var ret = cell.BitsWithDescriptors;
@@ -56,14 +137,14 @@ public class BagOfCells {
             }
             // // Проверяем, что ячейка еще не добавлена в список отсортированных ячеек
             if (!hashToIndex.ContainsKey(cell.Hash)) {
-            // Добавляем ячейку в начало списка отсортированных ячеек
-            sortedCells.Insert(0, (cell.Hash, cell));
-            // Сдвигаем уже добавленные ячейки на одну позицию вправо
-            for (int i = 1; i < sortedCells.Count; i++) {
-                hashToIndex[sortedCells[i].Item2.Hash]++;
-            }
-            // Добавляем ячейку в словарь hashToIndex
-            hashToIndex[cell.Hash] = 0;
+                // Добавляем ячейку в начало списка отсортированных ячеек
+                sortedCells.Insert(0, (cell.Hash, cell));
+                // Сдвигаем уже добавленные ячейки на одну позицию вправо
+                for (var i = 1; i < sortedCells.Count; i++) {
+                    hashToIndex[sortedCells[i].Item2.Hash]++;
+                }
+                // Добавляем ячейку в словарь hashToIndex
+                hashToIndex[cell.Hash] = 0;
             }
         }
 
@@ -126,7 +207,7 @@ public class BagOfCells {
         var l = 32 + 1 + 1 + 1 + 2 + 3 + 8 + (sBytes * 8) + (sBytes * 8) + (sBytes * 8) + (offsetBytes * 8) +
                 (roots.Length * sBytes * 8) + ((hasIdx ? 1 : 0) * cellsNum * (offsetBytes * 8)) + dataBits.Length + ((hasCrc32C ? 1 : 0) * 32);
         var bocBuilder = new BitsBuilder(l)
-            .StoreUInt(0xb5ee9c72, 32, false) // serialized_boc#b5ee9c72
+            .StoreUInt(BOC_CONSTRUCTOR, 32, false) // serialized_boc#b5ee9c72
             .StoreBit(hasIdx, false) // has_idx:(## 1)
             .StoreBit(hasCrc32C, false) // has_crc32c:(## 1)
             .StoreBit(hasCacheBits, false) // has_cache_bits:(## 1)
@@ -153,7 +234,7 @@ public class BagOfCells {
 
         if (hasCrc32C) {
             var crc32c = Crc32C.Calculate(bocBuilder.Build().Augment().ToBytes());
-            bocBuilder.storeUInt32LE(crc32c); // crc32c:has_crc32c?uint32
+            bocBuilder.StoreUInt32LE(crc32c); // crc32c:has_crc32c?uint32
         }
 
         return bocBuilder.Build();
