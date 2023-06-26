@@ -5,14 +5,14 @@ namespace TonSdk.Core.Tests;
 public class MnemonicBIP39Test
 {
     [Test]
-    public void Test_ConstructrorMnemonicBIP39Exceptions()
+    public void Test_ConstructorMnemonicBIP39Exceptions()
     {
         Assert.DoesNotThrow(() => new MnemonicBIP39());
         Assert.DoesNotThrow(() => new MnemonicBIP39(null));
         Assert.DoesNotThrow(() => new MnemonicBIP39(null, new MnemonicOptions("", 2048, 32)));
 
         Assert.Throws<Exception>(() => new MnemonicBIP39(new string[] { "abandon", "abandon", "abandon" }), "Mnemonic: must contain 24 bip39 words.");
-        Assert.Throws<Exception>(() => new MnemonicBIP39(new string[] 
+        Assert.Throws<Exception>(() => new MnemonicBIP39(new string[]
         { "ton", "testton", "testtoncat",
           "ton", "testton", "testtoncat",
           "ton", "testton", "testtoncat",
@@ -24,14 +24,14 @@ public class MnemonicBIP39Test
     }
 
     [Test]
-    public void Test_ConstructrorMnemonicBIP39()
+    public void Test_ConstructorMnemonicBIP39()
     {
         Assert.That(new MnemonicBIP39().Words.Length, Is.EqualTo(24));
         Assert.That(new MnemonicBIP39().Seed.Length, Is.EqualTo(32));
         Assert.That(new MnemonicBIP39().Keys.PrivateKey.Length, Is.EqualTo(32));
         Assert.That(new MnemonicBIP39().Keys.PublicKey.Length, Is.EqualTo(32));
 
-        // All tests have been checked with https://bip39.net 
+        // All tests have been checked with https://bip39.net
         MnemonicBIP39 mnemonicBIP39 = new MnemonicBIP39(new string[]{
         "album", "satoshi", "ginger",
         "erode", "trial", "say",

@@ -5,7 +5,7 @@ namespace TonSdk.Core.Tests;
 public class MnemonicTest
 {
     [Test]
-    public void Test_ConstructrorMnemonicExceptions()
+    public void Test_ConstructorMnemonicExceptions()
     {
         Assert.DoesNotThrow(() => new Mnemonic());
         Assert.DoesNotThrow(() => new Mnemonic(null));
@@ -24,7 +24,7 @@ public class MnemonicTest
     }
 
     [Test]
-    public void Test_ConstructrorMnemonic()
+    public void Test_ConstructorMnemonic()
     {
         Assert.That(new Mnemonic().Words.Length, Is.EqualTo(24));
         Assert.That(new Mnemonic().Seed.Length, Is.EqualTo(32));
