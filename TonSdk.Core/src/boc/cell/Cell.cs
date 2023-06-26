@@ -46,13 +46,13 @@ public class Cell {
     public Cell(string bitString, params Cell[] refs) :
         this(new Bits(bitString), refs) { }
 
-    public string toFiftHex(ushort indent = 1, int size = 0) {
+    private string toFiftHex(ushort indent = 1, int size = 0) {
         var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + bits.ToString("fiftHex") };
         output.AddRange(refs.Select(cell => $"\n{cell.toFiftHex(indent, size + 1)}"));
         return string.Join("", output);
     }
 
-    public string toFiftBin(ushort indent = 1, int size = 0) {
+    private string toFiftBin(ushort indent = 1, int size = 0) {
         var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + bits.ToString("fiftBin") };
 
         foreach (var cell in refs) {
@@ -61,12 +61,27 @@ public class Cell {
         return String.Join("", output);
     }
 
-    public CellSlice parse() {
+    public CellSlice Parse() {
         var me = this;
         return new CellSlice(ref me);
     }
 
-    public Bits serialize(
+    public string ToString() {
+        return ToString("base64");
+    }
+
+    public string ToString(string mode) {
+        return mode switch {
+            "hex" => Serialize().ToString("hex"),
+            "fiftBin" => toFiftBin(),
+            "fiftHex" => toFiftHex(),
+            "base64" => Serialize().ToString("base64"),
+            "base64url" => Serialize().ToString("base64url"),
+            _ => throw new ArgumentException("Unknown mode, supported: hex, fiftBin, fiftHex, base64, base64url")
+        };
+    }
+
+    public Bits Serialize(
         bool hasIdx = false,
         bool hasCrc32C = true
     ) {
