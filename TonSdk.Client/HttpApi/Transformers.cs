@@ -186,6 +186,11 @@ public struct InAdressInformationBody : IRequestBody
         [JsonProperty("init_state")] public string InitState;
     }
 
+    public struct SendBocResult
+    {
+        [JsonProperty("@type")] public string Type;
+    }
+
     public struct TransactionId
     {
         [JsonProperty("lt")] public ulong Lt;

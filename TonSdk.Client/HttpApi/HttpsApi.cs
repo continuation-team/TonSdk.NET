@@ -76,12 +76,27 @@ public class HttpApi
         return outRunGetMethod;
     }
 
-    //public async Task<object> SendBoc(Cell boc)
-    //{
-    //    InSendBocBody body = new()
-    //    {
-    //        boc = boc.;
-    //    }
-        
-    //}
+    public async Task<SendBocResult> SendBoc(Cell boc)
+    {
+        InSendBocBody requestBody = new()
+        {
+            boc = boc.ToString("base64")
+        };
+        var result = await new TonRequest(new RequestParameters("sendBoc", requestBody, ApiOptions)).Call();
+        RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
+        SendBocResult outSendBoc = resultRoot.Result;
+        return outSendBoc;
+    }
+
+    public async Task<SendBocResult> SendBoc(string bocBase64)
+    {
+        InSendBocBody requestBody = new()
+        {
+            boc = bocBase64
+        };
+        var result = await new TonRequest(new RequestParameters("sendBoc", requestBody, ApiOptions)).Call();
+        RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
+        SendBocResult outSendBoc = resultRoot.Result;
+        return outSendBoc;
+    }
 }
