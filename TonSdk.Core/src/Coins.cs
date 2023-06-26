@@ -8,7 +8,7 @@ public class CoinsOptions
     public bool IsNano { get; set; }
     public int Decimals { get; set; }
 
-    public CoinsOptions(bool IsNano = false, int Decimals = 9) 
+    public CoinsOptions(bool IsNano = false, int Decimals = 9)
     {
         this.IsNano = IsNano;
         this.Decimals = Decimals;
@@ -71,7 +71,7 @@ public class Coins
     public Coins Mul(object value)
     {
         CheckValue(value);
-        CheckConvertability(value);
+        CheckConvertibility(value);
 
         var multiplier = Convert.ToDecimal(value);
 
@@ -82,7 +82,7 @@ public class Coins
     public Coins Div(object value)
     {
         CheckValue(value);
-        CheckConvertability(value);
+        CheckConvertibility(value);
 
         var divider = Convert.ToDecimal(value);
 
@@ -183,7 +183,7 @@ public class Coins
         throw new Exception("Invalid value");
     }
 
-    private static void CheckConvertability(object value)
+    private static void CheckConvertibility(object value)
     {
         if (IsConvertable(value)) return;
 
