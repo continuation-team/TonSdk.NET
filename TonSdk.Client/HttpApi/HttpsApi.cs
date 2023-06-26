@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using TonSdk.Core;
+using TonSdk.Core.Boc;
 using static TonSdk.Client.HttpApi.Transformers;
 
 namespace TonSdk.Client.HttpApi;
@@ -74,4 +75,13 @@ public class HttpApi
         RunGetMethodResult outRunGetMethod = new(resultRoot.Result);
         return outRunGetMethod;
     }
+
+    //public async Task<object> SendBoc(Cell boc)
+    //{
+    //    InSendBocBody body = new()
+    //    {
+    //        boc = boc.;
+    //    }
+        
+    //}
 }
