@@ -1,14 +1,14 @@
 ﻿using System.Numerics;
 
-namespace TonSdk.Core.Boc.Utils;
+namespace TonSdk.Core.Boc;
 
 public static class Utils {
     public static byte reverseBits(this byte b) {
         byte r = 0;
         for (var i2 = 0; i2 < 8; i2++) {
-            r <<= 1;            // Сдвигаем результат влево
-            r |= (byte)(b & 1); // Записываем младший бит числа в результат
-            b >>= 1;            // Сдвигаем число вправо
+            r <<= 1;            // Shift the result to the left
+            r |= (byte)(b & 1); // Write the least significant bit of the number to the result
+            b >>= 1;            // Shift the number to the right
         }
         return r;
     }

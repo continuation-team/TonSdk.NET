@@ -1,6 +1,4 @@
-﻿using TonSdk.Core.Boc.Utils;
-
-namespace TonSdk.Core.Boc;
+﻿namespace TonSdk.Core.Boc;
 
 public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
 

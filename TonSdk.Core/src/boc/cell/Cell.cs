@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Runtime.CompilerServices;
-
-namespace TonSdk.Core.Boc;
+﻿namespace TonSdk.Core.Boc;
 
 
 public class Cell {
@@ -11,7 +8,7 @@ public class Cell {
 
     public readonly bool isExotic;
     public readonly int  refCount;
-    public readonly int  fullData; // количество полных полубайт (4 бита)
+    public readonly int  fullData;
     public readonly int  depth;
     private Bits? _bitsWithDescriptors;
     private Bits? _hash;

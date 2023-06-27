@@ -1,9 +1,4 @@
-﻿using System.Collections;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using TonSdk.Core.Boc.Utils;
-
-namespace TonSdk.Core.Boc;
+﻿namespace TonSdk.Core.Boc;
 
 public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
     private void CheckRefsOverflow(ref Cell[] refs) {

@@ -117,9 +117,32 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         return result;
     }
 
+    public BigInteger ReadUInt32LE() {
+        var bitEnd = _bits_st + 32;
+        CheckBitsUnderflow(bitEnd);
+        return _unsafeReadBigInteger(32, false, true);
+    }
+
     public BigInteger LoadUInt32LE() {
-        var bytes = LoadBits(32).ToBytes();
-        return new BigInteger(bytes);
+        var bitEnd = _bits_st + 32;
+        CheckBitsUnderflow(bitEnd);
+        var result = _unsafeReadBigInteger(32, false, true);
+        _bits_st = bitEnd;
+        return result;
+    }
+
+    public BigInteger ReadUInt64LE() {
+        var bitEnd = _bits_st + 64;
+        CheckBitsUnderflow(bitEnd);
+        return _unsafeReadBigInteger(64, false, true);
+    }
+
+    public BigInteger LoadUInt64LE() {
+        var bitEnd = _bits_st + 64;
+        CheckBitsUnderflow(bitEnd);
+        var result = _unsafeReadBigInteger(64, false, true);
+        _bits_st = bitEnd;
+        return result;
     }
 
     public Coins ReadCoins(int decimals = 9) {
@@ -209,12 +232,21 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
 
     public abstract U Restore();
 
-    private BigInteger _unsafeReadBigInteger(int size, bool sgn = false) {
+    private BigInteger _unsafeReadBigInteger(int size, bool sgn = false, bool le = false) {
         BigInteger result = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (_bits.Data[_bits_st + i]) {
-                result |= BigInteger.One << (size - 1 - i);
+        if (le) {
+            var bits = new BitArray(LoadBits(size).ToBytes());
+            for (int i = 0; i < size; i++) {
+                if (bits[i]) {
+                    result |= BigInteger.One << i;
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (_bits.Data[_bits_st + i]) {
+                    result |= BigInteger.One << (size - 1 - i);
+                }
             }
         }
 
