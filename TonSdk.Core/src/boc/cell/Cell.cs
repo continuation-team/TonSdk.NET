@@ -25,7 +25,7 @@ public class Cell {
     }
 
 
-    public Cell(Bits _bits, Cell[] _refs, CellType _type = CellType.ORDINARY) {
+    public Cell (Bits _bits, Cell[] _refs, CellType _type = CellType.ORDINARY) {
         if (_bits.Length > CellTraits.max_bits) {
             throw new ArgumentException($"Bits should have at most {CellTraits.max_bits} bits.", nameof(bits));
         }
@@ -38,13 +38,21 @@ public class Cell {
         refs = _refs;
         type = _type;
         refCount = _refs.Length;
-        fullData = Math.Max(_bits.Length / 4, 1);
+        fullData = Math.Max((_bits.Length + 7) / 8 + _bits.Length / 8, 1);
         isExotic = type != CellType.ORDINARY;
         depth = refCount == 0 ? 0 : _refs.Max(cell => cell.depth) + 1;
     }
 
-    public Cell(string bitString, params Cell[] refs) :
+    public Cell (string bitString, params Cell[] refs) :
         this(new Bits(bitString), refs) { }
+
+    public static Cell From(string bitsString) {
+        return From(new Bits(bitsString));
+    }
+
+    public static Cell From(Bits bits) {
+        return BagOfCells.DeserializeBoc(bits)[0];
+    }
 
     private string toFiftHex(ushort indent = 1, int size = 0) {
         var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + bits.ToString("fiftHex") };
@@ -62,11 +70,10 @@ public class Cell {
     }
 
     public CellSlice Parse() {
-        var me = this;
-        return new CellSlice(ref me);
+        return new CellSlice(this);
     }
 
-    public string ToString() {
+    public override string ToString() {
         return ToString("base64");
     }
 
@@ -85,7 +92,7 @@ public class Cell {
         bool hasIdx = false,
         bool hasCrc32C = true
     ) {
-        return BagOfCells.serializeBoc(this, hasIdx, hasCrc32C);
+        return BagOfCells.SerializeBoc(this, hasIdx, hasCrc32C);
     }
 
 

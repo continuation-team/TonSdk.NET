@@ -45,6 +45,13 @@ public class Bits {
     public Bits(byte[] bytes) : this(ref bytes) { }
 
     public Bits Slice(int start, int end) {
+        if (end < 0) end = Length + end;
+        if (start < 0) start = Length + start;
+
+        if (start < 0 || end < 0 || start > end || start > Length || end > Length) {
+            throw new ArgumentException("Invalid slice range");
+        }
+
         var ret = (BitArray)_data.Clone();
         ret.RightShift(start);
         ret.Length = end - start;
@@ -65,6 +72,31 @@ public class Bits {
         _bits[^(newL - l)] = true;
 
         return new Bits(_bits);
+    }
+
+    public Bits Rollback(int divider = 8) {
+        if (divider != 4 && divider != 8) {
+            throw new ArgumentException("Invalid divider. Can be (4 | 8)", nameof(divider));
+        }
+
+        if (Length < divider) {
+            throw new Exception("Bits length is less than divider");
+        }
+
+        int? pos = null;
+
+        for (int i = Length - 1; i >= Length - 1 - divider; i--) {
+            if (_data[i]) {
+                pos = i;
+                break;
+            }
+        }
+
+        if (pos == null) {
+            throw new Exception("Incorrectly augmented bits.");
+        }
+
+        return Slice(0, (int)pos);
     }
 
     private static BitArray fromString(string s) {

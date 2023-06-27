@@ -15,7 +15,7 @@ public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
     private int _refs_st = 0;
     private int _refs_en;
 
-    public CellSlice (ref Cell cell) : base(cell.bits) {
+    public CellSlice (Cell cell) : base(cell.bits) {
         _cell = cell;
         _refs_en = cell.refCount;
     }

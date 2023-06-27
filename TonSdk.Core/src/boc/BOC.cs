@@ -1,19 +1,9 @@
-﻿using System.Collections;
-using System.Runtime.CompilerServices;
-using JustCRC32C;
+﻿using JustCRC32C;
 using TonSdk.Core.Boc.Utils;
 
 namespace TonSdk.Core.Boc;
 
 public class BagOfCells {
-    // private Cell[] _cells;
-    //
-    // public BagOfCells(Cell[] cells) {
-    //     _cells = cells;
-    // }
-    //
-    // public BagOfCells(Cell cell) : this(new[] { cell }) {
-    // }
 
     private const uint BOC_CONSTRUCTOR = 0xb5ee9c72;
 
@@ -30,6 +20,13 @@ public class BagOfCells {
         public ulong  TotalCellsSize;
         public uint[] RootList;
         public Bits   CellsData;
+    }
+
+    private struct RawCell {
+        public Cell?       Cell;
+        public CellType    Type;
+        public CellBuilder Builder;
+        public ulong[]     Refs;
     }
 
     private static BocHeader deserializeHeader(Bits headerBits) {
@@ -54,9 +51,9 @@ public class BagOfCells {
         var totalCellsSize = (ulong)hs.LoadUInt(offsetBytes * 8);
 
         var calcRemainderBits = (rootsNum * sizeBytes * 8)
-                                   + (totalCellsSize * 8)
-                                   + (hasIdx ? cellsNum * offsetBytes * 8 : 0)
-                                   + (ulong)(hasCrc32C ? 32 : 0);
+                                + (totalCellsSize * 8)
+                                + (hasIdx ? cellsNum * offsetBytes * 8 : 0)
+                                + (ulong)(hasCrc32C ? 32 : 0);
 
         if ((ulong)hs.RemainderBits != calcRemainderBits) {
             throw new Exception("Invalid BOC size");
@@ -96,6 +93,106 @@ public class BagOfCells {
         };
     }
 
+    private static RawCell deserializeCell(BitsSlice dataSlice, ushort refIndexSize) {
+        if (dataSlice.RemainderBits < 2) {
+            throw new Exception("BOC not enough bytes to encode cell descriptors");
+        }
+
+        var refsDescriptor = (uint)dataSlice.LoadUInt(8);
+        var level = refsDescriptor >> 5;
+        var totalRefs = refsDescriptor & 7;
+        var hasHashes = (refsDescriptor & 16) != 0;
+        var isExotic = (refsDescriptor & 8) != 0;
+        var isAbsent = totalRefs == 7 && hasHashes;
+
+        if (isAbsent) {
+            throw new Exception("BoC can't deserialize absent cell");
+        }
+
+        if (totalRefs > 4) {
+            throw new Exception($"BoC cell can't has more than 4 refs {totalRefs}");
+        }
+
+        var bitsDescriptor = (uint)dataSlice.LoadUInt(8);
+        var isAugmented = (bitsDescriptor & 1) != 0;
+        var dataSize = (bitsDescriptor >> 1) + (isAugmented ? 1 : 0);
+        var hashesSize = hasHashes ? (level + 1) * 32 : 0;
+        var depthSize = hasHashes ? (level + 1) * 2 : 0;
+
+        if (dataSlice.RemainderBits < hashesSize + depthSize + dataSize + refIndexSize * totalRefs) {
+            throw new Exception("BoC not enough bytes to encode cell data");
+        }
+
+        if (hasHashes) dataSlice.SkipBits((int)(hashesSize + depthSize));
+
+        var data = isAugmented
+            ? dataSlice.LoadBits((int)dataSize * 8).Rollback(8)
+            : dataSlice.LoadBits((int)dataSize * 8);
+
+        if (isExotic && data.Length < 8) {
+            throw new Exception("BoC not enough bytes for an exotic cell type");
+        }
+
+        if (isExotic) throw new NotImplementedException("Exotic cells not implemented yet");
+
+        var refs = new ulong[totalRefs];
+        for (var i = 0; i < totalRefs; i++) {
+            refs[i] = (ulong)dataSlice.LoadUInt(refIndexSize * 8);
+        }
+
+        return new RawCell() {
+            Type = CellType.ORDINARY,
+            Builder = new CellBuilder(data.Length).StoreBits(data),
+            Refs = refs
+        };
+    }
+
+    public static Cell[] DeserializeBoc(Bits data) {
+        var headers = deserializeHeader(data);
+        var rawCells = new RawCell[headers.CellsNum];
+
+        var cellsDataSlice = headers.CellsData.Parse();
+
+        for (var i = 0; i < headers.CellsNum; i++) {
+            rawCells[i] = deserializeCell(cellsDataSlice, headers.SizeBytes);
+        }
+
+        for (var i = (int)(headers.CellsNum - 1); i >= 0; i--) {
+            foreach (var refIndex in rawCells[i].Refs) {
+                var rawRefCell = rawCells[refIndex];
+                if (refIndex < (ulong)i) {
+                    throw new Exception("Topological order is broken");
+                }
+
+                /*
+                    if (refType === CellType.MerkleProof || refType === CellType.MerkleUpdate) {
+                        hasMerkleProofs = true
+                    }
+                */
+
+                rawCells[i].Builder.StoreRef(rawRefCell.Builder.Build());
+            }
+
+            /*
+                // TODO: check if Merkle Proofs can be only on significant level
+                if (cellType === CellType.MerkleProof || cellType === CellType.MerkleUpdate) {
+                    hasMerkleProofs = true
+                }
+            */
+
+            rawCells[i].Cell = rawCells[i].Builder.Build();
+        }
+
+        /*
+            if (checkMerkleProofs && !hasMerkleProofs) {
+                throw new Error('BOC does not contain Merkle Proofs')
+            }
+        */
+
+        return headers.RootList.Select(i => rawCells[i].Cell!).ToArray();
+    }
+
+
 
     private static Bits serializeCell(Cell cell, Dictionary<Bits, int> cellsIndex, int refSize) {
         var ret = cell.BitsWithDescriptors;
@@ -111,44 +208,44 @@ public class BagOfCells {
     }
 
 
-    public static Bits serializeBoc(
+    public static Bits SerializeBoc(
         Cell root,
         bool hasIdx = false,
         bool hasCrc32C = true
     ) {
-        return serializeBoc(new[] { root }, hasIdx, hasCrc32C);
+        return SerializeBoc(new[] { root }, hasIdx, hasCrc32C);
     }
 
 
     private static (List<(Bits, Cell)> sortedCells, Dictionary<Bits, int> hashToIndex)
         TopologicalSort(Cell[] roots) {
 
-        // Список уже отсортированных вершин графа
+        // List of already sorted vertices of the graph
         var sortedCells = new List<(Bits, Cell)>();
-        // Словарь, который отображает хеш ячейки на ее индекс в отсортированном списке
+        // Dictionary that maps the cell hash to its index in the sorted list
         var hashToIndex = new Dictionary<Bits, int>(new BitsEqualityComparer());
 
-        // Рекурсивная функция обхода графа и топологической сортировки
+        // Recursive function for graph traversal and topological sorting
         void VisitCell(Cell cell) {
             foreach (var neighbor in cell.refs) {
                 if (!hashToIndex.ContainsKey(neighbor.Hash)) {
                     VisitCell(neighbor);
                 }
             }
-            // // Проверяем, что ячейка еще не добавлена в список отсортированных ячеек
+            // Check that the cell is not yet added to the list of sorted cells
             if (!hashToIndex.ContainsKey(cell.Hash)) {
-                // Добавляем ячейку в начало списка отсортированных ячеек
+                // Add the cell to the beginning of the list of sorted cells
                 sortedCells.Insert(0, (cell.Hash, cell));
-                // Сдвигаем уже добавленные ячейки на одну позицию вправо
+                // Shift the already added cells one position to the right
                 for (var i = 1; i < sortedCells.Count; i++) {
                     hashToIndex[sortedCells[i].Item2.Hash]++;
                 }
-                // Добавляем ячейку в словарь hashToIndex
+                // Add the cell to the hashToIndex dictionary
                 hashToIndex[cell.Hash] = 0;
             }
         }
 
-        // Выполняем обход и топологическую сортировку для каждой вершины графа
+        // Perform traversal and topological sorting for each vertex of the graph
         for (var i = roots.Length - 1; i > -1; i--) {
             // foreach (var rootCell in roots) {
             var rootCell = roots[i];
@@ -162,7 +259,8 @@ public class BagOfCells {
     }
 
 
-    public static Bits serializeBoc(
+
+    public static Bits SerializeBoc(
         Cell[] roots,
         bool hasIdx = false,
         bool hasCrc32C = true
@@ -187,7 +285,7 @@ public class BagOfCells {
         }
 
         var dataBits = dataBuilder.Build();
-        var offsetBytes = (dataBits.Length.bitLength() + 7) / 8;
+        var offsetBytes = Math.Max(dataBits.Length.bitLength() / 8, 1);
 
         /*
           serialized_boc#b5ee9c72 has_idx:(## 1) has_crc32c:(## 1)
@@ -238,53 +336,5 @@ public class BagOfCells {
         }
 
         return bocBuilder.Build();
-    }
-
-    // private static void parseBoc(BitArray bocBits) {
-    //
-    // }
-
-    // public static Cell[] deserializeBoc(string bocString) {
-    //     return deserializeBoc(BitArrayExt.fromString(bocString));
-    // }
-    //
-    // public static Cell[] deserializeBoc(BitArray bocBits) {
-    //
-    // }
-
-    public static void Test() {
-        var dc = new Cell("x{C_}",
-            new Cell("x{0AAAAA}"),
-            new Cell("x{FF_}",
-                new Cell("x{0AAAAA}")));
-        var dc2 = new Cell("x{F_}",
-            new Cell("x{0AAAAA}"),
-            new Cell("x{FF_}",
-                new Cell("x{0AAAAA}"),new Cell("x{0AAAAA}"),new Cell("x{0AAAAA}")));
-        var dc3 = new Cell("x{A_}",
-            new Cell("x{0AAAAA}"),
-            new Cell("x{FF_}",
-                new Cell("x{0AAAAA}"),new Cell("x{0AAAAA}"),dc));
-
-        // dc2.toFiftBits().print();
-        // BitArrayExt.fromFiftHex("x{FF_}").toHexString().print();
-
-        var (sortedCells, hashToIndex) = TopologicalSort(new[]{dc, dc2, dc3});
-
-        // foreach (var (hash, cell) in sortedCells) {
-        //     Console.WriteLine($"{hash.toHexString()} | {hashToIndex[hash]} | {cell.Bits.toFiftHex()}");
-        // }
-        // serializeBoc(new[]{ dc }, hasCrc32C:true, hasIdx:true).toFiftHex().print();
-
-        // BitArrayExt.fromHexString("50d7f591").toBitString().print();
-        // BitArrayExt.fromHexString("0DB08B5F").toBitString().print();
-        // B5EE9C7201010301000E000200C002010101FF0200060AAAAA
-        // b5ee9c7241010301000e000201c002010101ff0200060aaaaa
-        // B5EE9C72010206030000200300010200F005040200A005020301FF0505030200C005040301FF05050500060AAAAA
-
-        // BitArrayExt.fromHexString("4AB15039").toBitString().print();
-        // B5EE9C7241010301000E000201C002010102FF0200060AAAAA945B8539
-        // b5ee9c7241010301000e000201c002010102ff0200060aaaaa3950b14a
-        // BitArrayExt.fromHexString("3950b14a").toBitString().print();
     }
 }

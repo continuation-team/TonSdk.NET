@@ -22,7 +22,7 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
 
     private int _ref_en = 0;
 
-    public CellBuilder () {
+    public CellBuilder (int length = 1023) : base(length) {
         _refs = new Cell[CellTraits.max_refs];
     }
 
@@ -40,7 +40,7 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
         return this;
     }
 
-    public CellBuilder StoreRef(ref Cell cell, bool needCheck = true) {
+    public CellBuilder StoreRef(Cell cell, bool needCheck = true) {
         if (needCheck) CheckRefsOverflow(1);
 
         _refs[_ref_en++] = cell;
