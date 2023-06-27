@@ -7,9 +7,11 @@ public class TonClientParameters : HttpApiParameters { }
 public class TonClient : HttpApi
 {
     public Wallet Wallet { get; private set; }
+    public Jetton Jetton { get; private set; }
     public TonClient(TonClientParameters httpApiParameters) : base(httpApiParameters)
     {
         Wallet = new Wallet(this);
+        Jetton = new Jetton(this);
     }
 
     public async Task<Coins> GetBalance(Address address)

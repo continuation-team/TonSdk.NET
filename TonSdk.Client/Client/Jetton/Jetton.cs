@@ -1,6 +1,11 @@
-﻿using System.Numerics;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System;
+using System.Numerics;
+using System.Transactions;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
+using System.Reflection.Metadata;
 
 namespace TonSdk.Client;
 
@@ -41,7 +46,7 @@ public class Jetton
 
         JettonWalletData jettonWalletData = new()
         {
-            Balance = new((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, (int)decimals)),
+            Balance = new((decimal)runGetMethodResult.Stack[0], new CoinsOptions(true, (int)decimals)),
             OwnerAddress = ((Cell)runGetMethodResult.Stack[1]).Parse().LoadAddress()!,
             JettonMasterAddress = jettonMasterAddress,
             JettonWalletCode = (Cell)runGetMethodResult.Stack[3]
@@ -58,13 +63,13 @@ public class Jetton
         return 9;
     }
 
-    private async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
+    public async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonMasterContract, "get_jetton_data");
         if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
         JettonData jettonData = new()
         {
-            TotalSupply = new Coins((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
+            TotalSupply = new Coins((decimal)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
             AdminAddress = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!,
             Content = (Cell)runGetMethodResult.Stack[3]!,
             JettonWalletCode = (Cell)runGetMethodResult.Stack[4]!
@@ -78,35 +83,25 @@ public class Jetton
         return await GetDecimals(jettonWalletData.JettonMasterAddress);
     }
 
-    public async Task<IJettonTransaction[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null)
-    {
-        TransactionsInformationResult[] transactionsInformationResults = await client.GetTransactions(jettonWallet, limit);
-        uint jettonDecimals = decimals ?? await GetDecimalsByWallet(jettonWallet);
+    //private async Task<object[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null)
+    //{
+    //    TransactionsInformationResult[] transactionsInformationResult = await client.GetTransactions(jettonWallet, limit);
+    //    uint jettonDecimals = decimals ?? await GetDecimalsByWallet(jettonWallet);
 
-        IJettonTransaction[] parsedTransactions = new IJettonTransaction[transactionsInformationResults.Length];
-        var j = 0;
-        for (var i = 0; i < transactionsInformationResults.Length; i++)
-        {
-            IJettonTransaction? parsedTransaction = TransactionParser.ParseTransaction(transactionsInformationResults[i], jettonDecimals);
+    //}
 
-            if (parsedTransaction == null) j++;
-            else parsedTransactions[i - j] = parsedTransaction;
-        }
-        return parsedTransactions;
-    }
-
-    public async Task<Coins> GetBalance(Address jettonWallet)
-    {
-        JettonWalletData jettonWalletData = await GetWalletData(jettonWallet);
-        return jettonWalletData.Balance;
-    }
-
-    public async Task<Address> GetWalletAddress(Address jettonMasterContract, Address walletOwner)
-    {
-        string[][] stack = new string[1][] { Transformers.PackRequestStack(walletOwner) };
-        RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stack);
-        if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
-        Address resultAddress = ((Cell)runGetMethodResult.Stack[0]).Parse().LoadAddress()!;
-        return resultAddress;
-    }
+    //async getTransactions(jettonWallet: Address, limit = 5, decimals?: number)
+    //{
+    //    const transactions = await this.client.getTransactions({ address: jettonWallet, limit });
+    //    const jettonDecimals = decimals ?? await this.getDecimalsByWallet(jettonWallet);
+    //    return transactions
+    //        .map((transaction): JettonTransaction | null => transactionParser.parseTransaction(transaction, jettonDecimals))
+    //        .filter((transaction) => !!transaction) as JettonTransaction[];
+    //}
+    //public async Task<uint?> GetTransactions(Address jettonWallet, int limit = 5, int? decimals = null)
+    //{
+    //    TransactionsInformationResult[] transactionsInformationResult = await client.GetTransactions(jettonWallet, limit);
+    //    int jettonDecimals = decimals ?? 0;
+    //    return (uint)(BigInteger)runGetMethodResult.Stack[0];
+    //}
 }
