@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-namespace TonSdk.Client.HttpApi;
+namespace TonSdk.Client;
 
 public interface IRequestBody { }
 

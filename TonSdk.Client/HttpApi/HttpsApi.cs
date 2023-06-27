@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
-using static TonSdk.Client.HttpApi.Transformers;
+using static TonSdk.Client.Transformers;
 
-namespace TonSdk.Client.HttpApi;
+namespace TonSdk.Client;
 
-public struct HttpApiParameters
+public class HttpApiParameters
 {
     public string Endpoint { get; set; }
     public int? Timeout { get; set; }
@@ -61,13 +61,13 @@ public class HttpApi
         return transactionsInformationResult;
     }
 
-    public async Task<RunGetMethodResult> RunGetMethod(Address address, string method, string[][] stack)
+    public async Task<RunGetMethodResult> RunGetMethod(Address address, string method, string[][]? stack = null)
     {
         InRunGetMethodBody requestBody = new InRunGetMethodBody()
         {
             address = address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)),
             method = method,
-            stack = stack
+            stack = stack ?? Array.Empty<string[]>()
         };
 
         var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody, ApiOptions)).Call();
