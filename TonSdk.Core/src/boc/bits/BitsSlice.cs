@@ -122,6 +122,91 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         return new BigInteger(bytes);
     }
 
+    public Coins ReadCoins(int decimals = 9) {
+        return new Coins((decimal)ReadVarUInt(16), new CoinsOptions(true, decimals));
+    }
+
+    public Coins LoadCoins(int decimals = 9) {
+        return new Coins((decimal)LoadVarUInt(16), new CoinsOptions(true, decimals));
+    }
+
+    public BigInteger ReadVarUInt(int length) {
+        return LoadVarInt(length, false, false);
+    }
+
+    public BigInteger LoadVarUInt(int length) {
+        return LoadVarInt(length, false, true);
+    }
+
+    public BigInteger ReadVarInt(int length) {
+        return LoadVarInt(length, true, false);
+    }
+
+    public BigInteger LoadVarInt(int length) {
+        return LoadVarInt(length, true, true);
+    }
+
+    protected BigInteger LoadVarInt(int length, bool sgn, bool inplace) {
+        int size = (int)Math.Ceiling(Math.Log(length, 2));
+        int sizeBytes = (int)ReadUInt(size);
+        int sizeBits = sizeBytes * 8;
+
+        CheckBitsUnderflow(_bits_st + size + sizeBits);
+
+        if (inplace) {
+            SkipBits(size);
+            return sizeBits == 0
+                ? BigInteger.Zero
+                : sgn
+                    ? LoadInt(sizeBits)
+                    : LoadUInt(sizeBits);
+        } else {
+            var varIntSlice = ReadBits(size + sizeBits).Parse();
+            varIntSlice.SkipBits(size);
+            return sizeBits == 0
+                ? BigInteger.Zero
+                : sgn
+                    ? varIntSlice.LoadInt(sizeBits)
+                    : varIntSlice.LoadUInt(sizeBits);
+        }
+    }
+
+
+    public Address? ReadAddress() {
+        return LoadAddress(false);
+    }
+
+    public Address? LoadAddress() {
+        return LoadAddress(true);
+    }
+
+    protected Address? LoadAddress(bool inplace) {
+        var prefix = (byte)ReadUInt(2);
+        switch (prefix) {
+            case 0b10: // addr_std
+                var prefixAndAnycast = (byte)ReadUInt(3);
+                if (prefixAndAnycast == 0b101) {
+                    throw new NotImplementedException("Anycast addresses are not supported");
+                }
+                CheckBitsUnderflow(_bits_st + 267);
+                if (inplace) {
+                    SkipBits(3);
+                    return new Address((int)LoadInt(8), LoadBits(256).ToBytes());
+                } else {
+                    var addrSlice = ReadBits(267).Parse();
+                    addrSlice.SkipBits(3);
+                    return new Address((int)addrSlice.LoadInt(8), addrSlice.LoadBits(256).ToBytes());
+                }
+            case 0b01: // addr_extern
+                throw new NotImplementedException("Extern addresses are not supported");
+            case 0b11: // addr_var
+                throw new NotImplementedException("Var addresses are not supported");
+            default: // addr_none
+                if (inplace) SkipBits(2);
+                return null;
+        }
+    }
+
     public abstract U Restore();
 
     private BigInteger _unsafeReadBigInteger(int size, bool sgn = false) {

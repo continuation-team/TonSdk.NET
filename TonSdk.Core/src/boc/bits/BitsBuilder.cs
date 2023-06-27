@@ -72,8 +72,7 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
 
     public T StoreBit(bool b, bool needCheck = true) {
         if (needCheck) CheckBitsOverflow(1);
-        _data[_bits_cnt] = b;
-        _bits_cnt += 1;
+        _data[_bits_cnt++] = b;
         return (T)this;
     }
 
@@ -155,6 +154,42 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
 
         var bits = new Bits(bitArray);
         return StoreBits(bits);
+    }
+
+    public T StoreAddress(Address? address) {
+        if (address == null) {
+            return StoreBits(new BitArray(2, false));
+        }
+        CheckBitsOverflow(267);
+        StoreUInt(0b100, 3);
+        StoreInt(address.GetWorkchain(), 8);
+        StoreBits(new Bits(address.GetHash()));
+        return (T)this;
+    }
+
+    public T StoreCoins(Coins coins) {
+        return StoreVarUInt(coins.ToBigInt(), 16);
+    }
+
+    public T StoreVarUInt(BigInteger value, int length) {
+        return StoreVarInt(value, length, false);
+    }
+
+    public T StoreVarInt(BigInteger value, int length) {
+        return StoreVarInt(value, length, true);
+    }
+
+    protected T StoreVarInt(BigInteger value, int length, bool sgn) {
+        int size = (int)Math.Ceiling(Math.Log(length, 2));
+        var sizeBytes = (int)Math.Ceiling(BigInteger.Log(value, 2) / 8);
+        var sizeBits = sizeBytes * 8;
+        CheckBitsOverflow(sizeBits + size);
+        return value == 0
+            ? StoreUInt(0, size)
+            : sgn
+                ? StoreUInt((uint)sizeBytes, size).StoreInt(value, sizeBits)
+                : StoreUInt((uint)sizeBytes, size).StoreUInt(value, sizeBits);
+
     }
 
     public abstract T Clone();
