@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Numerics;
 using System.Text.RegularExpressions;
 
 namespace TonSdk.Core;
@@ -233,5 +232,10 @@ public class Coins
         CheckCoinsDecimals(decimals);
 
         return new Coins(value, new CoinsOptions(true, decimals));
+    }
+
+    public BigInteger ToBigInt()
+    {
+        return new BigInteger(Value);
     }
 }
