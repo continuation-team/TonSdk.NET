@@ -69,11 +69,11 @@ public class BagOfCells {
 
         if (hasCrc32C) {
             var crc32bits = headerBits.Slice(0, -32);
-            Console.WriteLine(hs.RemainderBits);
+            //Console.WriteLine(hs.RemainderBits);
             var crc32c = (uint)hs.LoadUInt32LE();
             var crc32c_calc = Crc32C.Calculate(crc32bits.ToBytes());
-            Console.WriteLine(crc32c);
-            Console.WriteLine(crc32c_calc);
+            //Console.WriteLine(crc32c);
+            //Console.WriteLine(crc32c_calc);
             if (crc32c != crc32c_calc) {
                 throw new Exception("Invalid CRC32C");
             }
