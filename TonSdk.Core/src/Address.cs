@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using TonSdk.Core.Crypto;
 namespace TonSdk.Core;
 public interface IAddressRewriteOptions
@@ -58,6 +57,14 @@ public class Address
     private readonly int _workchain;
     private readonly bool _bounceable;
     private readonly bool _testOnly;
+
+    public Address(int workchain, byte[] hash, IAddressRewriteOptions? options = null)
+    {
+        _hash = hash;
+        _workchain = options?.Workchain ?? workchain;
+        _bounceable = options?.Bounceable ?? true;
+        _testOnly = options?.TestOnly ?? false;
+    }
 
     public Address(Address address, IAddressRewriteOptions? options = null)
     {
@@ -252,6 +259,11 @@ public class Address
             BytesCompare(_hash, address._hash) &&
             _workchain == address._workchain
         );
+    }
+
+    public override string ToString()
+    {
+        return ToString();
     }
 
     public string ToString(AddressType type = AddressType.Base64, IAddressStringifyOptions? options = null)
