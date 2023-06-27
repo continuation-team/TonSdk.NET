@@ -1,10 +1,12 @@
-﻿using TonSdk.Core;
+﻿using Org.BouncyCastle.Math;
+using TonSdk.Core;
+using TonSdk.Core.Boc;
 
 namespace TonSdk.Client;
 public interface IJettonTransaction
 {
     JettonOperation Operation { get; set; }
-    long QueryId { get; set; }
+    ulong QueryId { get; set; }
     Coins Amount { get; set; }
     TransactionsInformationResult Transaction { get; set; }
 }
@@ -12,20 +14,20 @@ public interface IJettonTransaction
 public struct JettonTransfer : IJettonTransaction
 {
     public JettonOperation Operation { get; set; }
-    public long QueryId { get; set; }
+    public ulong QueryId { get; set; }
     public Coins Amount { get; set; }
     public Coins ForwardTonAmount { get; set; }
     public Address Source { get; set; }
     public Address Destination { get; set; }
-    public string Comment { get; set; }
-    public string Data { get; set; }
+    public string? Comment { get; set; }
+    public Cell? Data { get; set; }
     public TransactionsInformationResult Transaction { get; set; }
 }
 
 public struct JettonBurn : IJettonTransaction
 {
     public JettonOperation Operation { get; set; }
-    public long QueryId { get; set; }
+    public ulong QueryId { get; set; }
     public Coins Amount { get; set; }
     public TransactionsInformationResult Transaction { get; set; }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
 namespace TonSdk.Core;
 public interface IAddressRewriteOptions
@@ -189,7 +191,7 @@ public class Address
         data.RemoveRange(0, 34);
         byte[] checksum = data.Take(2).ToArray();
         data.RemoveRange(0, 2);
-        byte[] crc = Utils.Crc16BytesBigEndian(address);
+        byte[] crc = Crypto.Utils.Crc16BytesBigEndian(address);
 
         if (!crc.SequenceEqual(checksum))
         {
@@ -217,7 +219,7 @@ public class Address
     {
         var data = value.Split(':');
         var workchain = int.Parse(data[0]);
-        var hash = Utils.HexToBytes(data[1]);
+        var hash = Crypto.Utils.HexToBytes(data[1]);
         var bounceable = true;
         var testOnly = false;
 
@@ -259,6 +261,11 @@ public class Address
             BytesCompare(_hash, address._hash) &&
             _workchain == address._workchain
         );
+    }
+
+    public string ToBOC()
+    {
+        return new CellBuilder().StoreAddress(this).Build().Serialize().ToString();
     }
 
     public override string ToString()
@@ -310,7 +317,7 @@ public class Address
 
         if (type == AddressType.Raw)
         {
-            return $"{workchain}:{Utils.BytesToHex(_hash)}".ToLower();
+            return $"{workchain}:{Crypto.Utils.BytesToHex(_hash)}".ToLower();
         }
 
         byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly});
@@ -319,7 +326,7 @@ public class Address
         address[1] = (byte)workchain;
         Array.Copy(_hash, 0, address, 2, _hash.Length);
 
-        var checksum = Utils.Crc16BytesBigEndian(address);
+        var checksum = Crypto.Utils.Crc16BytesBigEndian(address);
         byte[] data = new byte[address.Length + checksum.Length];
 
         Array.Copy(address, 0, data, 0, address.Length);
