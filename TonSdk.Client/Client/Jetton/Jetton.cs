@@ -46,7 +46,7 @@ public class Jetton
 
         JettonWalletData jettonWalletData = new()
         {
-            Balance = new((decimal)runGetMethodResult.Stack[0], new CoinsOptions(true, (int)decimals)),
+            Balance = new((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, (int)decimals)),
             OwnerAddress = ((Cell)runGetMethodResult.Stack[1]).Parse().LoadAddress()!,
             JettonMasterAddress = jettonMasterAddress,
             JettonWalletCode = (Cell)runGetMethodResult.Stack[3]
@@ -69,7 +69,7 @@ public class Jetton
         if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
         JettonData jettonData = new()
         {
-            TotalSupply = new Coins((decimal)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
+            TotalSupply = new Coins((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
             AdminAddress = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!,
             Content = (Cell)runGetMethodResult.Stack[3]!,
             JettonWalletCode = (Cell)runGetMethodResult.Stack[4]!
@@ -83,11 +83,31 @@ public class Jetton
         return await GetDecimals(jettonWalletData.JettonMasterAddress);
     }
 
-    //private async Task<object[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null)
+    //private async Task<IJettonTransaction[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null)
     //{
-    //    TransactionsInformationResult[] transactionsInformationResult = await client.GetTransactions(jettonWallet, limit);
+    //    TransactionsInformationResult[] transactionsInformationResults = await client.GetTransactions(jettonWallet, limit);
     //    uint jettonDecimals = decimals ?? await GetDecimalsByWallet(jettonWallet);
 
+    //    IJettonTransaction[] parsedTransactions = Array.Empty<IJettonTransaction>();
+
+    //    foreach (TransactionsInformationResult transaction in transactionsInformationResults)
+    //    {
+    //        //var parsedTransaction = null;
+    //        //if()
+    //        //{
+    //        //    parsedTransactions.Append<IJettonTransaction>(parsedTransaction);
+    //        //}
+    //    }
+
+    //}
+
+    //foreach (var transaction in transactions)
+    //{
+    //    var parsedTransaction = TransactionParser.ParseTransaction(transaction, jettonDecimals);
+    //    if (parsedTransaction != null)
+    //    {
+    //        parsedTransactions.Add(parsedTransaction);
+    //    }
     //}
 
     //async getTransactions(jettonWallet: Address, limit = 5, decimals?: number)
