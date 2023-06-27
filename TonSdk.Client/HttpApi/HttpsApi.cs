@@ -88,15 +88,16 @@ public class HttpApi
         return outSendBoc;
     }
 
-    public async Task<SendBocResult> SendBoc(string bocBase64)
+    public async Task<ConfigParamResult> GetConfigParam(int configId, int seqno)
     {
-        InSendBocBody requestBody = new()
+        InGetConfigParamBody requestBody = new()
         {
-            boc = bocBase64
+            config_id = configId,
+            seqno = seqno
         };
-        var result = await new TonRequest(new RequestParameters("sendBoc", requestBody, ApiOptions)).Call();
-        RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
-        SendBocResult outSendBoc = resultRoot.Result;
-        return outSendBoc;
+        var result = await new TonRequest(new RequestParameters("getConfigParam", requestBody, ApiOptions)).Call();
+        RootGetConfigParam resultRoot = JsonConvert.DeserializeObject<RootGetConfigParam>(result);
+        ConfigParamResult outConfigParam = new(resultRoot.Result.Config);
+        return outConfigParam;
     }
 }

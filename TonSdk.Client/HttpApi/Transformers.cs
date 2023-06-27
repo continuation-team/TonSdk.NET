@@ -102,6 +102,12 @@ public struct InAdressInformationBody : IRequestBody
     {
         public string boc;
     }
+
+    public struct InGetConfigParamBody : IRequestBody
+    {
+        public int config_id;
+        public int seqno;
+    }
     //  [
     //      ["num", "1231"],
     //      ["num", "12345678"]
@@ -140,6 +146,24 @@ public struct InAdressInformationBody : IRequestBody
         [JsonProperty("result")] public SendBocResult Result { get; set; }
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+    }
+
+    public struct RootGetConfigParam
+    {
+        [JsonProperty("ok")] public bool Ok { get; set; }
+        [JsonProperty("result")] public OutGetConfigParamResult Result { get; set; }
+        [JsonProperty("id")] public string Id { get; set; }
+        [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+    }
+
+    public struct OutGetConfigParamResult
+    {
+        [JsonProperty("config")] public OutConfigParamResult Config;
+    }
+
+    public struct OutConfigParamResult
+    {
+        [JsonProperty("bytes")] public string Bytes;
     }
 
     public struct OutAddressInformationResult
@@ -275,6 +299,16 @@ public struct TransactionsInformationResult
         {
             OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
         }
+    }
+}
+
+public struct ConfigParamResult
+{
+    public Cell Bytes;
+
+    public ConfigParamResult(OutConfigParamResult outConfigParamResult)
+    {
+        Bytes = Cell.From(outConfigParamResult.Bytes);
     }
 }
 
