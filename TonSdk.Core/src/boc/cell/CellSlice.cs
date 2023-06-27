@@ -47,6 +47,28 @@ public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
         return refs;
     }
 
+    public CellSlice SkipRef() {
+        return SkipRefs(1);
+    }
+
+    public Cell ReadRef() {
+        var refEnd = _refs_st + 1;
+        CheckRefsUnderflow(refEnd);
+        return _cell.refs[_refs_st];
+    }
+
+    public Cell LoadRef() {
+        var refEnd = _refs_st + 1;
+        CheckRefsUnderflow(refEnd);
+        var _ref = _cell.refs[_refs_st];
+        _refs_st = refEnd;
+        return _ref;
+    }
+
+    public Cell RestoreRemainder() {
+        return new Cell(Bits, Refs);
+    }
+
     public override Cell Restore() {
         return _cell;
     }

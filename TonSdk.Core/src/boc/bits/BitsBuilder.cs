@@ -195,7 +195,11 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
             : sgn
                 ? StoreUInt((uint)sizeBytes, size).StoreInt(value, sizeBits)
                 : StoreUInt((uint)sizeBytes, size).StoreUInt(value, sizeBits);
+    }
 
+    public T StoreBitsSlice(BitsSlice bs) {
+        CheckBitsOverflow(bs.RemainderBits);
+        return StoreBits(bs.Bits);
     }
 
     public abstract T Clone();

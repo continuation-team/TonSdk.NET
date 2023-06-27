@@ -43,6 +43,14 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
         return this;
     }
 
+    public CellBuilder StoreCellSlice(CellSlice bs) {
+        CheckBitsOverflow(bs.RemainderBits);
+        CheckRefsOverflow(bs.RemainderRefs);
+        StoreBits(bs.Bits, false);
+        var r = bs.Refs;
+        return StoreRefs(ref r, false);
+    }
+
     public override Cell Build() {
         return new Cell(Data, Refs);
     }

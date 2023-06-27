@@ -267,6 +267,10 @@ public class BitsSlice : BitsSliceImpl<BitsSlice, Bits> {
 
     public BitsSlice (Bits bits) : base(bits) { }
 
+    public Bits RestoreRemainder() {
+        return Bits;
+    }
+
     public override Bits Restore() {
         return _bits;
     }
