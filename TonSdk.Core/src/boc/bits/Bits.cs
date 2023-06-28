@@ -34,14 +34,12 @@ public class Bits {
     public Bits(ref string s) : this(fromString(s)) { }
     public Bits(string s) : this(ref s) { }
 
-    public Bits(ref byte[] bytes) {
+    public Bits(byte[] bytes) {
         for (var i = 0; i < bytes.Length; i++) {
             bytes[i] = bytes[i].reverseBits();
         }
         _data = new BitArray(bytes);
     }
-
-    public Bits(byte[] bytes) : this(ref bytes) { }
 
     public Bits Slice(int start, int end) {
         if (end < 0) end = Length + end;
@@ -178,8 +176,7 @@ public class Bits {
     }
 
     public Bits Hash() {
-        var hashBytes = SHA256.HashData(ToBytes());
-        return new Bits(ref hashBytes);
+        return new Bits(SHA256.HashData(ToBytes()));
     }
 
     public T[] GetCopyTo<T>(T[] to) {

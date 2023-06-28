@@ -76,6 +76,15 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         return (T)this;
     }
 
+    public T StoreByte(byte b, bool needCheck = true) {
+        return StoreUInt(b, 8, needCheck);
+    }
+
+    public T StoreBytes(byte[] b, bool needCheck = true) {
+        var bits = new Bits(b);
+        return StoreBits(bits, needCheck);
+    }
+
     public T StoreUInt(UInt64 value, int size, bool needCheck = true) {
         var max = new BigInteger(1) << size;
         if (value >= max) {
@@ -113,15 +122,11 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
     }
 
     public T StoreUInt32LE(uint value) {
-        var bytes = BitConverter.GetBytes(value);
-        var bits = new Bits(ref bytes);
-        return StoreBits(bits);
+        return StoreBytes(BitConverter.GetBytes(value));
     }
 
     public T StoreUInt64LE(ulong value) {
-        var bytes = BitConverter.GetBytes(value);
-        var bits = new Bits(ref bytes);
-        return StoreBits(bits);
+        return StoreBytes(BitConverter.GetBytes(value));
     }
 
     private T storeNumber(BigInteger value, int size, bool needCheck) {
@@ -140,7 +145,7 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         if (BitConverter.IsLittleEndian)
             Array.Reverse(bytes);
 
-        BitArray bitArray = new Bits(ref bytes).Data;
+        BitArray bitArray = new Bits(bytes).Data;
         var change = size - bitArray.Count;
 
         if (change < 0) {
