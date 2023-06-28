@@ -105,7 +105,6 @@ public class Jetton
     {
         string[][] stack = new string[1][] { Transformers.PackRequestStack(walletOwner) };
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stack);
-        if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
         Address resultAddress = ((Cell)runGetMethodResult.Stack[0]).Parse().LoadAddress()!;
         return resultAddress;
     }

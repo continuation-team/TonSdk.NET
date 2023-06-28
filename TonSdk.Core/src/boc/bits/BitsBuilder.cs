@@ -174,7 +174,7 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         CheckBitsOverflow(267);
         StoreUInt(0b100, 3);
         StoreInt(address.GetWorkchain(), 8);
-        StoreBits(new Bits(address.GetHash()));
+        StoreUInt(address.GetHash(), 256);
         return (T)this;
     }
 

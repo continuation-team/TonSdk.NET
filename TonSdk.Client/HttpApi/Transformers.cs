@@ -22,6 +22,7 @@ public static class Transformers
         }
         if(element is BigInteger || element is uint || element is int || element is long || element is ulong)
         {
+            
             return new string[] { "num", element.ToString()! };
         }
         if(element is Coins)
@@ -30,7 +31,7 @@ public static class Transformers
         }
         if(element is CellSlice)
         {
-            return new string[] { "tvm.Slice", ((CellSlice)element).ToString()! };
+            return new string[] { "tvm.Slice", ((CellSlice)element).RestoreRemainder().ToString()! };
         }
         if (element is Address)
         {
@@ -39,28 +40,6 @@ public static class Transformers
         // TODO: Message Layout
         throw new Exception($"Unknown type of element: {element}");
     }
-
-    //const packRequestStack = (elem: any): any[] => {
-    //if (elem instanceof Cell) {
-    //    return ['tvm.Cell', elem.toString('base64', { has_index: false })];
-    //    } if (typeof elem === 'bigint' || typeof elem === 'number')
-    //{
-    //    return ['num', elem.toString()];
-    //}
-    //if (elem instanceof Coins) {
-    //    return ['num', elem.toNano()];
-    //}
-    //if (elem instanceof Slice) {
-    //    return ['tvm.Slice', elem.toString('base64', { has_index: false })];
-    //}
-    //if (elem instanceof MsgAddressInt || elem instanceof MsgAddressExt) {
-    //    return packRequestStack(new Builder().storeAddress(elem).cell().parse());
-    //}
-    //throw new Error(`unknown type of ${ elem }`);
-    //};
-
-
-
 // in
 public struct InAdressInformationBody : IRequestBody
     {
@@ -102,6 +81,12 @@ public struct InAdressInformationBody : IRequestBody
     {
         public string boc;
     }
+
+    public struct InGetConfigParamBody : IRequestBody
+    {
+        public int config_id;
+        public int seqno;
+    }
     //  [
     //      ["num", "1231"],
     //      ["num", "12345678"]
@@ -140,6 +125,24 @@ public struct InAdressInformationBody : IRequestBody
         [JsonProperty("result")] public SendBocResult Result { get; set; }
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+    }
+
+    public struct RootGetConfigParam
+    {
+        [JsonProperty("ok")] public bool Ok { get; set; }
+        [JsonProperty("result")] public OutGetConfigParamResult Result { get; set; }
+        [JsonProperty("id")] public string Id { get; set; }
+        [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+    }
+
+    public struct OutGetConfigParamResult
+    {
+        [JsonProperty("config")] public OutConfigParamResult Config;
+    }
+
+    public struct OutConfigParamResult
+    {
+        [JsonProperty("bytes")] public string Bytes;
     }
 
     public struct OutAddressInformationResult
@@ -275,6 +278,16 @@ public struct TransactionsInformationResult
         {
             OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
         }
+    }
+}
+
+public struct ConfigParamResult
+{
+    public Cell Bytes;
+
+    public ConfigParamResult(OutConfigParamResult outConfigParamResult)
+    {
+        Bytes = Cell.From(outConfigParamResult.Bytes);
     }
 }
 

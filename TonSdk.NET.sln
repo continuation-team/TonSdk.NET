@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc", "TonSdk.Smc\sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc.Tests", "TonSdk.Smc\test\TonSdk.Smc.Tests.csproj", "{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client", "TonSdk.Client\TonSdk.Client.csproj", "{227AD718-F7FA-4E42-8BC1-C949EFF8580C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,8 +35,15 @@ Global
 		{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{227AD718-F7FA-4E42-8BC1-C949EFF8580C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{227AD718-F7FA-4E42-8BC1-C949EFF8580C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{227AD718-F7FA-4E42-8BC1-C949EFF8580C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{227AD718-F7FA-4E42-8BC1-C949EFF8580C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A42AB9BD-5D3A-4357-B5BD-C5ECC13A6E2A}
 	EndGlobalSection
 EndGlobal

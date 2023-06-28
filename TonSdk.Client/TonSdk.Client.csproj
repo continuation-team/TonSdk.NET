@@ -15,4 +15,8 @@
     <ProjectReference Include="..\TonSdk.Core\src\TonSdk.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Client\Nft\" />
+  </ItemGroup>
+
 </Project>
