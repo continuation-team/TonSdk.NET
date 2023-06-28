@@ -31,8 +31,7 @@ public static class Transformers
         }
         if(element is CellSlice)
         {
-            
-            return new string[] { "tvm.Slice", ((CellSlice)element).Restore().Serialize().ToString()! };
+            return new string[] { "tvm.Slice", ((CellSlice)element).RestoreRemainder().ToString()! };
         }
         if (element is Address)
         {

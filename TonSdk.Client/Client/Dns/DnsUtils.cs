@@ -70,7 +70,6 @@ public class DnsUtils
         string[][] stack = new string[2][] { Transformers.PackRequestStack(domainCell.Parse()), Transformers.PackRequestStack(categoryBigInt) };
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stack);
 
-
         if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve DNS resolve data.");
         if (runGetMethodResult.Stack.Length != 2) throw new Exception("Invalid dnsresolve response.");
 
@@ -131,12 +130,10 @@ public class DnsUtils
         if (ds.LoadUInt(8) != prefix0 || ds.LoadUInt(8) != prefix1) throw new Exception("Invalid dns record value prefix");
         return ds.LoadAddress();
     }
-
     public static Address? ParseSmartContractAddressRecord(Cell cell)
     {
         return ParseSmartContractAddressImpl(cell, 0x9f, 0xd3);
     }
-
     public static Address? ParseNextResolverRecord(Cell cell)
     {
         return ParseSmartContractAddressImpl(cell, 0xba, 0x93);
