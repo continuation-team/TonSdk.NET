@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Numerics;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
@@ -40,7 +42,7 @@ public class AddressTag
 public class AddressData : AddressTag
 {
     public int Workchain { get; set; }
-    public byte[] Hash { get; set; }
+    public BigInteger Hash { get; set; }
 }
 
 public enum AddressType
@@ -53,14 +55,15 @@ public class Address
 {
     private const byte FLAG_BOUNCEABLE = 0x11;
     private const byte FLAG_NON_BOUNCEABLE = 0x51;
-    private const byte FLAG_TEST_ONLY = 0x80;
+    private const byte FLAG_TEST_ONLY_BOUNCEABLE = 0x91;
+    private const byte FLAG_TEST_ONLY_NON_BOUNCEABLE = 0xd1;
 
-    private readonly byte[] _hash;
+    private readonly BigInteger _hash;
     private readonly int _workchain;
     private readonly bool _bounceable;
     private readonly bool _testOnly;
 
-    public Address(int workchain, byte[] hash, IAddressRewriteOptions? options = null)
+    public Address(int workchain, BigInteger hash, IAddressRewriteOptions? options = null)
     {
         _hash = hash;
         _workchain = options?.Workchain ?? workchain;
@@ -108,7 +111,7 @@ public class Address
         _testOnly = testOnly;
     }
 
-    public byte[] GetHash() => _hash;
+    public BigInteger GetHash() => _hash;
 
     public int GetWorkchain() => _workchain;
 
@@ -123,8 +126,7 @@ public class Address
 
     private static bool IsEncoded(object address)
     {
-        const string pattern = "^([a-zA-Z0-9_-]{48}|[a-zA-Z0-9\\/\\+]{48})$";
-        return address is string str && Regex.IsMatch(str, pattern);
+        return address is string str && str.Length == 48 && (BitsPatterns.isBase64(str) || BitsPatterns.isBase64url(str) );
     }
 
     private static bool IsRaw(object address)
@@ -137,33 +139,23 @@ public class Address
     {
         bool bounceable = options.Bounceable;
         bool testOnly = options.TestOnly;
-        byte tag = bounceable ? FLAG_BOUNCEABLE : FLAG_NON_BOUNCEABLE;
 
-        return (byte)(testOnly ? (tag | FLAG_TEST_ONLY) : tag);
+        if (bounceable && !testOnly) return FLAG_BOUNCEABLE;
+        if (!bounceable && !testOnly) return FLAG_NON_BOUNCEABLE;
+        if (bounceable && testOnly) return FLAG_TEST_ONLY_BOUNCEABLE;
+        return FLAG_TEST_ONLY_NON_BOUNCEABLE;
     }
 
     private static AddressTag DecodeTag(int tag)
     {
-        int data = tag;
-        bool testOnly = (data & FLAG_TEST_ONLY) != 0;
-
-        if (testOnly)
+        switch(tag)
         {
-            data ^= FLAG_TEST_ONLY;
+            case FLAG_BOUNCEABLE: { return new AddressTag(){ Bounceable = true, TestOnly = false }; }
+            case FLAG_NON_BOUNCEABLE: { return new AddressTag() { Bounceable = false, TestOnly = false }; }
+            case FLAG_TEST_ONLY_BOUNCEABLE: { return new AddressTag() { Bounceable = true, TestOnly = true }; }
+            case FLAG_TEST_ONLY_NON_BOUNCEABLE: { return new AddressTag() { Bounceable = false, TestOnly = true }; }
+            default: throw new Exception("Address: bad address tag.");
         }
-
-        if (!(new int[] { FLAG_BOUNCEABLE, FLAG_NON_BOUNCEABLE }).Contains(data))
-        {
-            throw new Exception("Address: bad address tag.");
-        }
-
-        bool bounceable = data == FLAG_BOUNCEABLE;
-
-        return new AddressTag()
-        {
-            Bounceable = bounceable,
-            TestOnly = testOnly
-        };
     }
 
     private static AddressData ParseAddress(Address value)
@@ -171,7 +163,7 @@ public class Address
         int workchain = value._workchain;
         bool bounceable = value._bounceable;
         bool testOnly = value._testOnly;
-        byte[] hash = value._hash.ToArray();
+        BigInteger hash = value._hash;
 
         return new AddressData
         {
@@ -184,27 +176,33 @@ public class Address
 
     private static AddressData ParseEncoded(string value)
     {
-        string base64 = value.Replace("-", "+").Replace("_", "/");
-        byte[] bytes = Convert.FromBase64String(base64);
-        List<byte> data = new List<byte>(bytes);
-        byte[] address = data.Take(34).ToArray();
-        data.RemoveRange(0, 34);
-        byte[] checksum = data.Take(2).ToArray();
-        data.RemoveRange(0, 2);
-        byte[] crc = Crypto.Utils.Crc16BytesBigEndian(address);
+        
+        BitsSlice slice = new Bits(value).Parse();
+        byte[] crcBytes = slice.ReadBits(16 + 256).ToBytes();
 
-        if (!crc.SequenceEqual(checksum))
-        {
-            throw new Exception("Address: can't parse address. Wrong checksum.");
-        }
+        byte tag = (byte)slice.LoadUInt(8);
+        sbyte workchain = (sbyte)slice.LoadInt(8);
+        BigInteger hash = slice.LoadUInt(256);
+        byte[] checksum = slice.LoadBits(16).ToBytes();
+        byte[] crc = Crypto.Utils.Crc16BytesBigEndian(crcBytes);
 
-        byte[] firstTwoBytes = address.Take(2).ToArray();
-        address = address.Skip(2).ToArray();
-        byte tag = firstTwoBytes[0];
-        sbyte workchain = (sbyte)firstTwoBytes[1];
-        byte[] hash = address.Take(32).ToArray();
+        if (!crc.SequenceEqual(checksum)) throw new Exception("Address: can't parse address. Wrong checksum.");
 
-        var decodeTagResult = Address.DecodeTag(tag);
+        //string base64 = value.Replace("-", "+").Replace("_", "/");
+        //byte[] bytes = Convert.FromBase64String(base64);
+        //List<byte> data = new List<byte>(bytes);
+        //byte[] address = data.Take(34).ToArray();
+        //data.RemoveRange(0, 34);
+        //byte[] checksum = data.Take(2).ToArray();
+        //data.RemoveRange(0, 2);
+        //byte[] crc = Crypto.Utils.Crc16BytesBigEndian(address);
+        //byte[] firstTwoBytes = address.Take(2).ToArray();
+        //address = address.Skip(2).ToArray();
+        //byte tag = firstTwoBytes[0];
+        //sbyte workchain = (sbyte)firstTwoBytes[1];
+        //byte[] hash = address.Take(32).ToArray();
+
+        var decodeTagResult = DecodeTag(tag);
 
         return new AddressData
         {
@@ -219,7 +217,7 @@ public class Address
     {
         var data = value.Split(':');
         var workchain = int.Parse(data[0]);
-        var hash = Crypto.Utils.HexToBytes(data[1]);
+        var hash = new Bits(data[1]).Parse().LoadUInt(256);
         var bounceable = true;
         var testOnly = false;
 
@@ -258,7 +256,7 @@ public class Address
     public bool Equals (Address address)
     {
         return (address == this) || (
-            BytesCompare(_hash, address._hash) &&
+            Equals(_hash, address._hash) &&
             _workchain == address._workchain
         );
     }
@@ -317,31 +315,25 @@ public class Address
 
         if (type == AddressType.Raw)
         {
-            return $"{workchain}:{Crypto.Utils.BytesToHex(_hash)}".ToLower();
-        }
+            return $"{workchain}:{_hash.ToString("x")[1..]}";
+        }        
 
         byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly});
-        byte[] address = new byte[1 + 1 + _hash.Length];
-        address[0] = tag;
-        address[1] = (byte)workchain;
-        Array.Copy(_hash, 0, address, 2, _hash.Length);
 
-        var checksum = Crypto.Utils.Crc16BytesBigEndian(address);
-        byte[] data = new byte[address.Length + checksum.Length];
 
-        Array.Copy(address, 0, data, 0, address.Length);
-        Array.Copy(checksum, 0, data, address.Length, checksum.Length);
+        BitsBuilder addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8).StoreUInt(_hash, 256);
 
-        string base64 = Convert.ToBase64String(data);
+        var checksum = Crypto.Utils.Crc16(addressBits.Data.ToBytes());
+        addressBits.StoreUInt(checksum, 16);
+
+
         if (urlSafe)
         {
-            base64 = base64.Replace('/', '_').Replace('+', '-');
+            return addressBits.Build().ToString("base64url");
         }
         else
         {
-            base64 = base64.Replace('_', '/').Replace('-', '+');
+            return addressBits.Build().ToString("base64");
         }
-
-        return base64;
     }
 }

@@ -63,13 +63,12 @@ public class HttpApi
 
     public async Task<RunGetMethodResult> RunGetMethod(Address address, string method, string[][]? stack = null)
     {
-        InRunGetMethodBody requestBody = new InRunGetMethodBody()
+        InRunGetMethodBody requestBody = new()
         {
-            address = address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)),
+            address = address.ToString(),
             method = method,
             stack = stack ?? Array.Empty<string[]>()
         };
-
         var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody, ApiOptions)).Call();
         RootRunGetMethod resultRoot = JsonConvert.DeserializeObject<RootRunGetMethod>(result);
         RunGetMethodResult outRunGetMethod = new(resultRoot.Result);
@@ -88,13 +87,13 @@ public class HttpApi
         return outSendBoc;
     }
 
-    public async Task<ConfigParamResult> GetConfigParam(int configId, int seqno)
+    public async Task<ConfigParamResult> GetConfigParam(int configId, int? seqno = null)
     {
         InGetConfigParamBody requestBody = new()
         {
             config_id = configId,
-            seqno = seqno
         };
+        if(seqno != null) { requestBody.seqno = (int)seqno; }
         var result = await new TonRequest(new RequestParameters("getConfigParam", requestBody, ApiOptions)).Call();
         RootGetConfigParam resultRoot = JsonConvert.DeserializeObject<RootGetConfigParam>(result);
         ConfigParamResult outConfigParam = new(resultRoot.Result.Config);

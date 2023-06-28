@@ -8,10 +8,14 @@ public class TonClient : HttpApi
 {
     public Wallet Wallet { get; private set; }
     public Jetton Jetton { get; private set; }
+    public Nft Nft { get; private set; }
+    public Dns Dns { get; private set; }
     public TonClient(TonClientParameters httpApiParameters) : base(httpApiParameters)
     {
         Wallet = new Wallet(this);
         Jetton = new Jetton(this);
+        Nft = new Nft(this);
+        Dns = new Dns(this);
     }
 
     public async Task<Coins> GetBalance(Address address)

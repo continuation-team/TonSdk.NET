@@ -22,6 +22,7 @@ public static class Transformers
         }
         if(element is BigInteger || element is uint || element is int || element is long || element is ulong)
         {
+            
             return new string[] { "num", element.ToString()! };
         }
         if(element is Coins)
@@ -30,7 +31,8 @@ public static class Transformers
         }
         if(element is CellSlice)
         {
-            return new string[] { "tvm.Slice", ((CellSlice)element).ToString()! };
+            
+            return new string[] { "tvm.Slice", ((CellSlice)element).Restore().Serialize().ToString()! };
         }
         if (element is Address)
         {
@@ -39,28 +41,6 @@ public static class Transformers
         // TODO: Message Layout
         throw new Exception($"Unknown type of element: {element}");
     }
-
-    //const packRequestStack = (elem: any): any[] => {
-    //if (elem instanceof Cell) {
-    //    return ['tvm.Cell', elem.toString('base64', { has_index: false })];
-    //    } if (typeof elem === 'bigint' || typeof elem === 'number')
-    //{
-    //    return ['num', elem.toString()];
-    //}
-    //if (elem instanceof Coins) {
-    //    return ['num', elem.toNano()];
-    //}
-    //if (elem instanceof Slice) {
-    //    return ['tvm.Slice', elem.toString('base64', { has_index: false })];
-    //}
-    //if (elem instanceof MsgAddressInt || elem instanceof MsgAddressExt) {
-    //    return packRequestStack(new Builder().storeAddress(elem).cell().parse());
-    //}
-    //throw new Error(`unknown type of ${ elem }`);
-    //};
-
-
-
 // in
 public struct InAdressInformationBody : IRequestBody
     {

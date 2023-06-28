@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc", "TonSdk.Smc\sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc.Tests", "TonSdk.Smc\test\TonSdk.Smc.Tests.csproj", "{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Client", "TonSdk.Client\TonSdk.Client.csproj", "{227AD718-F7FA-4E42-8BC1-C949EFF8580C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client", "TonSdk.Client\TonSdk.Client.csproj", "{227AD718-F7FA-4E42-8BC1-C949EFF8580C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

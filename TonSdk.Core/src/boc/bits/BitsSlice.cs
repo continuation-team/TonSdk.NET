@@ -214,11 +214,11 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
                 CheckBitsUnderflow(_bits_st + 267);
                 if (inplace) {
                     SkipBits(3);
-                    return new Address((int)LoadInt(8), LoadBits(256).ToBytes());
+                    return new Address((int)LoadInt(8), LoadUInt(256));
                 } else {
                     var addrSlice = ReadBits(267).Parse();
                     addrSlice.SkipBits(3);
-                    return new Address((int)addrSlice.LoadInt(8), addrSlice.LoadBits(256).ToBytes());
+                    return new Address((int)addrSlice.LoadInt(8), addrSlice.LoadUInt(256));
                 }
             case 0b01: // addr_extern
                 throw new NotImplementedException("Extern addresses are not supported");
