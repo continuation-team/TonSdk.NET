@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 namespace TonSdk.Core.Boc;
 
 
-public class Bits {
+public class Bits : IComparable<Bits> {
     private static char[] hexSymbols = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
@@ -261,6 +261,49 @@ public class Bits {
 
     public BitArray Unwrap() {
         return _data;
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        Bits other = (Bits)obj;
+        if (_data.Length != other.Data.Length) return false;
+
+        for (int i = 0; i < _data.Length; i++) {
+            if (_data[i] != other.Data[i]) return false;
+        }
+
+        return true;
+    }
+
+    public override int GetHashCode() {
+        int hash = 17;
+        for (int i = 0; i < _data.Length; i++) {
+            hash = hash * 31 + _data[i].GetHashCode();
+        }
+        return hash;
+    }
+
+    public int CompareTo(Bits other) {
+        // Ensure the BitArrays are the same length
+        if (_data.Count != other.Data.Count)
+            throw new ArgumentException("BitArrays must be the same length");
+
+        // Compute XOR of the two BitArrays
+        var xorResult = new BitArray(_data).Xor(other.Data);
+
+        // Look for the first set bit
+        for (int i = 0; i < xorResult.Count; i++) {
+            if (xorResult[i]) {
+                // If the current bit is true and the other is false, return 1.
+                // Otherwise, return -1.
+                return _data[i] ? 1 : -1;
+            }
+        }
+
+        // If all bits are identical, the BitArrays are equal
+        return 0;
     }
 
 }

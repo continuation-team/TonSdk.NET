@@ -77,6 +77,12 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         return _bits.Data[_bits_st];
     }
 
+    public bool ReadBit(int idx) {
+        var bitEnd = _bits_st + idx + 1;
+        CheckBitsUnderflow(bitEnd);
+        return _bits.Data[_bits_st + idx];
+    }
+
     public bool LoadBit() {
         var bitEnd = _bits_st + 1;
         CheckBitsUnderflow(bitEnd);

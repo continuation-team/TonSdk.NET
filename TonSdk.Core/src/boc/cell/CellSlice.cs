@@ -65,6 +65,18 @@ public class CellSlice : BitsSliceImpl<CellSlice, Cell> {
         return _ref;
     }
 
+    public Cell? ReadOptRef() {
+        var opt = ReadBit();
+        return opt ? ReadRef() : null;
+    }
+
+    public Cell? LoadOptRef() {
+        var optRef = ReadOptRef();
+        SkipBit();
+        if (optRef != null) SkipRef();
+        return optRef;
+    }
+
     public Cell RestoreRemainder() {
         return new Cell(Bits, Refs);
     }

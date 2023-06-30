@@ -43,12 +43,25 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
         return this;
     }
 
-    public CellBuilder StoreCellSlice(CellSlice bs) {
-        CheckBitsOverflow(bs.RemainderBits);
-        CheckRefsOverflow(bs.RemainderRefs);
+    public CellBuilder StoreCellSlice(CellSlice bs, bool needCheck = true) {
+        if (needCheck) {
+            CheckBitsOverflow(bs.RemainderBits);
+            CheckRefsOverflow(bs.RemainderRefs);
+        }
         StoreBits(bs.Bits, false);
         var r = bs.Refs;
         return StoreRefs(ref r, false);
+    }
+
+    public CellBuilder StoreOptRef(Cell? cell, bool needCheck = true) {
+        bool opt = cell != null;
+        if (needCheck) {
+            CheckBitsOverflow(1);
+            if (opt) CheckRefsOverflow(1);
+        }
+
+        if (opt) StoreRef(cell!, false);
+        return StoreBit(opt, false);
     }
 
     public override Cell Build() {
