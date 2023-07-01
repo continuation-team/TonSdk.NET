@@ -85,7 +85,7 @@ public class Hashmap<K, V> {
             : default;
     }
 
-    protected Cell? serialize() {
+    public Cell? Serialize() {
         var nodes = new List<HmapNodeSer>(map.Count);
 
         nodes.AddRange(map.Select(kvp => new HmapNodeSer() { Key = kvp.Key.Parse(), Value = kvp.Value }));
@@ -94,6 +94,11 @@ public class Hashmap<K, V> {
     }
 
     protected Cell serializeEdge(List<HmapNodeSer> nodes) {
+        if (nodes.Count == 0) {
+            return new CellBuilder()
+                .StoreBits(serializeLabelShort(new Bits(0)))
+                .Build();
+        }
         var edge = new CellBuilder();
         var label = serializeLabel(nodes);
 
@@ -161,6 +166,7 @@ public class Hashmap<K, V> {
         var first = nodes[0].Key;
         var last = nodes[^1].Key;
 
+
         // m = length at most possible bits of n (key)
         var m = first.RemainderBits;
         var sameBitsIndex = -1;
@@ -176,20 +182,64 @@ public class Hashmap<K, V> {
 
         // hml_short$0 {m:#} {n:#} len:(Unary ~n) s:(n * Bit) = HmLabel ~n m;
         if (first.ReadBit() != last.ReadBit() || m == 0) {
-            return serializeLabelShort();
+            return serializeLabelShort(new Bits(0));
         }
 
-        var label = first.LoadBits(sameBitsLength);
-        var repeated = getRepeated(label);
-        var labelShort = serializeLabelShort();
-        var labelLong = serializeLabelLong();
-        var labelSame = nodes.Count > 0 && repeated.Length > 1
-            ? serializeLabelSame()
+        var label = first.ReadBits(sameBitsLength);
+        Bits repeated = getRepeated(label);
+        Bits labelShort = serializeLabelShort(label);
+        Bits labelLong = serializeLabelLong(label, m);
+        Bits? labelSame = nodes.Count > 1 && repeated.Length > 1
+            ? serializeLabelSame(repeated, m)
             : null;
 
-        
+        var labels = new List<(int, Bits?)>{
+            (label.Length, labelShort),
+            (label.Length, labelLong),
+            (repeated.Length, labelSame)
+        }.Where(el => el.Item2 != null).ToList();
 
 
+        // Sort labels by their length
+        labels.Sort((a, b) => a.Item2!.Length - b.Item2!.Length);
+
+        // Get most compact label
+        var chosen = labels[0];
+
+        // Remove label bits from nodes keys
+        foreach (var node in nodes) {
+            node.Key.SkipBits(chosen.Item1);
+        }
+
+        return chosen.Item2!;
+    }
+
+    // hml_short$0 {m:#} {n:#} len:(Unary ~n) {n <= m} s:(n * Bit) = HmLabel ~n m;
+    protected Bits serializeLabelShort(Bits bits) {
+        return new BitsBuilder()
+            .StoreBit(false)
+            .StoreInt(-1, bits.Length)
+            .StoreBit(false)
+            .StoreBits(bits)
+            .Build();
+    }
+
+    // hml_long$10 {m:#} n:(#<= m) s:(n * Bit) = HmLabel ~n m;
+    protected Bits serializeLabelLong(Bits bits, int m) {
+        return new BitsBuilder()
+            .StoreBit(true).StoreBit(false)
+            .StoreUInt(bits.Length, (int)Math.Ceiling(Math.Log2(m + 1)))
+            .StoreBits(bits)
+            .Build();
+    }
+
+    // hml_same$11 {m:#} v:Bit n:(#<= m) = HmLabel ~n m;
+    protected Bits serializeLabelSame(Bits bits, int m) {
+        return new BitsBuilder()
+            .StoreBit(true).StoreBit(true)
+            .StoreBit(bits.Data[0])
+            .StoreUInt(bits.Length, (int)Math.Ceiling(Math.Log2(m + 1)))
+            .Build();
     }
 }
 
