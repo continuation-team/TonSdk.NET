@@ -16,7 +16,7 @@
 | RPC client                                | <ul><li>- [x] </li></ul> |
 | Popular structures from block.tlb         | <ul><li>- [ ] </li></ul> |
 | Contracts (abstract TON contract class)   | <ul><li>- [ ] </li></ul> |
-| Ed25519 signing of transactions           | <ul><li>- [ ] </li></ul> |
+| Ed25519 signing of transactions           | <ul><li>- [x] </li></ul> |
 | ~100% tests coverage                      | <ul><li>- [ ] </li></ul> |
 
 
