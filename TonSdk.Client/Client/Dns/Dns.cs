@@ -10,6 +10,13 @@ public class Dns
         this.client = client;
     }
 
+    /// <summary>
+    /// Retrieves the wallet address associated with the specified domain.
+    /// </summary>
+    /// <param name="domain">The domain to resolve the wallet address for.</param>
+    /// <returns>
+    /// The wallet address associated with the domain, or null if the domain is not associated with a wallet address.
+    /// </returns>
     public async Task<Address?> GetWalletAddress(string domain)
     {
         var result = await ResolveAsync(domain, DnsUtils.DNS_CATEGORY_WALLET);
@@ -17,11 +24,15 @@ public class Dns
         return new Address((Address)result);
     }
 
-    public async Task<object?> ResolveAsync(string domain, string? category = null, bool oneStep = false)
+    private async Task<object?> ResolveAsync(string domain, string? category = null, bool oneStep = false)
     {
         return await DnsUtils.DnsResolve(client, await GetRootDnsAddress(), domain, category, oneStep);
     }
 
+    /// <summary>
+    /// Retrieves the root DNS address.
+    /// </summary>
+    /// <returns>The root DNS address.</returns>
     public async Task<Address> GetRootDnsAddress()
     {
         ConfigParamResult configParamResult = await client.GetConfigParam(4);

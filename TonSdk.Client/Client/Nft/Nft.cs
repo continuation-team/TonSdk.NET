@@ -37,6 +37,12 @@ public class Nft
         this.client = client;
     }
 
+    /// <summary>
+    /// Retrieves the address of an item in the specified collection by its index.
+    /// </summary>
+    /// <param name="collection">The address of the collection.</param>
+    /// <param name="index">The index of the item.</param>
+    /// <returns>The address of the item.</returns>
     public async Task<Address> GetItemAddress(Address collection, uint index)
     {
         string[][] stack = new string[1][] { Transformers.PackRequestStack(index) };
@@ -46,6 +52,11 @@ public class Nft
         return resultAddress;
     }
 
+    /// <summary>
+    /// Retrieves the royalty parameters of the specified NFT collection.
+    /// </summary>
+    /// <param name="collection">The address of the NFT collection.</param>
+    /// <returns>The royalty parameters of the collection.</returns>
     public async Task<NftRoyaltyParams> GetRoyaltyParams(Address collection)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(collection, "royalty_params");
@@ -60,6 +71,11 @@ public class Nft
         return nftRoyaltyParams;
     }
 
+    /// <summary>
+    /// Retrieves the data of the specified NFT collection.
+    /// </summary>
+    /// <param name="collection">The address of the NFT collection.</param>
+    /// <returns>The data of the collection.</returns>
     public async Task<NftCollectionData> GetCollectionData(Address collection)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(collection, "get_collection_data");
@@ -74,6 +90,11 @@ public class Nft
         return nftCollectionData;
     }
 
+    /// <summary>
+    /// Retrieves the data of the specified NFT item.
+    /// </summary>
+    /// <param name="itemAddress">The address of the NFT item.</param>
+    /// <returns>The data of the NFT item.</returns>
     public async Task<NftItemData> GetNftItemData(Address itemAddress)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(itemAddress, "get_nft_data");

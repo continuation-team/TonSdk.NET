@@ -20,6 +20,11 @@ public class Coins
     private int Decimals { get; set; }
     private decimal Multiplier { get; set; }
 
+    /// <summary>
+    /// Creates a new instance of the Coins class.
+    /// </summary>
+    /// <param name="value">The value of the coins.</param>
+    /// <param name="options">Optional options for customizing the coins.</param>
     public Coins(object value, CoinsOptions? options = null)
     {
         bool isNano = false;
@@ -49,6 +54,11 @@ public class Coins
         Value = !isNano ? decimalValue * Multiplier : decimalValue;
     }
 
+    /// <summary>
+    /// Adds the specified Coins to the current instance.
+    /// </summary>
+    /// <param name="coins">The Coins to add.</param>
+    /// <returns>A new Coins instance with the sum of the values.</returns>
     public Coins Add(Coins coins)
     {
         CheckCoins(coins);
@@ -58,6 +68,11 @@ public class Coins
         return this;
     }
 
+    /// <summary>
+    /// Subtracts the specified Coins from the current instance.
+    /// </summary>
+    /// <param name="coins">The Coins to subtract.</param>
+    /// <returns>A new Coins instance with the difference of the values.</returns>
     public Coins Sub(Coins coins)
     {
         CheckCoins(coins);
@@ -67,6 +82,11 @@ public class Coins
         return this;
     }
 
+    /// <summary>
+    /// Multiplies the current instance of Coins by the specified value.
+    /// </summary>
+    /// <param name="value">The value to multiply by.</param>
+    /// <returns>A new Coins instance with the multiplied value.</returns>
     public Coins Mul(object value)
     {
         CheckValue(value);
@@ -78,6 +98,11 @@ public class Coins
         return this;
     }
 
+    /// <summary>
+    /// Divides the current instance of Coins by the specified value.
+    /// </summary>
+    /// <param name="value">The value to divide by.</param>
+    /// <returns>A new Coins instance with the divided value.</returns>
     public Coins Div(object value)
     {
         CheckValue(value);
@@ -89,6 +114,11 @@ public class Coins
         return this;
     }
 
+    /// <summary>
+    /// Checks if the current instance of Coins is equal to the specified Coins.
+    /// </summary>
+    /// <param name="coins">The Coins to compare.</param>
+    /// <returns>True if the values are equal, false otherwise.</returns>
     public bool Eq(Coins coins)
     {
         CheckCoins(coins);
@@ -96,6 +126,11 @@ public class Coins
         return Value == coins.Value;
     }
 
+    /// <summary>
+    /// Checks if the current instance of Coins is greater than the specified Coins.
+    /// </summary>
+    /// <param name="coins">The Coins to compare.</param>
+    /// <returns>True if the current value is greater, false otherwise.</returns>
     public bool Gt(Coins coins)
     {
         CheckCoins(coins);
@@ -103,6 +138,11 @@ public class Coins
         return Value > coins.Value;
     }
 
+    /// <summary>
+    /// Checks if the current instance of Coins is greater or equal than the specified Coins.
+    /// </summary>
+    /// <param name="coins">The Coins to compare.</param>
+    /// <returns>True if the current value is greater or equal, false otherwise.</returns>
     public bool Gte(Coins coins)
     {
         CheckCoins(coins);
@@ -110,6 +150,11 @@ public class Coins
         return Value >= coins.Value;
     }
 
+    /// <summary>
+    /// Checks if the current instance of Coins is less than the specified Coins.
+    /// </summary>
+    /// <param name="coins">The Coins to compare.</param>
+    /// <returns>True if the current value is less, false otherwise.</returns>
     public bool Lt(Coins coins)
     {
         CheckCoins(coins);
@@ -117,6 +162,11 @@ public class Coins
         return Value < coins.Value;
     }
 
+    /// <summary>
+    /// Checks if the current instance of Coins is less or equal than the specified Coins.
+    /// </summary>
+    /// <param name="coins">The Coins to compare.</param>
+    /// <returns>True if the current value is less or equal, false otherwise.</returns>
     public bool Lte(Coins coins)
     {
         CheckCoins(coins);
@@ -124,20 +174,40 @@ public class Coins
         return Value <= coins.Value;
     }
 
+    /// <summary>
+    /// Checks if the coins is negative.
+    /// </summary>
+    /// <returns>True if the coins is negative; otherwise, false.</returns>
     public bool IsNegative() => Value < 0;
 
+    /// <summary>
+    /// Checks if the coins is positive.
+    /// </summary>
+    /// <returns>True if the coins is positive; otherwise, false.</returns>
     public bool IsPositive() => Value > 0;
 
+    /// <summary>
+    /// Checks if the coins is equal to zero.
+    /// </summary>
+    /// <returns>True if the coins is equal to zero; otherwise, false.</returns>
     public bool IsZero() => Value == 0;
 
+    /// <summary>
+    /// Converts the Coins to its nano string representation.
+    /// </summary>
+    /// <returns>The string representation of the nano Coins.</returns>
     public string ToNano() => Value.ToString("F0");
 
+    /// <summary>
+    /// Returns a string representation of the Coins value.
+    /// </summary>
+    /// <returns>A string representation of the Coins value.</returns>
     public override string ToString()
     {
         decimal value = Value / Multiplier;
         string formattedValue = value.ToString("F" + Decimals);
 
-        // Удалить все конечные нули
+        // Remove trailing zeros
         var re1 = new Regex($"\\.{new string('0', Decimals)}$");
         var re2 = new Regex("(\\.[0-9]*?[0-9])0+$");
 
@@ -226,6 +296,12 @@ public class Coins
         }
     }
 
+    /// <summary>
+    /// Creates a new Coins instance from the specified value in nano.
+    /// </summary>
+    /// <param name="value">The value in nano.</param>
+    /// <param name="decimals">The number of decimal places.</param>
+    /// <returns>A new Coins instance representing the value in nano.</returns>
     public static Coins FromNano(object value, int decimals = 9)
     {
         CheckCoinsType(value);
@@ -234,6 +310,10 @@ public class Coins
         return new Coins(value, new CoinsOptions(true, decimals));
     }
 
+    /// <summary>
+    /// Converts the value of the Coins instance to a BigInteger.
+    /// </summary>
+    /// <returns>A BigInteger representation of the value.</returns>
     public BigInteger ToBigInt()
     {
         return new BigInteger(Value);

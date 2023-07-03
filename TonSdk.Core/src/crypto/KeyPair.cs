@@ -24,6 +24,12 @@ public class KeyPair
         return signature;
     }
 
+    /// <summary>
+    /// Signs the hash of a Cell data using the specified key.
+    /// </summary>
+    /// <param name="data">The Cell data to sign.</param>
+    /// <param name="key">The key used for signing.</param>
+    /// <returns>The signature of the hashed Cell data.</returns>
     public static byte[] Sign(Cell data, byte[] key)
     {
         byte[] hash = data.Hash.ToBytes();

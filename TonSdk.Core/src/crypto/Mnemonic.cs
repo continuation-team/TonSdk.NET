@@ -9,6 +9,11 @@ public class Mnemonic
     private byte[]? _seed { get; set; }
     private KeyPair? _keys { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the Mnemonic class (TON).
+    /// </summary>
+    /// <param name="mnemonic">An optional array of mnemonic words.</param>
+    /// <exception cref="Exception">Thrown when the provided mnemonic is invalid.</exception>
     public Mnemonic(string[]? mnemonic = null)
     {
         if (mnemonic != null && mnemonic.Length != 24) throw new Exception("Mnemonic: must contain 24 bip39 words.");
@@ -27,10 +32,24 @@ public class Mnemonic
     public byte[]? Seed { get { return _seed; } }
     public KeyPair? Keys { get { return _keys; } }
 
+    /// <summary>
+    /// Generates an array of random mnemonic words.
+    /// </summary>
+    /// <returns>An array of mnemonic words.</returns>
     public static string[] GenerateWords() => Utils.GenerateWords();
 
+    /// <summary>
+    /// Generates a key pair from the provided seed.
+    /// </summary>
+    /// <param name="seed">The seed used for key pair generation.</param>
+    /// <returns>A KeyPair object containing the public and private keys.</returns>
     public static KeyPair GenerateKeyPair(byte[] seed) => Utils.GenerateKeyPair(seed);
 
+    /// <summary>
+    /// Generates a seed byte array from the provided mnemonic words.
+    /// </summary>
+    /// <param name="mnemonic">The mnemonic words.</param>
+    /// <returns>The generated seed byte array.</returns>
     public static byte[] GenerateSeed(string[] mnemonic)
     {
         if (mnemonic != null && mnemonic.Length != 24) throw new Exception("Mnemonic: must contain 24 bip39 words.");

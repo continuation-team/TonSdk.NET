@@ -44,7 +44,7 @@ public static class Utils
         return bytes;
     }
 
-    public static int BitArrayToInt(BitArray bitArray)
+    private static int BitArrayToInt(BitArray bitArray)
     {
         if (bitArray.Length > 32)
             throw new ArgumentException("Argument length shall be at most 32 bits.");
