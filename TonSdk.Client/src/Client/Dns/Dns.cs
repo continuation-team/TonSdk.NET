@@ -36,8 +36,7 @@ public class Dns
     public async Task<Address> GetRootDnsAddress()
     {
         ConfigParamResult configParamResult = await client.GetConfigParam(4);
-        if (configParamResult.Bytes.bits.Length != 256) throw new Exception($"Invalid ConfigParam 4 length {configParamResult.Bytes.bits.Length}");
-        string addressHash = configParamResult.Bytes.bits.ToString("hex");
-        return new Address($"-1:{addressHash}");
+        if (configParamResult.Bytes.BitsCount != 256) throw new Exception($"Invalid ConfigParam 4 length {configParamResult.Bytes.BitsCount}");
+        return new Address(-1, configParamResult.Bytes.Parse().LoadUInt(256));
     }
 }
