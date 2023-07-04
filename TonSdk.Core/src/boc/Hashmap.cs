@@ -455,7 +455,7 @@ public class HashmapE<K, V> : HashmapBase<HashmapE<K,V>, K, V> {
     /// <typeparam name="K">Type of hashmap Key (after deserialize)</typeparam>
     /// <typeparam name="V">type of hashmap Value (after deserialize)</typeparam>
     /// <returns>HashmapE object</returns>
-    public HashmapE<K, V> Parse(CellSlice dictSlice, HashmapOptions<K, V> opt) {
+    public static HashmapE<K, V> Parse(CellSlice dictSlice, HashmapOptions<K, V> opt) {
         return Deserialize(dictSlice, opt);
     }
 }

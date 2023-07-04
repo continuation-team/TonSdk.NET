@@ -26,16 +26,10 @@ public class Jetton
     {
         public Coins TotalSupply;
         public Address AdminAddress;
-        public Cell Content;
+        public JettonContent Content;
         public Cell JettonWalletCode;
     }
 
-    /// <summary>
-    /// Retrieves the data of a jetton wallet.
-    /// </summary>
-    /// <param name="jettonWallet">The address of the jetton wallet.</param>
-    /// <returns>The jetton wallet data.</returns>
-    /// <exception cref="Exception">Thrown when the jetton wallet is not deployed or when the data retrieval fails.</exception>
     private async Task<JettonWalletData> GetWalletData(Address jettonWallet)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data");
@@ -56,11 +50,6 @@ public class Jetton
         return jettonWalletData;
     }
 
-    /// <summary>
-    /// Retrieves the number of decimals for a jetton master contract.
-    /// </summary>
-    /// <param name="jettonMasterContract">The address of the jetton master contract.</param>
-    /// <returns>The number of decimals for the jetton master contract.</returns>
     private async Task<uint> GetDecimals(Address jettonMasterContract)
     {
         JettonData jettonData = await GetData(jettonMasterContract);
@@ -69,7 +58,7 @@ public class Jetton
         return 9;
     }
 
-    private async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
+    public async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonMasterContract, "get_jetton_data");
         if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
@@ -77,7 +66,7 @@ public class Jetton
         {
             TotalSupply = new Coins((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
             AdminAddress = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!,
-            Content = (Cell)runGetMethodResult.Stack[3]!,
+            Content = await JettonUtils.ParseMetadata((Cell)runGetMethodResult.Stack[3]!),
             JettonWalletCode = (Cell)runGetMethodResult.Stack[4]!
         };
         return jettonData;
