@@ -1,4 +1,11 @@
-﻿using TonSdk.Core.Boc;
+﻿
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Transactions;
+using System;
+using TonSdk.Core.Boc;
+using System.Drawing;
+using System.Xml.Linq;
+using TonSdk.Client;
 using TonSdk.Core;
 using System.Numerics;
 
@@ -62,7 +69,7 @@ public class TransactionParser
             uint op = (uint)forwardPayload.LoadUInt(32);
             if (op == 0)
             {
-                // TODO: save comment
+                // TODO: save comment 
             }
         }
 
@@ -103,7 +110,7 @@ public class TransactionParser
             uint op = (uint)forwardPayload.LoadUInt(32);
             if (op == 0)
             {
-                // TODO: save comment
+                // TODO: save comment 
             }
         }
 

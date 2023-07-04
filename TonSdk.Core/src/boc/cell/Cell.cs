@@ -4,7 +4,7 @@
 public class Cell {
     public readonly Bits   Bits;
     public readonly Cell[] Refs;
-    public readonly CellType Type;
+    public readonly CellType type;
 
     public readonly bool IsExotic;
     public readonly int  RefsCount;
@@ -34,11 +34,10 @@ public class Cell {
 
         Bits = _bits;
         Refs = _refs;
-        Type = _type;
+        type = _type;
         RefsCount = _refs.Length;
-        BitsCount = _bits.Length;
         FullData = Math.Max((_bits.Length + 7) / 8 + _bits.Length / 8, 1);
-        IsExotic = Type != CellType.ORDINARY;
+        IsExotic = type != CellType.ORDINARY;
         Depth = RefsCount == 0 ? 0 : _refs.Max(cell => cell.Depth) + 1;
     }
 

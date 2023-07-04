@@ -1,8 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+//using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Utilities;
+using System.Globalization;
 using System.Numerics;
+using System.Xml.Linq;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static TonSdk.Client.Transformers;
 
 namespace TonSdk.Client;
@@ -11,13 +16,13 @@ public static class Transformers
 {
     public static string[] PackRequestStack(object element)
     {
-        if(element is Cell)
+        if(element is Cell) 
         {
             return new string[] { "tvm.Cell", ((Cell)element).ToString() };
         }
         if(element is BigInteger || element is uint || element is int || element is long || element is ulong)
         {
-
+            
             return new string[] { "num", element.ToString()! };
         }
         if(element is Coins)
@@ -200,7 +205,7 @@ public struct InAdressInformationBody : IRequestBody
         [JsonProperty("file_hash")] public string FileHash;
     }
 
-
+    
 }
 
 public struct AddressInformationResult
@@ -216,7 +221,7 @@ public struct AddressInformationResult
 
     public AddressInformationResult(OutAddressInformationResult outAddressInformationResult)
     {
-        switch(outAddressInformationResult.State)
+        switch(outAddressInformationResult.State) 
         {
             case "active":
                 {

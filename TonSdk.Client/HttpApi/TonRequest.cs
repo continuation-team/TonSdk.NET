@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-
 namespace TonSdk.Client;
 
 public interface IRequestBody { }
@@ -28,7 +27,7 @@ public class TonRequest
         HttpClient httpClient = new();
         httpClient.Timeout = TimeSpan.FromMilliseconds(Convert.ToDouble(_params.HttpApiParameters.Timeout));
         //httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-
+        
         if(_params.HttpApiParameters.ApiKey != null && _params.HttpApiParameters.ApiKey != string.Empty)
             httpClient.DefaultRequestHeaders.Add("X-API-Key", _params.HttpApiParameters.ApiKey);
 

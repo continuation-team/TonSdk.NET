@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TonSdk.Core\src\TonSdk.Core.csproj" />
+    <ProjectReference Include="..\TonSdk.Core\src\TonSdk.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
