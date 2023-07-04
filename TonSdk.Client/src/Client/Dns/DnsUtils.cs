@@ -25,7 +25,7 @@ public class DnsUtils
 
         string domainLower = domain.ToLower();
 
-        for(int i = 0; i < domainLower.Length; i++) 
+        for(int i = 0; i < domainLower.Length; i++)
         {
             if(char.ConvertToUtf32(domainLower, i) < 32) throw new Exception("Bytes in range 0..32 are not allowed in domain names");
         }
@@ -44,7 +44,7 @@ public class DnsUtils
 
         string[] domainPair = domain.Split('.');
 
-        foreach(string domainPart in domainPair) 
+        foreach(string domainPart in domainPair)
         {
             if(domain.Length == 0) throw new Exception("Domain name cannot have an empty component");
         }
@@ -59,7 +59,7 @@ public class DnsUtils
         int length = domainBytes.Length * 8;
 
         CellBuilder sliceBuilder = new ();
-        
+
         foreach (byte b in domainBytes)
         {
             sliceBuilder.StoreUInt(b, 8);
@@ -76,7 +76,7 @@ public class DnsUtils
         uint resultLen = (uint)(BigInteger)runGetMethodResult.Stack[0];
         Cell cell = (Cell)runGetMethodResult.Stack[1];
 
-        if(cell == null || cell.bits == null) throw new Exception("Invalid dnsresolve response.");
+        if(cell == null || cell.Bits == null) throw new Exception("Invalid dnsresolve response.");
         if (resultLen == 0) return null;
         if (resultLen % 8 != 0) throw new Exception("domain split not at a component boundary");
         if(resultLen > length) throw new Exception($"invalid response {resultLen} /{length}");
