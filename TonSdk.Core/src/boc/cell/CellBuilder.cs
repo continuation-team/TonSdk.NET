@@ -17,6 +17,10 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
 
     private int _ref_en = 0;
 
+    public int RemainderRefs {
+        get { return CellTraits.max_refs - _ref_en; }
+    }
+
     public CellBuilder (int length = 1023) : base(length) {
         _refs = new Cell[CellTraits.max_refs];
     }
@@ -64,6 +68,10 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
         return StoreBit(opt, false);
     }
 
+    public CellBuilder StoreDict<K, V>(HashmapE<K, V> hashmap, bool needCheck = true) {
+        return StoreCellSlice(hashmap.Build().Parse(), needCheck);
+    }
+
     public override Cell Build() {
         return new Cell(Data, Refs);
     }
@@ -71,13 +79,4 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
     public override CellBuilder Clone() {
         throw new NotImplementedException();
     }
-
-    // public Cell endExoticCell() {
-    //
-    // }
 }
-
-
-/*
-
- */

@@ -2,14 +2,15 @@
 
 
 public class Cell {
-    public readonly Bits   bits;
-    public readonly Cell[] refs;
+    public readonly Bits   Bits;
+    public readonly Cell[] Refs;
     public readonly CellType type;
 
-    public readonly bool isExotic;
-    public readonly int  refCount;
-    public readonly int  fullData;
-    public readonly int  depth;
+    public readonly bool IsExotic;
+    public readonly int  RefsCount;
+    public readonly int  BitsCount;
+    public readonly int  FullData;
+    public readonly int  Depth;
     private Bits? _bitsWithDescriptors;
     private Bits? _hash;
 
@@ -24,20 +25,20 @@ public class Cell {
 
     public Cell (Bits _bits, Cell[] _refs, CellType _type = CellType.ORDINARY) {
         if (_bits.Length > CellTraits.max_bits) {
-            throw new ArgumentException($"Bits should have at most {CellTraits.max_bits} bits.", nameof(bits));
+            throw new ArgumentException($"Bits should have at most {CellTraits.max_bits} bits.", nameof(Bits));
         }
 
         if (_refs.Length > CellTraits.max_refs) {
-            throw new ArgumentException($"Refs should have at most {CellTraits.max_refs} elements.", nameof(refs));
+            throw new ArgumentException($"Refs should have at most {CellTraits.max_refs} elements.", nameof(Refs));
         }
 
-        bits = _bits;
-        refs = _refs;
+        Bits = _bits;
+        Refs = _refs;
         type = _type;
-        refCount = _refs.Length;
-        fullData = Math.Max((_bits.Length + 7) / 8 + _bits.Length / 8, 1);
-        isExotic = type != CellType.ORDINARY;
-        depth = refCount == 0 ? 0 : _refs.Max(cell => cell.depth) + 1;
+        RefsCount = _refs.Length;
+        FullData = Math.Max((_bits.Length + 7) / 8 + _bits.Length / 8, 1);
+        IsExotic = type != CellType.ORDINARY;
+        Depth = RefsCount == 0 ? 0 : _refs.Max(cell => cell.Depth) + 1;
     }
 
     public Cell (string bitString, params Cell[] refs) :
@@ -52,15 +53,15 @@ public class Cell {
     }
 
     private string toFiftHex(ushort indent = 1, int size = 0) {
-        var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + bits.ToString("fiftHex") };
-        output.AddRange(refs.Select(cell => $"\n{cell.toFiftHex(indent, size + 1)}"));
+        var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + Bits.ToString("fiftHex") };
+        output.AddRange(Refs.Select(cell => $"\n{cell.toFiftHex(indent, size + 1)}"));
         return string.Join("", output);
     }
 
     private string toFiftBin(ushort indent = 1, int size = 0) {
-        var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + bits.ToString("fiftBin") };
+        var output = new List<string> { string.Concat(Enumerable.Repeat(" ", indent * size)) + Bits.ToString("fiftBin") };
 
-        foreach (var cell in refs) {
+        foreach (var cell in Refs) {
             output.Add($"\n{cell.toFiftBin(indent, size + 1)}");
         }
         return String.Join("", output);
@@ -94,10 +95,10 @@ public class Cell {
 
 
     private Bits buildBitsWithDescriptors() {
-        var augmented = bits.Augment(8);
+        var augmented = Bits.Augment(8);
         var l = 16 + augmented.Length;
-        var d1 = refCount + (isExotic ? 8 : 0); // + MaxLevel * 32;
-        var d2 = fullData;
+        var d1 = RefsCount + (IsExotic ? 8 : 0); // + MaxLevel * 32;
+        var d2 = FullData;
         var bb = new BitsBuilder(l)
                             .StoreUInt(d1, 8)
                             .StoreUInt(d2, 8)
@@ -110,13 +111,13 @@ public class Cell {
 
     private Bits calcHash() {
         var bitsWithDescriptors = BitsWithDescriptors;
-        var l = bitsWithDescriptors.Length + refCount * (16 + 256);
+        var l = bitsWithDescriptors.Length + RefsCount * (16 + 256);
         var bb = new BitsBuilder(l).StoreBits(bitsWithDescriptors, false);
-        for (var i = 0; i < refCount; i++) {
-            bb.StoreUInt(refs[i].depth, 16);
+        for (var i = 0; i < RefsCount; i++) {
+            bb.StoreUInt(Refs[i].Depth, 16);
         }
-        for (var i = 0; i < refCount; i++) {
-            bb.StoreBits(refs[i].Hash, false);
+        for (var i = 0; i < RefsCount; i++) {
+            bb.StoreBits(Refs[i].Hash, false);
         }
 
         _hash = bb.Build().Hash();

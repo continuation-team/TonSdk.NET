@@ -50,6 +50,10 @@ public abstract class HashmapBase<T, K, V> where T : HashmapBase<T, K, V> {
     protected Func<Bits, K>? deserializeKey;
     protected Func<Cell, V>? deserializeValue;
 
+    public int Count {
+        get { return map.Count; }
+    }
+
     public HashmapBase(HashmapOptions<K, V> opt) {
         if (opt.KeySize == 0) throw new Exception("Key size can not be 0");
 
@@ -342,7 +346,7 @@ public class Hashmap<K, V> : HashmapBase<Hashmap<K, V>, K, V> {
     /// <returns>Hashmap object</returns>
     public static Hashmap<K, V> Deserialize<K, V>(Cell? dictCell, HashmapOptions<K, V> opt) {
         if (dictCell == null) return new Hashmap<K, V>(opt);
-        if (dictCell.bits.Length < 2) {
+        if (dictCell.BitsCount < 2) {
             throw new Exception("Hashmap: can't be empty. It must contain at least 1 key-value pair.");
         }
 
@@ -418,19 +422,25 @@ public class HashmapE<K, V> : HashmapBase<HashmapE<K,V>, K, V> {
     /// <typeparam name="K">Type of hashmap Key (after deserialize)</typeparam>
     /// <typeparam name="V">type of hashmap Value (after deserialize)</typeparam>
     /// <returns>HashmapE object</returns>
-    public static HashmapE<K,V> Deserialize(CellSlice dictSlice, HashmapOptions<K, V> opt) {
-        if (dictSlice.RemainderBits < 1) throw new Exception("HashmapE: bad hashmap size flag.");
+    public static HashmapE<K,V> Deserialize(CellSlice dictSlice, HashmapOptions<K, V> opt, bool inplace = true) {
+        var maybeBit = dictSlice.ReadBit();
 
         var hashmap = new HashmapE<K, V>(opt);
 
-        if (!dictSlice.LoadBit()) return hashmap;
+        if (!maybeBit) {
+            if (inplace) dictSlice.SkipBit();
+            return hashmap;
+        }
 
-        var nodes = deserializeEdge(dictSlice.LoadRef().Parse(), opt.KeySize);
+        var dictCell = dictSlice.ReadRef();
+
+        var nodes = deserializeEdge(dictCell.Parse(), opt.KeySize);
 
         foreach (var node in nodes) {
             hashmap.SetRaw(node.Key, node.Value);
         }
 
+        if (inplace) dictSlice.SkipBit().SkipRef();
         return hashmap;
     }
 
