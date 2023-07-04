@@ -17,6 +17,10 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
 
     private int _ref_en = 0;
 
+    public int RemainderRefs {
+        get { return CellTraits.max_refs - _ref_en; }
+    }
+
     public CellBuilder (int length = 1023) : base(length) {
         _refs = new Cell[CellTraits.max_refs];
     }
@@ -43,12 +47,29 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
         return this;
     }
 
-    public CellBuilder StoreCellSlice(CellSlice bs) {
-        CheckBitsOverflow(bs.RemainderBits);
-        CheckRefsOverflow(bs.RemainderRefs);
+    public CellBuilder StoreCellSlice(CellSlice bs, bool needCheck = true) {
+        if (needCheck) {
+            CheckBitsOverflow(bs.RemainderBits);
+            CheckRefsOverflow(bs.RemainderRefs);
+        }
         StoreBits(bs.Bits, false);
         var r = bs.Refs;
         return StoreRefs(ref r, false);
+    }
+
+    public CellBuilder StoreOptRef(Cell? cell, bool needCheck = true) {
+        bool opt = cell != null;
+        if (needCheck) {
+            CheckBitsOverflow(1);
+            if (opt) CheckRefsOverflow(1);
+        }
+
+        if (opt) StoreRef(cell!, false);
+        return StoreBit(opt, false);
+    }
+
+    public CellBuilder StoreDict<K, V>(HashmapE<K, V> hashmap, bool needCheck = true) {
+        return StoreCellSlice(hashmap.Build().Parse(), needCheck);
     }
 
     public override Cell Build() {
@@ -58,13 +79,4 @@ public class CellBuilder : BitsBuilderImpl<CellBuilder, Cell> {
     public override CellBuilder Clone() {
         throw new NotImplementedException();
     }
-
-    // public Cell endExoticCell() {
-    //
-    // }
 }
-
-
-/*
-
- */

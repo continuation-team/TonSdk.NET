@@ -42,6 +42,11 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         _bits_en = _bits.Length;
     }
 
+    protected BitsSliceImpl(Bits bits, int bits_st, int bits_en) {
+        _bits = bits;
+        _bits_st = bits_st;
+        _bits_en = bits_en;
+    }
 
     public T SkipBits(int size) {
         CheckSize(size);
@@ -75,6 +80,12 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         var bitEnd = _bits_st + 1;
         CheckBitsUnderflow(bitEnd);
         return _bits.Data[_bits_st];
+    }
+
+    public bool ReadBit(int idx) {
+        var bitEnd = _bits_st + idx + 1;
+        CheckBitsUnderflow(bitEnd);
+        return _bits.Data[_bits_st + idx];
     }
 
     public bool LoadBit() {
@@ -194,7 +205,6 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         }
     }
 
-
     public Address? ReadAddress() {
         return LoadAddress(false);
     }
@@ -259,7 +269,6 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
         return result;
     }
 }
-
 
 
 public class BitsSlice : BitsSliceImpl<BitsSlice, Bits> {

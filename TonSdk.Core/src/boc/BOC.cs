@@ -199,9 +199,9 @@ public class BagOfCells {
     private static Bits serializeCell(Cell cell, Dictionary<Bits, int> cellsIndex, int refSize) {
         var ret = cell.BitsWithDescriptors;
         refSize *= 8;
-        var l = ret.Length + cell.refCount * refSize;
+        var l = ret.Length + cell.RefsCount * refSize;
         var b = new BitsBuilder(l).StoreBits(ret);
-        foreach (var refCell in cell.refs) {
+        foreach (var refCell in cell.Refs) {
             var refHash = refCell.Hash;
             var refIndex = cellsIndex[refHash];
             b.StoreUInt(refIndex, refSize);
@@ -229,7 +229,7 @@ public class BagOfCells {
 
         // Recursive function for graph traversal and topological sorting
         void VisitCell(Cell cell) {
-            foreach (var neighbor in cell.refs) {
+            foreach (var neighbor in cell.Refs) {
                 if (!hashToIndex.ContainsKey(neighbor.Hash)) {
                     VisitCell(neighbor);
                 }
@@ -251,7 +251,7 @@ public class BagOfCells {
         for (var i = roots.Length - 1; i > -1; i--) {
             // foreach (var rootCell in roots) {
             var rootCell = roots[i];
-            foreach (var cell in rootCell.refs) {
+            foreach (var cell in rootCell.Refs) {
                 VisitCell(cell);
             }
             VisitCell(rootCell);
