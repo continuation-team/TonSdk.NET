@@ -22,6 +22,7 @@ public class JettonUtils
     // TODO: Metadata keys
     public static async Task<JettonContent> ParseMetadata(Cell content)
     {
+        Console.WriteLine(content.ToString("fiftBin"));
         CellSlice ds = content.Parse();
         if (ds.Bits.Length < 8) throw new Exception("Invalid metadata");
 
@@ -48,16 +49,15 @@ public class JettonUtils
             { "decimals", Core.Crypto.Utils.HexToBytes("ee80fd2f1e03480e2282363596ee752d7bb27f50776b95086a0279189675923e") }
         };
 
-        byte[] kd(Bits b) => b.ToBytes(false);
+        //byte[] kd(Bits b) => b.ToBytes(false);
 
-        Cell vd(Cell c) => c;
+        //Cell vd(Cell c) => c;
 
         var parsed = HashmapE<byte[], Cell>.Parse(content, new HashmapOptions<byte[], Cell>
         {
-            Deserializers = new HashmapDeserializers<byte[], Cell>() { Key = kd, Value = vd }
+            Deserializers = new HashmapDeserializers<byte[], Cell>() { Key = (b) => b.ToBytes(), Value = (c) => c },
+            KeySize = 256
         });
-
-        Console.WriteLine(parsed.Count);
         
 
         JettonContent jettonContent = new()
@@ -70,6 +70,7 @@ public class JettonUtils
 
     private static async Task<JettonContent> ParseOffChain(CellSlice content)
     {
+        Console.WriteLine(content.RestoreRemainder().ToString());
         return new JettonContent();
     }
 

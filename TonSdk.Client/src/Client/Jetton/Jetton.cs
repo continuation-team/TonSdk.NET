@@ -6,6 +6,14 @@ namespace TonSdk.Client;
 
 public class MetadataKeys : Dictionary<string, BigInteger>{}
 
+public struct JettonData
+{
+    public Coins TotalSupply;
+    public Address AdminAddress;
+    public JettonContent Content;
+    public Cell JettonWalletCode;
+}
+
 public class Jetton
 {
     private readonly TonClient client;
@@ -22,13 +30,7 @@ public class Jetton
         public Cell JettonWalletCode;
     }
 
-    public struct JettonData
-    {
-        public Coins TotalSupply;
-        public Address AdminAddress;
-        public JettonContent Content;
-        public Cell JettonWalletCode;
-    }
+    
 
     private async Task<JettonWalletData> GetWalletData(Address jettonWallet)
     {
@@ -126,4 +128,6 @@ public class Jetton
         Address resultAddress = ((Cell)runGetMethodResult.Stack[0]).Parse().LoadAddress()!;
         return resultAddress;
     }
+
+
 }
