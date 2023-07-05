@@ -303,7 +303,7 @@ public abstract class HashmapBase<T, K, V> where T : HashmapBase<T, K, V> {
             length++;
         }
 
-        return edge.LoadBits(length + 1);
+        return edge.LoadBits(length);
     }
 
     protected static Bits deserializeLabelLong(CellSlice edge, long m) {
