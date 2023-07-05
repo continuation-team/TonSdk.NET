@@ -55,9 +55,7 @@ public class Jetton
     private async Task<uint> GetDecimals(Address jettonMasterContract)
     {
         JettonData jettonData = await GetData(jettonMasterContract);
-
-        // TODO: return ~~(content.decimals) || 9;
-        return 9;
+        return jettonData.Content.Decimals;
     }
 
     public async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
