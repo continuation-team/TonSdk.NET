@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Numerics;
+using System.Text;
 
 namespace TonSdk.Core.Boc;
 
@@ -238,6 +239,30 @@ public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
                 if (inplace) SkipBits(2);
                 return null;
         }
+    }
+
+    public byte[] ReadBytes(int size) {
+        return ReadBits(size * 8).ToBytes();
+    }
+
+    public byte[] LoadBytes(int size) {
+        return LoadBits(size * 8).ToBytes();
+    }
+
+    public string ReadString() {
+        return ReadString(RemainderBits / 8);
+    }
+
+    public string ReadString(int size) {
+        return Encoding.UTF8.GetString(ReadBytes(size));
+    }
+
+    public string LoadString() {
+        return LoadString(RemainderBits / 8);
+    }
+
+    public string LoadString(int size) {
+        return Encoding.UTF8.GetString(LoadBytes(size));
     }
 
     public abstract U Restore();

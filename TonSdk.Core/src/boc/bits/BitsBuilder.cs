@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Numerics;
+using System.Text;
 
 namespace TonSdk.Core.Boc;
 
@@ -83,6 +84,11 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
     public T StoreBytes(byte[] b, bool needCheck = true) {
         var bits = new Bits(b);
         return StoreBits(bits, needCheck);
+    }
+
+    public T StoreString(string s, bool needCheck = true) {
+        var bytes = Encoding.UTF8.GetBytes(s);
+        return StoreBytes(bytes, needCheck);
     }
 
     public T StoreUInt(UInt64 value, int size, bool needCheck = true) {
