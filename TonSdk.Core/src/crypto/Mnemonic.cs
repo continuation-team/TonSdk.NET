@@ -5,9 +5,9 @@ public class Mnemonic
     private static int TON_ROUNDS = 100000;
     private static int TON_KEY_LENGTH = 32;
 
-    private string[]? _words { get; set; }
-    private byte[]? _seed { get; set; }
-    private KeyPair? _keys { get; set; }
+    private string[] _words { get; set; }
+    private byte[] _seed { get; set; }
+    private KeyPair _keys { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the Mnemonic class (TON).
@@ -28,9 +28,9 @@ public class Mnemonic
         _keys = keys;
     }
 
-    public string[]? Words { get { return _words; } }
-    public byte[]? Seed { get { return _seed; } }
-    public KeyPair? Keys { get { return _keys; } }
+    public string[] Words { get { return _words; } }
+    public byte[] Seed { get { return _seed; } }
+    public KeyPair Keys { get { return _keys; } }
 
     /// <summary>
     /// Generates an array of random mnemonic words.
