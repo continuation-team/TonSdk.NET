@@ -59,9 +59,9 @@ public class Address
     private const byte FLAG_TEST_ONLY_NON_BOUNCEABLE = 0xd1;
 
     private readonly BigInteger _hash;
-    private readonly int _workchain;
-    private readonly bool _bounceable;
-    private readonly bool _testOnly;
+    private int _workchain;
+    private bool _bounceable;
+    private bool _testOnly;
 
     /// <summary>
     /// Initializes a new instance of the Address class.
@@ -148,10 +148,28 @@ public class Address
     public bool IsBounceable() => _bounceable;
 
     /// <summary>
+    /// Sets bounceable property and return it.
+    /// </summary>
+    /// <returns>True if the address is bounceable; otherwise, false.</returns>
+    public bool IsBounceable(bool state) 
+    { 
+        return _bounceable = state;
+    }
+
+    /// <summary>
     /// Checks if the address is testonly.
     /// </summary>
     /// <returns>True if the address is testonly; otherwise, false.</returns>
     public bool IsTestOnly() => _testOnly;
+
+    /// <summary>
+    /// Sets testonly property and return it.
+    /// </summary>
+    /// <returns>True if the address is testonly; otherwise, false.</returns>
+    public bool IsTestOnly(bool state)
+    {
+        return _testOnly = state;
+    }
 
     private static bool IsAddress(object address)
     {
