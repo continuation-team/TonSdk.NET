@@ -25,20 +25,18 @@ public class Bits : IComparable<Bits> {
         _data = new BitArray(length);
     }
 
-    public Bits(ref BitArray b) {
+    public Bits(BitArray b) {
         _data = b;
     }
 
-    public Bits(BitArray b): this(ref b) { }
-
-    public Bits(ref string s) : this(fromString(s)) { }
-    public Bits(string s) : this(ref s) { }
+    public Bits(string s) : this(fromString(s)) { }
 
     public Bits(byte[] bytes) {
-        for (var i = 0; i < bytes.Length; i++) {
-            bytes[i] = bytes[i].reverseBits();
+        var _bytes = (byte[])bytes.Clone();
+        for (var i = 0; i < _bytes.Length; i++) {
+            _bytes[i] = _bytes[i].reverseBits();
         }
-        _data = new BitArray(bytes);
+        _data = new BitArray(_bytes);
     }
 
     public Bits Slice(int start, int end) {

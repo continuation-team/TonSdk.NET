@@ -1,15 +1,21 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
-using System.Text;
 using TonSdk.Core.Boc;
 
 namespace TonSdk.Core.Crypto;
 
-public class KeyPair
-{
-    public byte[]? PrivateKey { get; set; }
-    public byte[]? PublicKey { get; set; }
+public class KeyPair {
+    private readonly byte[] _privateKey;
+    private readonly byte[] _publicKey;
+    public byte[] PrivateKey => _privateKey;
+    public byte[] PublicKey => _publicKey;
+
+    public KeyPair(byte[] privateKey, byte[] publicKey)
+    {
+        _privateKey = privateKey;
+        _publicKey = publicKey;
+    }
 
     private static byte[] SignDetached(byte[] hash, byte[] privateKey)
     {

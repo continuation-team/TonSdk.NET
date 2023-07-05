@@ -287,7 +287,7 @@ public class BagOfCells {
         }
 
         var dataBits = dataBuilder.Build();
-        var offsetBytes = Math.Max(dataBits.Length.bitLength() / 8, 1);
+        var offsetBytes = Math.Max((dataBits.Length.bitLength() + 7) / 8, 1);
 
         /*
           serialized_boc#b5ee9c72 has_idx:(## 1) has_crc32c:(## 1)

@@ -1,5 +1,6 @@
 using System.Numerics;
 using TonSdk.Core.Boc;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Core.Block;
 
@@ -79,7 +80,7 @@ public struct StateInitOptions {
     public TickTock? Special;
     public Cell? Code;
     public Cell? Data;
-    public HashmapE<BigInteger, SimpleLib> Library;
+    public HashmapE<BigInteger, SimpleLib>? Library;
 }
 
 public class StateInit : BlockStruct<StateInitOptions> {
@@ -90,11 +91,31 @@ public class StateInit : BlockStruct<StateInitOptions> {
 
         _data = opt;
         var builder = new CellBuilder();
-        if (opt.SplitDepth.HasValue) builder.StoreUInt((uint)opt.SplitDepth, 5);
-        if (opt.Special != null) builder.StoreCellSlice(opt.Special.Cell.Parse());
-        builder.StoreOptRef(opt.Code)
+
+        if (opt.SplitDepth.HasValue) {
+            builder
+                .StoreBit(true)
+                .StoreUInt((uint)opt.SplitDepth, 5);
+        } else {
+            builder
+                .StoreBit(false);
+        }
+
+        if (opt.Special != null) {
+            builder
+                .StoreBit(true)
+                .StoreCellSlice(opt.Special.Cell.Parse());
+        } else {
+            builder
+                .StoreBit(false);
+        }
+        var lib = opt.Library != null
+            ? opt.Library.Build()
+            : new CellBuilder().StoreBit(false).Build();
+        builder
+            .StoreOptRef(opt.Code)
             .StoreOptRef(opt.Data)
-            .StoreCellSlice(opt.Library.Build().Parse());
+            .StoreCellSlice(lib.Parse());
         _cell = builder.Build();
     }
 
@@ -135,8 +156,8 @@ public class StateInit : BlockStruct<StateInitOptions> {
 public class CommonMsgInfo : BlockStruct<object> {
     public static CommonMsgInfo Parse(CellSlice slice) {
         var _slice = slice.Clone();
-        if (!_slice.LoadBit()) return IntMsgInfo.Parse(slice);
-        if (!_slice.LoadBit()) return ExtInMsgInfo.Parse(slice);
+        if (!_slice.LoadBit()) return IntMsgInfo.Parse(slice, true);
+        if (!_slice.LoadBit()) return ExtInMsgInfo.Parse(slice, true);
         throw new NotImplementedException("ExtOutMsgInfo is not implemented yet");
     }
 }
@@ -173,8 +194,14 @@ public class IntMsgInfo : CommonMsgInfo {
             .Build();
     }
 
-    public static IntMsgInfo Parse(CellSlice slice) {
+    public static IntMsgInfo Parse(CellSlice slice, bool skipPrefix = false) {
         var _slice = slice.Clone();
+        if (!skipPrefix) {
+            var prefix = _slice.LoadBit();
+            if (prefix) throw new ArgumentException("Invalid IntMsgInfo prefix. TLB: `int_msg_info$0`");
+        } else {
+            _slice.SkipBit();
+        }
         var ihrDisabled = _slice.LoadBit();
         var bounce = _slice.LoadBit();
         var bounced = _slice.LoadBit();
@@ -226,10 +253,9 @@ public class ExtInMsgInfo : CommonMsgInfo {
     public static ExtInMsgInfo Parse(CellSlice slice, bool skipPrefix = false) {
         var _slice = slice.Clone();
         if (!skipPrefix) {
-            var prefix = (byte)slice.LoadInt(2);
+            var prefix = (byte)_slice.LoadInt(2);
             if (prefix != 0b10) throw new ArgumentException("Invalid ExtInMsgInfo prefix. TLB: `ext_in_msg_info$10`");
-        }
-        else {
+        } else {
             _slice.SkipBits(2);
         }
 
@@ -256,12 +282,20 @@ public struct MessageXOptions {
 }
 
 public class MessageX : BlockStruct<MessageXOptions> {
+
+    private bool _signed;
+
+    public bool Signed {
+        get => _signed;
+    }
+
     public MessageX(MessageXOptions opt) {
         _data = opt;
         _cell = buildCell();
+        _signed = false;
     }
 
-    private Cell buildCell() {
+    private Cell buildCell(byte[]? privateKey = null, bool eitherSliceRef = false) {
         var builder = new CellBuilder()
             .StoreCellSlice(_data.Info.Cell.Parse());
         var maybeStateInit = _data.StateInit != null;
@@ -274,12 +308,16 @@ public class MessageX : BlockStruct<MessageXOptions> {
         }
 
         if (_data.Body != null) {
-            var eitherBody = _data.Body.BitsCount > builder.RemainderBits || _data.Body.RefsCount > builder.RemainderRefs;
+            var body = privateKey != null
+                ? signBody(privateKey, eitherSliceRef)
+                : _data.Body!;
+            var eitherBody = _data.Body.BitsCount > builder.RemainderBits
+                               || _data.Body.RefsCount > builder.RemainderRefs;
             builder.StoreBit(eitherBody);
-            if (eitherBody) {
-                builder.StoreCellSlice(_data.Body.Parse());
+            if (!eitherBody) {
+                builder.StoreCellSlice(body.Parse());
             } else {
-                builder.StoreRef(_data.Body);
+                builder.StoreRef(body);
             }
         } else {
             builder.StoreBit(false);
@@ -288,14 +326,39 @@ public class MessageX : BlockStruct<MessageXOptions> {
         return builder.Build();
     }
 
+    private Cell signBody(byte[] privateKey, bool eitherSliceRef) {
+        var b = new CellBuilder()
+            .StoreBytes(KeyPair.Sign(_data.Body, privateKey));
+        if (!eitherSliceRef) {
+            b.StoreCellSlice(_data.Body.Parse());
+        } else {
+            b.StoreRef(_data.Body);
+        }
+        return b.Build();
+    }
+
+    public virtual MessageX Sign(byte[] privateKey, bool eitherSliceRef = false) {
+        if (_data.Body == null) throw new Exception("MessageX body is empty");
+        if (_signed) throw new Exception("MessageX already signed");
+        _cell = buildCell(privateKey, eitherSliceRef);
+        _signed = true;
+        return this;
+    }
+
     public static MessageX Parse(CellSlice slice) {
         var _slice = slice.Clone();
         var info = CommonMsgInfo.Parse(_slice);
         var maybeStateInit = _slice.LoadBit();
         var eitherStateInit = maybeStateInit && _slice.LoadBit();
-        var stateInit = maybeStateInit ? eitherStateInit ? StateInit.Parse(_slice.LoadRef().Parse()) : StateInit.Parse(_slice) : null;
+        var stateInit = maybeStateInit
+            ? eitherStateInit
+                ? StateInit.Parse(_slice.LoadRef().Parse())
+                : StateInit.Parse(_slice)
+            : null;
         var eitherBody = _slice.LoadBit();
-        var body = eitherBody ? _slice.LoadRef() : _slice.RestoreRemainder();
+        var body = eitherBody
+            ? _slice.LoadRef()
+            : _slice.RestoreRemainder();
 
         slice.SkipBits(slice.RemainderBits - _slice.RemainderBits);
         slice.SkipRefs(slice.RemainderRefs - _slice.RemainderRefs);
@@ -308,6 +371,35 @@ public class MessageX : BlockStruct<MessageXOptions> {
     }
 }
 
+public struct ExternalInMessageOptions {
+    public ExtInMsgInfo Info;
+    public StateInit? StateInit;
+    public Cell? Body;
+}
+
+public class ExternalInMessage : MessageX {
+    public ExternalInMessage(ExternalInMessageOptions opt)
+        : base(new MessageXOptions{Info = opt.Info, Body = opt.Body, StateInit = opt.StateInit}) {}
+
+    public ExternalInMessage Sign(byte[] privateKey) {
+        return (ExternalInMessage)base.Sign(privateKey);
+    }
+}
+
+public struct InternalMessageOptions {
+    public IntMsgInfo Info;
+    public StateInit? StateInit;
+    public Cell? Body;
+}
+
+public class InternalMessage : MessageX {
+    public InternalMessage(InternalMessageOptions opt)
+        : base(new MessageXOptions{Info = opt.Info, Body = opt.Body, StateInit = opt.StateInit}) {}
+
+    public InternalMessage Sign(byte[] privateKey) {
+        return (InternalMessage)base.Sign(privateKey);
+    }
+}
 
 public class OutAction : BlockStruct<object> {
     public static OutAction Parse(CellSlice slice) {

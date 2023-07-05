@@ -118,11 +118,7 @@ public static class Utils
         byte[] privateKeyBytes = privateKey.GetEncoded();
         byte[] publicKeyBytes = publicKey.GetEncoded();
 
-        KeyPair keyPair = new()
-        {
-            PublicKey = publicKeyBytes,
-            PrivateKey = privateKeyBytes
-        };
+        KeyPair keyPair = new KeyPair(privateKeyBytes, publicKeyBytes);
 
         return keyPair;
     }

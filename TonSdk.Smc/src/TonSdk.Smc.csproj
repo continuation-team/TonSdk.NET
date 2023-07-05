@@ -7,4 +7,13 @@
         <RootNamespace>TonSdk.Contracts</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="jetton\" />
+      <Folder Include="nft\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\TonSdk.Core\src\TonSdk.Core.csproj" />
+    </ItemGroup>
+
 </Project>
