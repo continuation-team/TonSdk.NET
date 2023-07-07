@@ -228,12 +228,12 @@ public struct AddressInformationResult
                     State = AccountState.Frozen;
                     break;
                 }
-            case "uninit":
+            case "uninitialized":
                 {
                     State = AccountState.Uninit;
                     break;
                 }
-            case "nonexist":
+            default:
                 {
                     State = AccountState.NonExist;
                     break;
