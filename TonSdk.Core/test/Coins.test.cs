@@ -49,6 +49,7 @@ public class CoinsTest
         Assert.That(new Coins("10").Eq(new Coins(10.2)), Is.EqualTo(false));
         Assert.That(new Coins("10.5").Eq(new Coins(10.5)), Is.EqualTo(true));
         Assert.That(new Coins(10).Eq(new Coins(10)), Is.EqualTo(true));
+        Assert.Throws<Exception>(() => new Coins(10, new CoinsOptions(false, 222)));
     }
 
     [Test]
@@ -57,6 +58,7 @@ public class CoinsTest
         Assert.That(new Coins("10").Add(new Coins(10)).Eq(new Coins(20)), Is.EqualTo(true));
         Assert.That(new Coins("10").Add(new Coins(10.5)).Eq(new Coins(20.5)), Is.EqualTo(true));
         Assert.That(new Coins(10).Add(new Coins(10)).Eq(new Coins(20)), Is.EqualTo(true));
+        Assert.Throws<Exception>(() => new Coins(10).Add(new Coins(10.0, new CoinsOptions(false, 10))));
     }
 
     [Test]
@@ -90,6 +92,8 @@ public class CoinsTest
         Assert.That(new Coins("10").Mul(10).Eq(new Coins(100)), Is.EqualTo(true));
         Assert.That(new Coins("10").Mul(1).Eq(new Coins(10)), Is.EqualTo(true));
         Assert.That(new Coins(10).Mul(10).Eq(new Coins(100)), Is.EqualTo(true));
+        Assert.Throws<Exception>(() => new Coins(10).Mul('s').Eq(new Coins(100)));
+        Assert.Throws<Exception>(() => new Coins(10).Mul("sss").Eq(new Coins(100)));
     }
 
     [Test]

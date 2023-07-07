@@ -291,29 +291,6 @@ public class Address
         };
     }
 
-    private static bool BytesCompare(byte[] a1, byte[] a2)
-    {
-        if (a1 == null || a2 == null)
-        {
-            return false;
-        }
-
-        if (a1.Length != a2.Length)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < a1.Length; i++)
-        {
-            if (a1[i] != a2[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     /// <summary>
     /// Determines whether the specified Address object is equal to the current Address.
     /// </summary>
@@ -334,15 +311,6 @@ public class Address
     public string ToBOC()
     {
         return new CellBuilder().StoreAddress(this).Build().Serialize().ToString();
-    }
-
-    /// <summary>
-    /// Converts the Address to its string representation.
-    /// </summary>
-    /// <returns>The string representation of the Address.</returns>
-    public override string ToString()
-    {
-        return ToString();
     }
 
     /// <summary>
@@ -378,20 +346,20 @@ public class Address
             throw new Exception("Address: workchain must be int8.");
         }
 
-        if (bounceable.GetType() != typeof(bool))
-        {
-            throw new Exception("Address: bounceable flag must be a boolean.");
-        }
-
-        if (testOnly.GetType() != typeof(bool))
-        {
-            throw new Exception("Address: testOnly flag must be a boolean.");
-        }
-
-        if (urlSafe.GetType() != typeof(bool))
-        {
-            throw new Exception("Address: urlSafe flag must be a boolean.");
-        }
+        // if (bounceable.GetType() != typeof(bool))
+        // {
+        //     throw new Exception("Address: bounceable flag must be a boolean.");
+        // }
+        //
+        // if (testOnly.GetType() != typeof(bool))
+        // {
+        //     throw new Exception("Address: testOnly flag must be a boolean.");
+        // }
+        //
+        // if (urlSafe.GetType() != typeof(bool))
+        // {
+        //     throw new Exception("Address: urlSafe flag must be a boolean.");
+        // }
 
         if (type == AddressType.Raw)
         {

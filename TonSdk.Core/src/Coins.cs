@@ -261,7 +261,6 @@ public class Coins
 
     private static bool IsValid(object value)
     {
-        // TODO: узнать про тип данных
         return value is string || value is int || value is decimal || value is double || value is float || value is long;
     }
 

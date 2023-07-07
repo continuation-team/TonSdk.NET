@@ -18,9 +18,11 @@ public class AddressTest
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsBounceable(false), Is.EqualTo(false));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsTestOnly, Is.EqualTo(false));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsTestOnly(true), Is.EqualTo(true));
+        
         Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").GetWorkchain());
         Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").GetHash());
         Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString());
+        Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64, null));
     }
 
     [Test]
@@ -47,7 +49,10 @@ public class AddressTest
     public void Test_OutToString()
     {
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Raw), Is.EqualTo("0:83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8"));
-        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
+        Assert.Throws<Exception>(() =>
+            new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64,
+                new AddressStringifyOptions(true, true, true, 222)));  
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64, new AddressStringifyOptions(true, false, true)), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64, new AddressStringifyOptions(true, false, true)), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Base64, new AddressStringifyOptions(false, false, true)), Is.EqualTo("UQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqEBI"));
