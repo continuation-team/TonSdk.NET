@@ -2,8 +2,8 @@
 
 
 public class Cell {
-    public readonly Bits   Bits;
-    public readonly Cell[] Refs;
+    public readonly Bits     Bits;
+    public readonly Cell[]   Refs;
     public readonly CellType Type;
 
     public readonly bool IsExotic;

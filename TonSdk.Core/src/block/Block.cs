@@ -4,7 +4,7 @@ using TonSdk.Core.Crypto;
 
 namespace TonSdk.Core.Block;
 
-public class Utils {
+public static class BlockUtils {
     public static void CheckUnderflow(CellSlice slice, int? needBits, int? needRefs) {
         if (needBits.HasValue && needBits < slice.RemainderBits) {
             throw new ArgumentException("Bits underflow");
@@ -44,7 +44,7 @@ public class TickTock : BlockStruct<TickTockOptions> {
     }
 
     public static TickTock Parse(CellSlice slice) {
-        Utils.CheckUnderflow(slice, 2, null);
+        BlockUtils.CheckUnderflow(slice, 2, null);
         return new TickTock(new TickTockOptions {
             Tick = slice.LoadBit(),
             Tock = slice.LoadBit()
@@ -67,7 +67,7 @@ public class SimpleLib : BlockStruct<SimpleLibOptions> {
     }
 
     public static SimpleLib Parse(CellSlice slice) {
-        Utils.CheckUnderflow(slice, 1, 1);
+        BlockUtils.CheckUnderflow(slice, 1, 1);
         return new SimpleLib(new SimpleLibOptions {
             Public = slice.LoadBit(),
             Root   = slice.LoadRef()
@@ -337,7 +337,7 @@ public class MessageX : BlockStruct<MessageXOptions> {
         return b.Build();
     }
 
-    public virtual MessageX Sign(byte[] privateKey, bool eitherSliceRef = false) {
+    public MessageX Sign(byte[] privateKey, bool eitherSliceRef = false) {
         if (_data.Body == null) throw new Exception("MessageX body is empty");
         if (_signed) throw new Exception("MessageX already signed");
         _cell = buildCell(privateKey, eitherSliceRef);
@@ -430,7 +430,7 @@ public class ActionSendMsg : OutAction {
     }
 
     public static ActionSendMsg Parse(CellSlice slice, bool skipPrefix = false) {
-        Utils.CheckUnderflow(slice, 40, 1);
+        BlockUtils.CheckUnderflow(slice, 40, 1);
         if (!skipPrefix) {
             var prefix = slice.LoadUInt(32);
             if (prefix != 0x0ec3c86d) throw new ArgumentException("Invalid action prefix");
@@ -458,7 +458,7 @@ public class ActionSetCode : OutAction {
     }
 
     public static ActionSetCode Parse(CellSlice slice, bool skipPrefix = false) {
-        Utils.CheckUnderflow(slice, 32, 1);
+        BlockUtils.CheckUnderflow(slice, 32, 1);
         if (!skipPrefix) {
             var prefix = slice.LoadUInt(32);
             if (prefix != 0xad4de08e) throw new ArgumentException("Invalid action prefix");
@@ -471,13 +471,13 @@ public class ActionSetCode : OutAction {
 }
 
 public struct OutListOptions {
-    public List<OutAction> Actions;
+    public OutAction[] Actions;
 }
 
 
 public class OutList : BlockStruct<OutListOptions> {
     public OutList(OutListOptions opt) {
-        if (opt.Actions.Count > 255) throw new ArgumentException("Too many actions. May be from 0 to 255 (includes)");
+        if (opt.Actions.Length > 255) throw new ArgumentException("Too many actions. May be from 0 to 255 (includes)");
         _data = opt;
         _cell = buildCell();
     }
@@ -509,6 +509,6 @@ public class OutList : BlockStruct<OutListOptions> {
             _slice = prev.Parse();
         }
 
-        return new OutList(new OutListOptions { Actions = actions });
+        return new OutList(new OutListOptions { Actions = actions.ToArray() });
     }
 }

@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
 namespace TonSdk.Core;
@@ -62,6 +63,14 @@ public class Address
     private int _workchain;
     private bool _bounceable;
     private bool _testOnly;
+
+    public Address(int workchain, StateInit stateInit, IAddressRewriteOptions? options = null)
+    {
+        _hash = stateInit.Cell.Hash.Parse().LoadUInt(256);
+        _workchain = options?.Workchain ?? workchain;
+        _bounceable = options?.Bounceable ?? true;
+        _testOnly = options?.TestOnly ?? false;
+    }
 
     /// <summary>
     /// Initializes a new instance of the Address class.
@@ -151,8 +160,8 @@ public class Address
     /// Sets bounceable property and return it.
     /// </summary>
     /// <returns>True if the address is bounceable; otherwise, false.</returns>
-    public bool IsBounceable(bool state) 
-    { 
+    public bool IsBounceable(bool state)
+    {
         return _bounceable = state;
     }
 
@@ -228,7 +237,7 @@ public class Address
 
     private static AddressData ParseEncoded(string value)
     {
-        
+
         BitsSlice slice = new Bits(value).Parse();
         byte[] crcBytes = slice.ReadBits(16 + 256).ToBytes();
 
@@ -387,7 +396,7 @@ public class Address
         if (type == AddressType.Raw)
         {
             return $"{workchain}:{_hash.ToString("x")[1..]}";
-        }        
+        }
 
         byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly});
 

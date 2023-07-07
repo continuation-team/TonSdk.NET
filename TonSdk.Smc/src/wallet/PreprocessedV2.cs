@@ -4,68 +4,64 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Contracts.Wallet;
 
-public struct WalletV3Options {
+public struct PreprocessedV2Options {
     public byte[] PublicKey;
     public int? Workchain;
-    public uint? SubwalletId;
 }
 
-public struct WalletV3Storage {
-    public uint Seqno;
-    public uint SubwalletId;
+public struct PreprocessedV2Storage {
     public byte[] PublicKey;
+    public uint Seqno;
 }
 
 
-public class WalletV3 : WalletBase {
-    private uint _subwalletId;
+public class PreprocessedV2 : WalletBase {
 
-    public uint SubwalletId => _subwalletId;
-
-    public WalletV3(WalletV3Options opt, uint revision = 2) {
-        if (revision != 1 && revision != 2) {
-            throw new Exception("Unsupported revision. Only 1 and 2 are supported");
-        }
-        _code = revision == 1 ? Cell.From(WalletSources.V3R1) : Cell.From(WalletSources.V3R2);
+    public PreprocessedV2(PreprocessedV2Options opt) {
+        _code = Cell.From(WalletSources.PreprocessedV2);
         _publicKey = opt.PublicKey;
-        _subwalletId = opt.SubwalletId ?? WalletTraits.SUBWALLET_ID;
         _stateInit = buildStateInit();
         _address = new Address(opt.Workchain ?? 0, _stateInit);
     }
 
-    public WalletV3Storage ParseStorage(CellSlice slice) {
-        BlockUtils.CheckUnderflow(slice, 32 + 32 + 256, null);
-        return new WalletV3Storage {
-            Seqno = (uint)slice.LoadUInt(32),
-            SubwalletId = (uint)slice.LoadUInt(32),
-            PublicKey = slice.LoadBytes(32)
+    public PreprocessedV2Storage ParseStorage(CellSlice slice) {
+        BlockUtils.CheckUnderflow(slice, 16 + 256, null);
+        return new PreprocessedV2Storage {
+            PublicKey = slice.LoadBytes(32),
+            Seqno = (uint)slice.LoadUInt(16),
         };
     }
 
     protected sealed override StateInit buildStateInit() {
         var data = new CellBuilder()
-            .StoreUInt(0, 32)
-            .StoreUInt(_subwalletId, 32)
             .StoreBytes(_publicKey)
+            .StoreUInt(0, 16)
             .Build();
         return new StateInit(new StateInitOptions{ Code = _code, Data = data });
     }
 
     public ExternalInMessage CreateTransferMessage(WalletTransfer[] transfers, uint seqno, uint timeout = 60) {
-        if (transfers.Length is 0 or > 4) {
-            throw new Exception("WalletV3: can make only 1 to 4 transfers per operation.");
+        if (transfers.Length is 0 or > 255) {
+            throw new Exception("PreprocessedV2: can make only 1 to 255 transfers per operation.");
         }
 
         var bodyBuilder = new CellBuilder()
-            .StoreUInt(_subwalletId, 32)
             .StoreUInt(DateTimeOffset.Now.ToUnixTimeSeconds() + timeout, 32)
             .StoreUInt(seqno, 32);
 
-        foreach (var transfer in transfers) {
-            bodyBuilder
-                .StoreUInt(transfer.Mode, 8)
-                .StoreRef(transfer.Message.Cell);
+        var actions = new OutAction[transfers.Length];
+
+        for (var i = 0; i < transfers.Length; i++) {
+            var transfer = transfers[i];
+            var action = new ActionSendMsg(new()
+            {
+                Mode = transfer.Mode,
+                OutMsg = transfer.Message
+            });
+            actions[i] = action;
         }
+
+        bodyBuilder.StoreRef(new OutList(new() { Actions = actions }).Cell);
 
         return new ExternalInMessage(new ExternalInMessageOptions {
             Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = Address }),
@@ -76,9 +72,9 @@ public class WalletV3 : WalletBase {
 
     public ExternalInMessage CreateDeployMessage() {
         var bodyBuilder = new CellBuilder()
-            .StoreUInt(_subwalletId, 32)
             .StoreInt(-1, 32)
-            .StoreUInt(0, 32); // seqno = 0
+            .StoreUInt(0, 16) // seqno = 0
+            .StoreRef(new CellBuilder().Build()); // empty out_list
 
         return new ExternalInMessage(new ExternalInMessageOptions {
             Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = Address }),
