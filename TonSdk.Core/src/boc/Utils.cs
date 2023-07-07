@@ -2,7 +2,7 @@
 
 namespace TonSdk.Core.Boc;
 
-public static class Utils {
+public static class BocUtils {
     public static byte reverseBits(this byte b) {
         byte r = 0;
         for (var i2 = 0; i2 < 8; i2++) {
