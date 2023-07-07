@@ -49,7 +49,6 @@ public class Wallet
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(address, "get_plugin_list");
         if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) return null;
-        Console.WriteLine(JsonConvert.SerializeObject(runGetMethodResult.Stack));
         return runGetMethodResult.Stack;
     }
 }

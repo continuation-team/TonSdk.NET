@@ -22,7 +22,6 @@ public class CoinsTest
         Assert.Throws<Exception>(() => new Coins(20.555, new CoinsOptions(false, 0)), "Invalid Coins value, decimals places \"3\" can't be greater than selected \"0\"");
     }
 
-
     [Test]
     public void Test_CoinsToCoinsEqual()
     {
@@ -58,6 +57,15 @@ public class CoinsTest
         Assert.That(new Coins("10").Add(new Coins(10)).Eq(new Coins(20)), Is.EqualTo(true));
         Assert.That(new Coins("10").Add(new Coins(10.5)).Eq(new Coins(20.5)), Is.EqualTo(true));
         Assert.That(new Coins(10).Add(new Coins(10)).Eq(new Coins(20)), Is.EqualTo(true));
+    }
+
+    [Test]
+    public void Test_CheckCoins()
+    {
+        Assert.That(new Coins("10").IsNegative, Is.EqualTo(false));
+        Assert.That(new Coins("10").IsPositive, Is.EqualTo(true));
+        Assert.That(new Coins(0).IsZero, Is.EqualTo(true));
+        Assert.DoesNotThrow(() =>new Coins(10).ToBigInt());
     }
 
     [Test]

@@ -21,9 +21,9 @@ public struct NftRoyaltyParams
 public struct NftItemData
 {
     public bool Init;
-    public uint Index;
+    public BigInteger Index;
     public Address CollectionAddress;
-    public Address OwnerAddres;
+    public Address OwnerAddress;
     public Cell Content;
 }
 
@@ -102,9 +102,9 @@ public class Nft
         NftItemData nftItemData = new()
         {
             Init = (int)(BigInteger)runGetMethodResult.Stack[0] == -1,
-            Index = (uint)(BigInteger)runGetMethodResult.Stack[1],
+            Index = (BigInteger)runGetMethodResult.Stack[1],
             CollectionAddress = collection,
-            OwnerAddres = owner,
+            OwnerAddress = owner,
             Content = (Cell)runGetMethodResult.Stack[4]
         };
         return nftItemData;

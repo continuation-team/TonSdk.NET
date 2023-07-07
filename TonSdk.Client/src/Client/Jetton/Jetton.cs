@@ -4,8 +4,6 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Client;
 
-public class MetadataKeys : Dictionary<string, BigInteger>{}
-
 public struct JettonData
 {
     public Coins TotalSupply;
@@ -29,8 +27,6 @@ public class Jetton
         public Address JettonMasterAddress;
         public Cell JettonWalletCode;
     }
-
-    
 
     private async Task<JettonWalletData> GetWalletData(Address jettonWallet)
     {
@@ -58,10 +54,22 @@ public class Jetton
         return jettonData.Content.Decimals;
     }
 
-    public async Task<JettonData> GetData(Address jettonMasterContract, MetadataKeys? metadateKeys = null)
+    private async Task<uint> GetDecimalsByWallet(Address jettonWallet)
+    {
+        JettonWalletData jettonWalletData = await GetWalletData(jettonWallet);
+        return await GetDecimals(jettonWalletData.JettonMasterAddress);
+    }
+
+    /// <summary>
+    /// Retrieves the jetton data
+    /// </summary>
+    /// <param name="jettonMasterContract">Jetton master contract address.</param>
+    /// <returns>JettonData object with jetton data.</returns>
+    /// <exception cref="Exception">Throws when cannot retrieve jetton data.</exception>
+    public async Task<JettonData> GetData(Address jettonMasterContract)
     {
         RunGetMethodResult runGetMethodResult = await client.RunGetMethod(jettonMasterContract, "get_jetton_data");
-        if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton wallet data.");
+        if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve jetton data.");
         JettonData jettonData = new()
         {
             TotalSupply = new Coins((decimal)(BigInteger)runGetMethodResult.Stack[0], new CoinsOptions(true, 9)),
@@ -70,12 +78,6 @@ public class Jetton
             JettonWalletCode = (Cell)runGetMethodResult.Stack[4]!
         };
         return jettonData;
-    }
-
-    private async Task<uint> GetDecimalsByWallet(Address jettonWallet)
-    {
-        JettonWalletData jettonWalletData = await GetWalletData(jettonWallet);
-        return await GetDecimals(jettonWalletData.JettonMasterAddress);
     }
 
     /// <summary>

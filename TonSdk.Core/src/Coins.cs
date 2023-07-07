@@ -232,10 +232,10 @@ public class Coins
         }
     }
 
-    private static void CheckCoins(object value)
+    private static void CheckCoins(Coins value)
     {
-        if (IsCoins(value)) return;
-        throw new Exception("Invalid value");
+        //if (IsCoins(value)) return;
+        //throw new Exception("Invalid value");
     }
 
     private static void CompareCoinsDecimals(Coins a, Coins b)

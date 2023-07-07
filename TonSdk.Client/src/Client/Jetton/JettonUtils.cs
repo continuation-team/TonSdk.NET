@@ -25,14 +25,35 @@ public class JettonContent
         valueDict.TryGetValue("image", out Image);
         valueDict.TryGetValue("image_data", out ImageData);
         valueDict.TryGetValue("symbol", out Symbol);
-        valueDict.TryGetValue("uri", out string? dec);
+        valueDict.TryGetValue("decimals", out string? dec);
         Decimals = dec != null ? uint.Parse(dec) : 9;
+    }
+
+    public JettonContent(JettonUtils.OutJettonOffContent outJettonOffContent)
+    {
+        Uri = outJettonOffContent.Uri ?? null;
+        Name = outJettonOffContent.Name ?? null;
+        Description = outJettonOffContent.Description ?? null;
+        Image = outJettonOffContent.Image ?? null;
+        ImageData = outJettonOffContent.ImageData ?? null;
+        Symbol = outJettonOffContent.Symbol ?? null;
+        Decimals = outJettonOffContent.Decimals == null ? 9 : uint.Parse(outJettonOffContent.Decimals);
     }
 }
 
 public class JettonUtils
 {
-    // TODO: Metadata keys
+    public struct OutJettonOffContent
+    {
+        [JsonProperty("uri")] public string Uri;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("description")] public string Description;
+        [JsonProperty("image")] public string Image;
+        [JsonProperty("image_data")] public string ImageData;
+        [JsonProperty("symbol")] public string Symbol;
+        [JsonProperty("decimals")] public string Decimals;
+    }
+
     public static async Task<JettonContent> ParseMetadata(Cell content)
     {
         CellSlice ds = content.Parse();
@@ -97,7 +118,8 @@ public class JettonUtils
         if (!response.IsSuccessStatusCode) throw new Exception($"Received error: {await response.Content.ReadAsStringAsync()}");
         string result = await response.Content.ReadAsStringAsync();
 
-        JettonContent? jettonContent = JsonConvert.DeserializeObject<JettonContent>(result);
+        OutJettonOffContent offJettonContent = JsonConvert.DeserializeObject<OutJettonOffContent>(result);
+        JettonContent jettonContent = new(offJettonContent);
         return jettonContent ?? throw new Exception("Parse metadata error.");
     }
 

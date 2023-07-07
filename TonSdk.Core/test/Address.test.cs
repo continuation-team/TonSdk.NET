@@ -10,6 +10,18 @@ public class AddressTest
         Assert.Throws<Exception>(() => new Address("cat"), "Address: can\t parse address. Unknown type.");
         Assert.Throws<Exception>(() => new Address(string.Empty), "Address: can\t parse address. Unknown type.");
     }
+    
+    [Test]
+    public void Test_CheckAddress()
+    {
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsBounceable, Is.EqualTo(true));
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsBounceable(false), Is.EqualTo(false));
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsTestOnly, Is.EqualTo(false));
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").IsTestOnly(true), Is.EqualTo(true));
+        Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").GetWorkchain());
+        Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").GetHash());
+        Assert.DoesNotThrow(() => new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString());
+    }
 
     [Test]
     public void Test_EqualsTool()
