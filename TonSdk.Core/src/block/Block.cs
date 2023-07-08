@@ -381,8 +381,8 @@ public class ExternalInMessage : MessageX {
     public ExternalInMessage(ExternalInMessageOptions opt)
         : base(new MessageXOptions{Info = opt.Info, Body = opt.Body, StateInit = opt.StateInit}) {}
 
-    public ExternalInMessage Sign(byte[] privateKey) {
-        return (ExternalInMessage)base.Sign(privateKey);
+    public ExternalInMessage Sign(byte[] privateKey, bool eitherSliceRef = false) {
+        return (ExternalInMessage)base.Sign(privateKey, eitherSliceRef);
     }
 }
 
@@ -396,8 +396,8 @@ public class InternalMessage : MessageX {
     public InternalMessage(InternalMessageOptions opt)
         : base(new MessageXOptions{Info = opt.Info, Body = opt.Body, StateInit = opt.StateInit}) {}
 
-    public InternalMessage Sign(byte[] privateKey) {
-        return (InternalMessage)base.Sign(privateKey);
+    public InternalMessage Sign(byte[] privateKey, bool eitherSliceRef = false) {
+        return (InternalMessage)base.Sign(privateKey, eitherSliceRef);
     }
 }
 
