@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Core", "TonSdk.Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Core.Tests", "TonSdk.Core\test\TonSdk.Core.Tests.csproj", "{7F0C7FA3-D15D-4F83-BCC1-0EF5B19B96F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc", "TonSdk.Smc\src\TonSdk.Smc.csproj", "{3DE6E205-F960-4D9E-8F33-FA0DCE197616}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Contracts", "TonSdk.Contracts\src\TonSdk.Contracts.csproj", "{3DE6E205-F960-4D9E-8F33-FA0DCE197616}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Smc.Tests", "TonSdk.Smc\test\TonSdk.Smc.Tests.csproj", "{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Contracts.Tests", "TonSdk.Contracts\test\TonSdk.Contracts.Tests.csproj", "{A96FBCB5-3B62-454D-9436-2FB7B6FF0B54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client", "TonSdk.Client\src\TonSdk.Client.csproj", "{227AD718-F7FA-4E42-8BC1-C949EFF8580C}"
 EndProject

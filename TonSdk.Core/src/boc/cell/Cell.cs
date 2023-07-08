@@ -37,7 +37,7 @@ public class Cell {
         Type = _type;
         RefsCount = _refs.Length;
         BitsCount = _bits.Length;
-        FullData = Math.Max((_bits.Length + 7) / 8 + _bits.Length / 8, 1);
+        FullData = (_bits.Length + 7) / 8 + _bits.Length / 8;
         IsExotic = Type != CellType.ORDINARY;
         Depth = RefsCount == 0 ? 0 : _refs.Max(cell => cell.Depth) + 1;
     }
