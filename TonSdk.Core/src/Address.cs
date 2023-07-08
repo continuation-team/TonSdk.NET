@@ -316,6 +316,15 @@ public class Address
     /// <summary>
     /// Converts the Address to its string representation.
     /// </summary>
+    /// <returns>The string representation of the Address.</returns>
+    public override string ToString()
+    {
+        return ToString();
+    }
+
+    /// <summary>
+    /// Converts the Address to its string representation.
+    /// </summary>
     /// <param name="type">The type of string representation to use (default is AddressType.Base64).</param>
     /// <param name="options">Optional options for customizing the string representation.</param>
     /// <returns>The string representation of the Address.</returns>
