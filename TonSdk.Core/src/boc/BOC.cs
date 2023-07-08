@@ -165,31 +165,10 @@ public class BagOfCells {
                 if (refIndex < (ulong)i) {
                     throw new Exception("Topological order is broken");
                 }
-
-                /*
-                    if (refType === CellType.MerkleProof || refType === CellType.MerkleUpdate) {
-                        hasMerkleProofs = true
-                    }
-                */
-
                 rawCells[i].Builder.StoreRef(rawRefCell.Builder.Build());
             }
-
-            /*
-                // TODO: check if Merkle Proofs can be only on significant level
-                if (cellType === CellType.MerkleProof || cellType === CellType.MerkleUpdate) {
-                    hasMerkleProofs = true
-                }
-            */
-
             rawCells[i].Cell = rawCells[i].Builder.Build();
         }
-
-        /*
-            if (checkMerkleProofs && !hasMerkleProofs) {
-                throw new Error('BOC does not contain Merkle Proofs')
-            }
-        */
 
         return headers.RootList.Select(i => rawCells[i].Cell!).ToArray();
     }

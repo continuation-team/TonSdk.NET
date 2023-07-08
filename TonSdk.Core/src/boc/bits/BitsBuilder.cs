@@ -227,6 +227,9 @@ public abstract class BitsBuilderImpl<T, U> where T : BitsBuilderImpl<T, U> {
         _newBits.Length = _data.Length;
         _newBits.LeftShift(offset);
         _data.Or(_newBits);
+        // for (int i = 0; i < newBits.Length; i++) {
+        //     _data[i + offset] = newBits[i];
+        // }
     }
 }
 

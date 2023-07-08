@@ -20,7 +20,7 @@ public class DnsUtils
 
     public static byte[] DomainToBuffer(string domain)
     {
-        if (domain == null || domain.Length == 0) throw new Exception("Empty domain");
+        if (string.IsNullOrEmpty(domain)) throw new Exception("Empty domain");
         if(domain == ".") return new byte[] { 0 };
 
         string domainLower = domain.ToLower();
@@ -103,7 +103,7 @@ public class DnsUtils
         }
     }
 
-    public static BigInteger CategoryToBigInt (string category)
+    public static BigInteger CategoryToBigInt (string? category)
     {
         if(category == null) return BigInteger.Zero;
         byte[] categoryBytes = Encoding.UTF8.GetBytes(category);

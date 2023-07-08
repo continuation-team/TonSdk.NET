@@ -12,12 +12,6 @@ public static partial class BitsPatterns {
      private const string Base64       = @"^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$";
      private const string Base64url    = @"^(?:[A-Za-z0-9-_]{4})*(?:[A-Za-z0-9-_]{2}==|[A-Za-z0-9-_]{3}=)?$";
 
-     private static void throwUnlessMatch(this bool x, string description) {
-          if (!x) {
-               throw new ArgumentException(description);
-          }
-     }
-
      public static bool isBinaryString(this string s) {
           return BinaryStringRegex().IsMatch(s);
      }
@@ -41,28 +35,7 @@ public static partial class BitsPatterns {
           return Base64urlRegex().IsMatch(s);
      }
 
-     public static void checkIsBinaryString(this string s) {
-          s.isBinaryString().throwUnlessMatch($"{s} is not BitString, BitString is 1000101101010");
-     }
-     public static void checkIsHexString(this string s) {
-          s.isHexString().throwUnlessMatch($"{s} is not HexString, HexString is 1F419ADB7");
-     }
-     public static void checkIsFiftBinary(this string s) {
-          s.isFiftBinary().throwUnlessMatch($"{s} is not FiftBits, FiftBits is b{{1001010}}");
-     }
-     public static void checkIsFiftHex(this string s) {
-          s.isFiftHex().throwUnlessMatch($"{s} is not FiftHex, FiftHex is x{{1AB95FF}}");
-     }
-
-     public static void checkIsBase64(this string s) {
-          s.isBase64().throwUnlessMatch($"{s} is not Base64, Base64 is te6ccuEBAQEAKwBWAFEAAAAyKam=");
-     }
-
-     public static void checkIsBase64url(this string s) {
-          s.isBase64().throwUnlessMatch($"{s} is not Base64url, Base64url is te6ccuEBAQEAKwBWAFEAAAAyKam=");
-     }
-
-     #pragma warning disable CS8625
+#pragma warning disable CS8625
      [GeneratedRegex(BinaryString)]
      private static partial Regex BinaryStringRegex();
 
