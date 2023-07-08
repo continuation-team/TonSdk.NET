@@ -23,9 +23,9 @@
 ## Overview example
 
 ```csharp
-TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "0efdbc011a4c1c36fc74c3c4291bd9a1eccbf960b9113516fc62bc9e6a127d6d" });
+TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
 
-Mnemonic mnemonic = new Mnemonic("hint,cart,close,glass,soldier,earth,crouch,lumber,speak,pretty,sign,differ,ship,clay,robot,error,goat,defense,plug,spy,scheme,fold,slam,evolve".Split(","));
+Mnemonic mnemonic = new Mnemonic();
 
 PreprocessedV2 wallet = new PreprocessedV2(new PreprocessedV2Options { PublicKey = mnemonic.Keys.PublicKey! });
 
