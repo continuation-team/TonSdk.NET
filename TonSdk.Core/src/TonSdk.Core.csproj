@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>TonSdk.Core</RootNamespace>
+        <PackageId>TonSdk.Core</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Continuation Team</Authors>
+        <PackageDescription>Core library with types and structures for TON Blockchain</PackageDescription>
+        <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JustCRC32C" Version="1.1.0" />
+	    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath=""/>
+        <None Include="../../LICENSE" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+</Project>
