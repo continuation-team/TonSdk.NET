@@ -46,8 +46,8 @@ public class PreprocessedV2 : WalletBase {
         }
 
         var bodyBuilder = new CellBuilder()
-            .StoreUInt(DateTimeOffset.Now.ToUnixTimeSeconds() + timeout, 32)
-            .StoreUInt(seqno, 32);
+            .StoreUInt(DateTimeOffset.Now.ToUnixTimeSeconds() + timeout, 64)
+            .StoreUInt(seqno, 16);
 
         var actions = new OutAction[transfers.Length];
 
@@ -72,7 +72,7 @@ public class PreprocessedV2 : WalletBase {
 
     public ExternalInMessage CreateDeployMessage() {
         var bodyBuilder = new CellBuilder()
-            .StoreInt(-1, 32)
+            .StoreInt(-1, 64)
             .StoreUInt(0, 16) // seqno = 0
             .StoreRef(new CellBuilder().Build()); // empty out_list
 
