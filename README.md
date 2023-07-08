@@ -20,6 +20,52 @@
 | ~100% tests coverage                      | <ul><li>- [ ] </li></ul> |
 
 
+## Overview example
+
+```csharp
+TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
+
+Mnemonic mnemonic = new Mnemonic();
+
+PreprocessedV2 wallet = new PreprocessedV2(new PreprocessedV2Options { PublicKey = mnemonic.Keys.PublicKey! });
+
+Address address = wallet.Address;
+
+string nonBounceableAddress = address.ToString(AddressType.Base64, new AddressStringifyOptions(false, false, true));
+
+Console.WriteLine(nonBounceableAddress);
+
+uint? seqno = await tonclient.Wallet.GetSeqno(address);
+
+Coins walletBalance = await tonclient.GetBalance(address);
+
+Address destination = await tonclient.Dns.GetWalletAddress("foundation.ton");
+
+Console.WriteLine(walletBalance);
+Console.WriteLine(destination);
+
+ExternalInMessage message = wallet.CreateTransferMessage(new[]
+{
+    new WalletTransfer
+    {
+        Message = new InternalMessage(new()
+        {
+            Info = new IntMsgInfo(new()
+            {
+                Dest = destination,
+                Value = new Coins("0.2")
+            }),
+            Body = new CellBuilder().StoreUInt(0, 32).StoreString("test").Build()
+        }),
+        Mode = 1
+    }
+}, seqno ?? 0).Sign(mnemonic.Keys.PrivateKey);
+
+Console.WriteLine(message.Cell);
+
+await tonclient.SendBoc(message.Cell!);
+```
+
 ## License
 
 LGPL License
