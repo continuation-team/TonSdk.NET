@@ -72,6 +72,38 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
 await tonclient.SendBoc(message.Cell!);
 ```
 
+```csharp
+// Define the address of the jetton master contract
+Address jettonMasterContract = new Address("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF");
+
+// Get the jetton wallet address
+Address jettonWallet = await tonclient.Jetton.GetWalletAddress(jettonMasterContract, address);
+
+// Create a message body for the jetton transfer
+Cell jettonTransfer = JettonWallet.CreateTransferRequest(new() { Amount = new Coins(100), Destination = destination });
+
+// Create a transfer message for the wallet
+ExternalInMessage message = wallet.CreateTransferMessage(new[]
+{
+    new WalletTransfer
+    {
+        Message = new InternalMessage(new()
+        {
+            Info = new IntMsgInfo(new()
+            {
+                Dest = jettonWallet,
+                Value = new Coins("0.1")
+            }),
+            Body = jettonTransfer
+        }),
+        Mode = 1
+    }
+}, seqno).Sign(mnemonic.Keys.PrivateKey, true);
+
+// Send the serialized message
+await tonclient.SendBoc(message.Cell!);
+```
+
 ## License
 
 LGPL License
