@@ -1,6 +1,13 @@
 ## TonSdk.NET
 
 
+## Packages
+
+- **[TonSdk.Core](https://www.nuget.org/packages/TonSdk.Core/)** - Core library with types and structures for TON Blockchain
+- **[TonSdk.Client](https://www.nuget.org/packages/TonSdk.Client/)** - RPC Client for work with TonCenter API
+- **[TonSdk.Contracts](https://www.nuget.org/packages/TonSdk.Contracts/)** - Abstractions for work with smart contracts in TON Blockchain
+
+
 ## Features and status
 
 | Feature                                   | Status                   |
@@ -20,7 +27,7 @@
 | ~100% tests coverage                      | <ul><li>- [ ] </li></ul> |
 
 
-## Overview example
+### Overview example
 
 ```csharp
 // Create a new instance of the TonClient using the specified endpoint and API key
@@ -72,7 +79,7 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
 await tonclient.SendBoc(message.Cell!);
 ```
 
-## Overview example (Jetton Transfer)
+### Overview example (Jetton Transfer)
 ```csharp
 // Define the address of the jetton master contract
 Address jettonMasterContract = new Address("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF");
@@ -107,4 +114,4 @@ await tonclient.SendBoc(message.Cell!);
 
 ## License
 
-LGPL License
+MIT License
