@@ -23,9 +23,9 @@
 ## Overview example
 
 ```csharp
-TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
+TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "0efdbc011a4c1c36fc74c3c4291bd9a1eccbf960b9113516fc62bc9e6a127d6d" });
 
-Mnemonic mnemonic = new Mnemonic();
+Mnemonic mnemonic = new Mnemonic("hint,cart,close,glass,soldier,earth,crouch,lumber,speak,pretty,sign,differ,ship,clay,robot,error,goat,defense,plug,spy,scheme,fold,slam,evolve".Split(","));
 
 PreprocessedV2 wallet = new PreprocessedV2(new PreprocessedV2Options { PublicKey = mnemonic.Keys.PublicKey! });
 
@@ -33,16 +33,13 @@ Address address = wallet.Address;
 
 string nonBounceableAddress = address.ToString(AddressType.Base64, new AddressStringifyOptions(false, false, true));
 
-Console.WriteLine(nonBounceableAddress);
+Cell? walletData = (await tonclient.GetAddressInformation(address)).Data;
 
-uint? seqno = await tonclient.Wallet.GetSeqno(address);
+uint seqno = walletData == null ? 0 : wallet.ParseStorage(walletData.Parse()).Seqno;
 
 Coins walletBalance = await tonclient.GetBalance(address);
 
 Address destination = await tonclient.Dns.GetWalletAddress("foundation.ton");
-
-Console.WriteLine(walletBalance);
-Console.WriteLine(destination);
 
 ExternalInMessage message = wallet.CreateTransferMessage(new[]
 {
@@ -59,9 +56,7 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
         }),
         Mode = 1
     }
-}, seqno ?? 0).Sign(mnemonic.Keys.PrivateKey);
-
-Console.WriteLine(message.Cell);
+}, seqno).Sign(mnemonic.Keys.PrivateKey, true);
 
 await tonclient.SendBoc(message.Cell!);
 ```
