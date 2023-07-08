@@ -207,8 +207,8 @@ public struct AddressInformationResult
 {
     public AccountState State;
     public Coins Balance;
-    //public Cell Code;
-    //public Cell Data;
+    public Cell? Code;
+    public Cell? Data;
     public TransactionId LastTransactionId;
     public BlockIdExternal BlockId;
     public string FrozenHash;
@@ -240,6 +240,8 @@ public struct AddressInformationResult
                 }
         }
         Balance = new Coins(outAddressInformationResult.Balance, new CoinsOptions(true, 9));
+        Code = outAddressInformationResult.Code == "" ? null : Cell.From(outAddressInformationResult.Code);
+        Data = outAddressInformationResult.Data == "" ? null : Cell.From(outAddressInformationResult.Data);
         LastTransactionId = outAddressInformationResult.LastTransactionId;
         BlockId = outAddressInformationResult.BlockId;
         FrozenHash = outAddressInformationResult.FrozenHash;
