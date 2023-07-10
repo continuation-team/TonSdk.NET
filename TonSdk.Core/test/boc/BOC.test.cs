@@ -16,4 +16,12 @@ public class BOCTest {
         var dataCell = Cell.From(configData);
         Assert.That(dataCell.Serialize(true).ToString(), Is.EqualTo(configData));
     }
+
+    // [Test]
+    public static void SerializeTestLight() {
+        var cell1 = new CellBuilder().StoreBits("ABCDEF_").Build();
+        var cell0 = new CellBuilder().StoreBits("123467_").StoreRef(cell1).Build();
+        Console.WriteLine(cell0.ToString("fiftHex"));
+        Console.WriteLine(cell0);
+    }
 }

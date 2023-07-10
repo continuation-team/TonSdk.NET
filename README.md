@@ -112,6 +112,10 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
 await tonclient.SendBoc(message.Cell!);
 ```
 
+## Donation
+
+`EQD-JzFlKsmHaEeBKnCW44wB03hsGYHuS7e3g9qnMFmNsPGa`
+
 ## License
 
 MIT License
