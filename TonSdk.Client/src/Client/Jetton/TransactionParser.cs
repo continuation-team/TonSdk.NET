@@ -2,141 +2,143 @@
 using TonSdk.Core;
 using System.Numerics;
 
-namespace TonSdk.Client;
-
-public class TransactionParser
+namespace TonSdk.Client
 {
-    public static IJettonTransaction? ParseTransaction(TransactionsInformationResult transaction, uint decimals)
+
+    public class TransactionParser
     {
-        if (transaction.InMsg.MsgData.Text != null && transaction.InMsg.MsgData.Text.Length != 0) return null; // Not a jetton transaction
-
-        CellSlice bodySlice = transaction.InMsg.MsgData.Body!.Parse();
-
-        if (bodySlice.RemainderBits < 32) return null;
-        uint operation = (uint)bodySlice.LoadUInt(32);
-
-        try
+        public static IJettonTransaction ParseTransaction(TransactionsInformationResult transaction, uint decimals)
         {
-            switch (operation)
+            if (transaction.InMsg.MsgData.Text != null && transaction.InMsg.MsgData.Text.Length != 0) return null; // Not a jetton transaction
+
+            CellSlice bodySlice = transaction.InMsg.MsgData.Body!.Parse();
+
+            if (bodySlice.RemainderBits < 32) return null;
+            uint operation = (uint)bodySlice.LoadUInt(32);
+
+            try
             {
-                case (uint)JettonOperation.TRANSFER:
-                    {
-                        return ParseTransferTransaction(bodySlice, transaction, decimals);
-                    }
-                case (uint)JettonOperation.INTERNAL_TRANSFER:
-                    {
-                        return ParseInternalTransferTransaction(bodySlice, transaction, decimals);
-                    }
-                case (uint)JettonOperation.BURN:
-                    {
-                        return ParseBurnTransaction(bodySlice, transaction, decimals);
-                    }
-                default: return null;
+                switch (operation)
+                {
+                    case (uint)JettonOperation.TRANSFER:
+                        {
+                            return ParseTransferTransaction(bodySlice, transaction, decimals);
+                        }
+                    case (uint)JettonOperation.INTERNAL_TRANSFER:
+                        {
+                            return ParseInternalTransferTransaction(bodySlice, transaction, decimals);
+                        }
+                    case (uint)JettonOperation.BURN:
+                        {
+                            return ParseBurnTransaction(bodySlice, transaction, decimals);
+                        }
+                    default: return null;
+                }
             }
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static JettonTransfer ParseTransferTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
-    {
-        BigInteger queryId = bodySlice.LoadUInt(64);
-        Coins amount = bodySlice.LoadCoins((int)decimals);
-
-        Address? source = transaction.InMsg.Source ?? null;
-        Address? destination = bodySlice.LoadAddress();
-
-        bodySlice.LoadAddress();
-        bodySlice.SkipBit();
-
-        Coins forwardTonAmount = bodySlice.LoadCoins();
-        CellSlice forwardPayload = bodySlice.LoadBit() ? bodySlice.LoadRef().Parse() : bodySlice;
-
-        Cell? data = null;
-        string? comment = null;
-        if (forwardPayload.RemainderBits > 0 || forwardPayload.RemainderRefs > 0) data = forwardPayload.RestoreRemainder();
-        if (forwardPayload.RemainderBits > 32)
-        {
-            uint op = (uint)forwardPayload.LoadUInt(32);
-            if (op == 0)
+            catch
             {
-                // TODO: save comment
+                return null;
             }
         }
 
-        JettonTransfer jettonTransfer = new()
+        private static JettonTransfer ParseTransferTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
         {
-            Operation = JettonOperation.TRANSFER,
-            QueryId = (ulong)queryId,
-            Amount = amount,
-            Source = source,
-            Destination = destination,
-            Comment = comment,
-            Data = data,
-            ForwardTonAmount = forwardTonAmount,
-            Transaction = transaction
-        };
+            BigInteger queryId = bodySlice.LoadUInt(64);
+            Coins amount = bodySlice.LoadCoins((int)decimals);
 
-        return jettonTransfer;
-    }
+            Address source = transaction.InMsg.Source ?? null;
+            Address destination = bodySlice.LoadAddress();
 
-    private static JettonTransfer ParseInternalTransferTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
-    {
-        BigInteger queryId = bodySlice.LoadUInt(64);
-        Coins amount = bodySlice.LoadCoins((int)decimals);
+            bodySlice.LoadAddress();
+            bodySlice.SkipBit();
 
-        Address? source = bodySlice.LoadAddress();
-        Address? destination = null;
+            Coins forwardTonAmount = bodySlice.LoadCoins();
+            CellSlice forwardPayload = bodySlice.LoadBit() ? bodySlice.LoadRef().Parse() : bodySlice;
 
-        bodySlice.LoadAddress();
-
-        Coins forwardTonAmount = bodySlice.LoadCoins();
-        CellSlice forwardPayload = bodySlice.LoadBit() ? bodySlice.LoadRef().Parse() : bodySlice;
-
-        Cell? data = null;
-        string? comment = null;
-        if (forwardPayload.RemainderBits > 0 || forwardPayload.RemainderRefs > 0) data = forwardPayload.RestoreRemainder();
-        if (forwardPayload.RemainderBits > 32)
-        {
-            uint op = (uint)forwardPayload.LoadUInt(32);
-            if (op == 0)
+            Cell data = null;
+            string comment = null;
+            if (forwardPayload.RemainderBits > 0 || forwardPayload.RemainderRefs > 0) data = forwardPayload.RestoreRemainder();
+            if (forwardPayload.RemainderBits > 32)
             {
-                // TODO: save comment
+                uint op = (uint)forwardPayload.LoadUInt(32);
+                if (op == 0)
+                {
+                    // TODO: save comment
+                }
             }
+
+            JettonTransfer jettonTransfer = new JettonTransfer()
+            {
+                Operation = JettonOperation.TRANSFER,
+                QueryId = (ulong)queryId,
+                Amount = amount,
+                Source = source,
+                Destination = destination,
+                Comment = comment,
+                Data = data,
+                ForwardTonAmount = forwardTonAmount,
+                Transaction = transaction
+            };
+
+            return jettonTransfer;
         }
 
-        JettonTransfer jettonTransfer = new()
+        private static JettonTransfer ParseInternalTransferTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
         {
-            Operation = JettonOperation.INTERNAL_TRANSFER,
-            QueryId = (ulong)queryId,
-            Amount = amount,
-            Source = source,
-            Destination = destination,
-            Comment = comment,
-            Data = data,
-            ForwardTonAmount = forwardTonAmount,
-            Transaction = transaction
-        };
+            BigInteger queryId = bodySlice.LoadUInt(64);
+            Coins amount = bodySlice.LoadCoins((int)decimals);
 
-        return jettonTransfer;
-    }
+            Address source = bodySlice.LoadAddress();
+            Address destination = null;
 
-    private static JettonBurn ParseBurnTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
-    {
-        BigInteger queryId = bodySlice.LoadUInt(64);
-        Coins amount = bodySlice.LoadCoins((int)decimals);
+            bodySlice.LoadAddress();
 
-        JettonBurn jettonBurn = new()
+            Coins forwardTonAmount = bodySlice.LoadCoins();
+            CellSlice forwardPayload = bodySlice.LoadBit() ? bodySlice.LoadRef().Parse() : bodySlice;
+
+            Cell data = null;
+            string comment = null;
+            if (forwardPayload.RemainderBits > 0 || forwardPayload.RemainderRefs > 0) data = forwardPayload.RestoreRemainder();
+            if (forwardPayload.RemainderBits > 32)
+            {
+                uint op = (uint)forwardPayload.LoadUInt(32);
+                if (op == 0)
+                {
+                    // TODO: save comment
+                }
+            }
+
+            JettonTransfer jettonTransfer = new JettonTransfer()
+            {
+                Operation = JettonOperation.INTERNAL_TRANSFER,
+                QueryId = (ulong)queryId,
+                Amount = amount,
+                Source = source,
+                Destination = destination,
+                Comment = comment,
+                Data = data,
+                ForwardTonAmount = forwardTonAmount,
+                Transaction = transaction
+            };
+
+            return jettonTransfer;
+        }
+
+        private static JettonBurn ParseBurnTransaction(CellSlice bodySlice, TransactionsInformationResult transaction, uint decimals)
         {
-            Operation = JettonOperation.BURN,
-            QueryId = (ulong)queryId,
-            Amount = amount,
-            Transaction = transaction
-        };
+            BigInteger queryId = bodySlice.LoadUInt(64);
+            Coins amount = bodySlice.LoadCoins((int)decimals);
 
-        return jettonBurn;
+            JettonBurn jettonBurn = new JettonBurn()
+            {
+                Operation = JettonOperation.BURN,
+                QueryId = (ulong)queryId,
+                Amount = amount,
+                Transaction = transaction
+            };
+
+            return jettonBurn;
+        }
     }
 }
 

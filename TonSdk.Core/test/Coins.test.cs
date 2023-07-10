@@ -134,6 +134,8 @@ public class CoinsTest
         Assert.That(new Coins("-1.23").ToNano(), Is.EqualTo("-1230000000"));
         Assert.That(new Coins("0").ToNano(), Is.EqualTo("0"));
         Assert.That(new Coins("10.23").ToNano(), Is.EqualTo("10230000000"));
+        Assert.That(new Coins("-1,23").ToNano(), Is.EqualTo("-1230000000"));
+        Assert.That(new Coins("10,23").ToNano(), Is.EqualTo("10230000000"));
     }
 
     [Test]
