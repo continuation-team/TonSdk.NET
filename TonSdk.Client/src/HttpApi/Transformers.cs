@@ -52,11 +52,11 @@ namespace TonSdk.Client
 
             public int limit;
 
-            public int lt;
+            public ulong lt;
 
             public string hash;
 
-            public int to_lt;
+            public ulong to_lt;
 
             public bool archival;
         }
