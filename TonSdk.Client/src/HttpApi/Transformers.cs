@@ -159,7 +159,7 @@ namespace TonSdk.Client
         {
             [JsonProperty("utime")] public long Utime;
             [JsonProperty("data")] public string Data;
-            [JsonProperty("last_transaction_id")] public TransactionId TransactionId;
+            [JsonProperty("transaction_id")] public TransactionId TransactionId;
             [JsonProperty("fee")] public string Fee;
             [JsonProperty("storage_fee")] public string StorageFee;
             [JsonProperty("other_fee")] public string OtherFee;
@@ -305,7 +305,7 @@ namespace TonSdk.Client
 
         public RawMessage(OutRawMessage outRawMessage)
         {
-            Source = new Address(outRawMessage.Source);
+            Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0 ? new Address(outRawMessage.Source) : null;
             Destination = new Address(outRawMessage.Destination);
             Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
             FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
