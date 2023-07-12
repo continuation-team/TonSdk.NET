@@ -60,16 +60,16 @@ namespace TonSdk.Client
         /// <param name="to_lt">The logical time of the transaction to retrieve up to (optional).</param>
         /// <param name="archival">Specifies whether to retrieve transactions from archival nodes (optional).</param>
         /// <returns>An array of transaction information results.</returns>
-        public async Task<TransactionsInformationResult[]> GetTransactions(Address address, int limit = 10, int? lt = null, string hash = null, int? to_lt = null, bool? archival = null)
+        public async Task<TransactionsInformationResult[]> GetTransactions(Address address, int limit = 10, ulong? lt = null, string hash = null, ulong? to_lt = null, bool? archival = null)
         {
             InTransactionsBody requestBody = new InTransactionsBody()
             {
                 address = address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)),
                 limit = limit
             };
-            if (lt != null) requestBody.lt = (int)lt;
+            if (lt != null) requestBody.lt = (ulong)lt;
             if (hash != null) requestBody.hash = hash;
-            if (to_lt != null) requestBody.to_lt = (int)to_lt;
+            if (to_lt != null) requestBody.to_lt = (ulong)to_lt;
             if (archival != null) requestBody.archival = (bool)archival;
 
             var result = await new TonRequest(new RequestParameters("getTransactions", requestBody, ApiOptions)).Call();
