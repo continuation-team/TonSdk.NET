@@ -3,29 +3,37 @@
 
 ## Packages
 
-- **[TonSdk.Core](https://www.nuget.org/packages/TonSdk.Core/)** - Core library with types and structures for TON Blockchain
-- **[TonSdk.Client](https://www.nuget.org/packages/TonSdk.Client/)** - RPC Client for work with TonCenter API
-- **[TonSdk.Contracts](https://www.nuget.org/packages/TonSdk.Contracts/)** - Abstractions for work with smart contracts in TON Blockchain
+### [TonSdk.Core](https://www.nuget.org/packages/TonSdk.Core/)
+[![NuGet](https://img.shields.io/nuget/dt/TonSdk.Core.svg)](https://www.nuget.org/packages/TonSdk.Core)
+[![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Core.svg)](https://www.nuget.org/packages/TonSdk.Core) \
+Core library with types and structures for TON Blockchain
+
+### [TonSdk.Client](https://www.nuget.org/packages/TonSdk.Client/)
+[![NuGet](https://img.shields.io/nuget/dt/TonSdk.Client.svg)](https://www.nuget.org/packages/TonSdk.Client)
+[![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Client.svg)](https://www.nuget.org/packages/TonSdk.Client) \
+RPC Client for work with TonCenter API
+
+### [TonSdk.Contracts](https://www.nuget.org/packages/TonSdk.Contracts/)
+[![NuGet](https://img.shields.io/nuget/dt/TonSdk.Contracts.svg)](https://www.nuget.org/packages/TonSdk.Contracts)
+[![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Contracts.svg)](https://www.nuget.org/packages/TonSdk.Contracts) \
+Abstractions for work with smart contracts in TON Blockchain
 
 
 ## Features and status
 
-| Feature                                   | Status                   |
-|-------------------------------------------|--------------------------|
-| Builder, Cell, Slice                      | <ul><li>- [x] </li></ul> |
-| BOC  (de)serialization                    | <ul><li>- [x] </li></ul> |
-| Hashmap(E) (dictionary) (de)serialization | <ul><li>- [x] </li></ul> |
-| Mnemonic BIP39 standard                   | <ul><li>- [x] </li></ul> |
-| Mnemonic TON standard                     | <ul><li>- [x] </li></ul> |
-| Coins (class for TON, JETTON, e.t.c.)     | <ul><li>- [x] </li></ul> |
-| Address (class for TON address)           | <ul><li>- [x] </li></ul> |
-| Message layouts (such as MessageX e.t.c.) | <ul><li>- [x] </li></ul> |
-| RPC client                                | <ul><li>- [x] </li></ul> |
-| Popular structures from block.tlb         | <ul><li>- [x] </li></ul> |
-| Contracts (abstract TON contract class)   | <ul><li>- [x] </li></ul> |
-| Ed25519 signing of transactions           | <ul><li>- [x] </li></ul> |
-| ~100% tests coverage                      | <ul><li>- [ ] </li></ul> |
-
+- [x] Builder, Cell, Slice
+- [x] BOC  (de)serialization
+- [x] Hashmap(E) (dictionary) (de)serialization
+- [x] Mnemonic BIP39 standard
+- [x] Mnemonic TON standard
+- [x] Coins (class for TON, JETTON, e.t.c.)
+- [x] Address (class for TON address)
+- [x] Message layouts (such as MessageX e.t.c.)
+- [x] RPC client
+- [x] Popular structures from block.tlb
+- [x] Contracts (abstract TON contract class)
+- [x] Ed25519 signing of transactions
+- [ ] ~100% tests coverage
 
 ### Overview example
 
