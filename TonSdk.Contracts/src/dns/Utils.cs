@@ -4,7 +4,7 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Contracts.Dns {
     public static class DnsOperations {
-        public const uint CHANGE_DNS_RECORD = 0x1a0f3d8c;
+        public const uint CHANGE_DNS_RECORD = 0x4eb1f0f9;
     }
 
     public static class DnsCategory {
