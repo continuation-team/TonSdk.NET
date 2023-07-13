@@ -14,7 +14,7 @@ namespace TonSdk.Contracts.Dns {
             var builder = new CellBuilder()
                 .StoreUInt(DnsOperations.CHANGE_DNS_RECORD, 32)
                 .StoreUInt(opt.QueryId ?? SmcUtils.GenerateQueryId(60), 64)
-                .StoreUInt(DnsUtils.CategoryToBigInt(opt.Category), 64);
+                .StoreUInt(DnsUtils.CategoryToBigInt(opt.Category), 256);
             if (opt.Value != null) {
                 builder.StoreRef(opt.Value);
             }

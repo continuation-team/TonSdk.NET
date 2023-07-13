@@ -122,7 +122,7 @@ await tonclient.SendBoc(message.Cell!);
 
 ## Donation
 
-`EQD-JzFlKsmHaEeBKnCW44wB03hsGYHuS7e3g9qnMFmNsPGa`
+`continuation.ton`
 
 ## License
 
