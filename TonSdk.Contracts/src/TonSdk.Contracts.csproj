@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Contracts</RootNamespace>
         <PackageId>TonSdk.Contracts</PackageId>
-        <Version>0.2.0</Version>
+        <Version>0.2.1</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Abstractions for work with smart contracts in TON Blockchain</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
