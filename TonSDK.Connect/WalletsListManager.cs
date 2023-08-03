@@ -94,14 +94,12 @@ public class WalletsListManager
             List<Dictionary<string, object>> walletsList = null;
             try
             {
-                using (var httpClient = new HttpClient())
-                {
-                    var response = httpClient.GetStringAsync(walletsListSource).Result;
-                    walletsList = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(response);
+                using var httpClient = new HttpClient();
+                var response = httpClient.GetStringAsync(walletsListSource).Result;
+                walletsList = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(response);
 
-                    if (walletsList == null || walletsList.Count == 0)
-                        throw new FetchWalletsError();
-                }
+                if (walletsList == null || walletsList.Count == 0)
+                    throw new FetchWalletsError();
             }
             catch (Exception e)
             {
