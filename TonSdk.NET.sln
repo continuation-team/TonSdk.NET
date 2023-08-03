@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Contracts.Tests", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client", "TonSdk.Client\src\TonSdk.Client.csproj", "{227AD718-F7FA-4E42-8BC1-C949EFF8580C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Client.Tests", "TonSdk.Client\test\TonSdk.Client.Tests.csproj", "{BEE8B4ED-6405-454E-B3B6-B02C0C1F320D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client.Tests", "TonSdk.Client\test\TonSdk.Client.Tests.csproj", "{BEE8B4ED-6405-454E-B3B6-B02C0C1F320D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Connect", "TonSDK.Connect\TonSdk.Connect.csproj", "{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{BEE8B4ED-6405-454E-B3B6-B02C0C1F320D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEE8B4ED-6405-454E-B3B6-B02C0C1F320D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEE8B4ED-6405-454E-B3B6-B02C0C1F320D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
