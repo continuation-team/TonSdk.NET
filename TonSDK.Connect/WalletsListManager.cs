@@ -26,53 +26,52 @@ public class WalletsListManager
 
     private List<WalletConfig> walletsListCache;
     private int walletsListCacheCreationTimestamp;
-
-    List<Dictionary<string, object>> FALLBACK_WALLETS_LIST = new List<Dictionary<string, object>>()
+    private readonly List<Dictionary<string, object>> FALLBACK_WALLETS_LIST = new List<Dictionary<string, object>>()
+    {
+        new Dictionary<string, object>()
         {
-            new Dictionary<string, object>()
-            {
-                { "name", "Tonkeeper" },
-                { "image", "https://tonkeeper.com/assets/tonconnect-icon.png" },
-                { "tondns", "tonkeeper.ton" },
-                { "about_url", "https://tonkeeper.com" },
-                { "universal_url", "https://app.tonkeeper.com/ton-connect" },
-                { "bridge", new List<Dictionary<string, object>>()
+            { "name", "Tonkeeper" },
+            { "image", "https://tonkeeper.com/assets/tonconnect-icon.png" },
+            { "tondns", "tonkeeper.ton" },
+            { "about_url", "https://tonkeeper.com" },
+            { "universal_url", "https://app.tonkeeper.com/ton-connect" },
+            { "bridge", new List<Dictionary<string, object>>()
+                {
+                    new Dictionary<string, object>()
                     {
-                        new Dictionary<string, object>()
-                        {
-                            { "type", "sse" },
-                            { "url", "https://bridge.tonapi.io/bridge" }
-                        },
-                        new Dictionary<string, object>()
-                        {
-                            { "type", "js" },
-                            { "key", "tonkeeper" }
-                        }
-                    }
-                }
-            },
-            new Dictionary<string, object>()
-            {
-                { "name", "Tonhub" },
-                { "image", "https://tonhub.com/tonconnect_logo.png" },
-                { "about_url", "https://tonhub.com" },
-                { "universal_url", "https://tonhub.com/ton-connect" },
-                { "bridge", new List<Dictionary<string, object>>()
+                        { "type", "sse" },
+                        { "url", "https://bridge.tonapi.io/bridge" }
+                    },
+                    new Dictionary<string, object>()
                     {
-                        new Dictionary<string, object>()
-                        {
-                            { "type", "js" },
-                            { "key", "tonhub" }
-                        },
-                        new Dictionary<string, object>()
-                        {
-                            { "type", "sse" },
-                            { "url", "https://connect.tonhubapi.com/tonconnect" }
-                        }
+                        { "type", "js" },
+                        { "key", "tonkeeper" }
                     }
                 }
             }
-        };
+        },
+        new Dictionary<string, object>()
+        {
+            { "name", "Tonhub" },
+            { "image", "https://tonhub.com/tonconnect_logo.png" },
+            { "about_url", "https://tonhub.com" },
+            { "universal_url", "https://tonhub.com/ton-connect" },
+            { "bridge", new List<Dictionary<string, object>>()
+                {
+                    new Dictionary<string, object>()
+                    {
+                        { "type", "js" },
+                        { "key", "tonhub" }
+                    },
+                    new Dictionary<string, object>()
+                    {
+                        { "type", "sse" },
+                        { "url", "https://connect.tonhubapi.com/tonconnect" }
+                    }
+                }
+            }
+        }
+    };
 
     public WalletsListManager(string walletsListSource = null, int cacheTtl = 0)
     {

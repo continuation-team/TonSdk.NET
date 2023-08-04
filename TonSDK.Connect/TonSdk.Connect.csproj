@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="LaunchDarkly.EventSource" Version="5.0.1" />
 	  <PackageReference Include="TonSdk.Core" Version="0.2.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

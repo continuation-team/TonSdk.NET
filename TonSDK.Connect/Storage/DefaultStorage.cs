@@ -4,9 +4,9 @@ namespace TonSdk.Connect;
 
 public class DefaultStorage
 {
-    private static readonly string KEY_LAST_EVENT_ID = "last_event_id";
-    private static readonly string KEY_CONNECTION = "connection";
-    private static readonly string STORAGE_PREFIX = "sharptonconnect_";
+    public static readonly string KEY_LAST_EVENT_ID = "last_event_id";
+    public static readonly string KEY_CONNECTION = "connection";
+    public static readonly string STORAGE_PREFIX = "sharptonconnect_";
 
     private static IsolatedStorageFile GetIsolatedStorage()
     {
