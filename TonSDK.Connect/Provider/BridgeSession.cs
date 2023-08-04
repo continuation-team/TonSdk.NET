@@ -1,15 +1,16 @@
 ﻿namespace TonSdk.Connect;
 
-public struct BridgeSession
+public class BridgeSession
 {
-    public CryptedSessionInfo? CryptedSessionInfo { get; private set; }
-    public string? WalletPublicKey { get; private set; }
-    public string? BridgeUrl { get; private set; }
+    public CryptedSessionInfo? CryptedSessionInfo { get; set; }
+    public string? WalletPublicKey { get; set; }
+    public string? BridgeUrl { get; set; }
 
-    public BridgeSession(SessionInfo sessionInfo)
+    public BridgeSession(SessionInfo? sessionInfo = null)
     {
-        CryptedSessionInfo = sessionInfo.SessionPrivateKey != null ? new(sessionInfo.SessionPrivateKey) : null;
-        WalletPublicKey = sessionInfo.WalletPublicKey ?? null;
-        BridgeUrl = sessionInfo.BridgeUrl ?? null;
+        if (sessionInfo == null) return;
+        CryptedSessionInfo = sessionInfo?.SessionPrivateKey != null ? new(sessionInfo?.SessionPrivateKey) : null;
+        WalletPublicKey = sessionInfo?.WalletPublicKey ?? null;
+        BridgeUrl = sessionInfo?.BridgeUrl ?? null;
     }
 }
