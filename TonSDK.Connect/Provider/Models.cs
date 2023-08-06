@@ -2,6 +2,34 @@
 
 namespace TonSdk.Connect;
 
+public struct BridgeIncomingMessage
+{
+    public string? From { get; set; }
+    public string? Message { get; set; }
+}
+
+public class ConnectAdditionalRequest
+{
+    public string? TonProof { get; set; }
+}
+
+public interface ConnectItem 
+{
+    public string? name { get; set; }
+}
+
+
+public class ConnectRequest
+{
+    public string? manifestUrl { get; set; }
+    public ConnectItem[] items { get; set; }
+}
+
+public class ConnectAddressItem : ConnectItem
+{
+    public string? name { get; set; }
+}
+
 public struct ConnectionInfo
 {
     public string? Type { get; set; }

@@ -5,7 +5,7 @@ using TonSdk.Core.Crypto;
 
 namespace TonSdk.Connect;
 
-public struct CryptedSessionInfo
+public class CryptedSessionInfo
 {
     public const int NONCE_SIZE = 24;
     public KeyPair KeyPair { get; private set; }
@@ -13,7 +13,7 @@ public struct CryptedSessionInfo
 
     public CryptedSessionInfo(string? seed = null)
     {
-        byte[] seedBytes = seed == null ? GenerateRandomBytes(32) : Utils.HexToBytes(seed);
+        byte[] seedBytes = (seed != null ? Utils.HexToBytes(seed) : GenerateRandomBytes(32));
         KeyPair = GenerateKeyPair(seedBytes);
         SesionId = Utils.BytesToHex(KeyPair.PublicKey);
     }

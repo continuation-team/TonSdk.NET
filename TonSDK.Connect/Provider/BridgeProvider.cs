@@ -1,9 +1,10 @@
 ﻿using LaunchDarkly.EventSource;
+using Newtonsoft.Json;
 
 namespace TonSdk.Connect;
 
 public delegate void ProviderMessageHandler(string eventData);
-public delegate void ProviderErrorHandler(ExceptionEventArgs args);
+public delegate void ProviderErrorHandler(Exception args);
 
 public class BridgeProvider
 {
@@ -27,10 +28,10 @@ public class BridgeProvider
         _listeners = new List<object>();
     }
 
-    public async Task<string> ConnectAsync()
+    public async Task<string> ConnectAsync(ConnectRequest connectRequest)
     {
         CloseGateways();
-        CryptedSessionInfo sessionInfo = new();
+        CryptedSessionInfo sessionInfo = new CryptedSessionInfo();
 
         string bridgeUrl = _wallet.BridgeUrl;
         string universalUrl = _wallet.UniversalUrl ?? STANDART_UNIVERSAL_URL;
@@ -41,8 +42,7 @@ public class BridgeProvider
         _session.CryptedSessionInfo = sessionInfo;
         _session.BridgeUrl = bridgeUrl;
 
-        // TODO: Generate Universal Url
-        return "";
+        return GenerateUniversalLink(universalUrl, connectRequest);
     }
 
     public async Task RestoreConnection()
@@ -76,19 +76,30 @@ public class BridgeProvider
 
     //    for listener in self._listeners:
     //        listener(connection['connect_event'])
-        
+
     //    return True
 
+    private string GenerateUniversalLink(string universalLink, ConnectRequest connectRequest)
+    {
+        UriBuilder url = new UriBuilder(universalLink);
+        url.Query += $"v={2}";
+        url.Query += $"&id={_session?.CryptedSessionInfo?.SesionId}";
+        url.Query += $"&r={JsonConvert.SerializeObject(connectRequest)}";
+        return url.ToString();
+    }
 
     public void CloseGateways() => _gateway?.Close();
 
-    private void GatewayMessageListener(string eventData)
+    private async void GatewayMessageListener(string eventData)
     {
         Console.WriteLine(eventData);
+        if(eventData.StartsWith("id:")) await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, eventData[4..]);
+        Console.WriteLine(await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID));
+
     }
 
-    private void GatewayErrorListener(ExceptionEventArgs e)
+    private void GatewayErrorListener(Exception e)
     {
-        throw new TonConnectError(e.Exception.ToString());
+        throw new TonConnectError(e.ToString());
     }
 }
