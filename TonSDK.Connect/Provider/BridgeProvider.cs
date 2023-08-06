@@ -45,6 +45,41 @@ public class BridgeProvider
         return "";
     }
 
+    public async Task RestoreConnection()
+    {
+        CloseGateways();
+
+
+    }
+
+    //async def restore_connection(self):
+    //    self._close_gateways()
+
+    //    connection = await self._storage.get_item(IStorage.KEY_CONNECTION)
+    //    if not connection:
+    //        return False
+    //    connection = json.loads(connection)
+
+    //    if 'session' not in connection:
+    //        return False
+    //    self._session = BridgeSession(connection['session'])
+
+    //    self._gateway = BridgeGateway(
+    //        self._storage,
+    //        self._session.bridge_url,
+    //        self._session.session_crypto.session_id,
+    //        self._gateway_listener,
+    //        self._gateway_errors_listener
+    //    )
+
+    //    await self._gateway.register_session()
+
+    //    for listener in self._listeners:
+    //        listener(connection['connect_event'])
+        
+    //    return True
+
+
     public void CloseGateways() => _gateway?.Close();
 
     private void GatewayMessageListener(string eventData)
