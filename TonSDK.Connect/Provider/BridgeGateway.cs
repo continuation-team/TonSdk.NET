@@ -45,7 +45,18 @@ public class BridgeGateway
         await _eventSource.StartAsync();
     }
 
-    // TODO: Implement sending message
+    public async Task Send(string request, string receiverPublicKey, string topic, int? ttl = null)
+    {
+        string bridgeBase = _bridgeUrl.TrimEnd('/');
+        string bridgeUrl = $"{bridgeBase}/{POST_PATH}?client_id={_sessionId}";
+        bridgeUrl += $"&to={receiverPublicKey}";
+        bridgeUrl += $"&ttl={ttl ?? DEFAULT_TTL}";
+        bridgeUrl += $"&topic={topic}";
+
+        using HttpClient client = new();
+        StringContent content = new(request);
+        await client.PostAsync(bridgeUrl, content);
+    }
 
     public void Pause()
     {
@@ -63,9 +74,8 @@ public class BridgeGateway
 
     private async void MessageHandler(object? sender, MessageReceivedEventArgs args)
     {
-        if (_isClosed) return;
         await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, args.Message.LastEventId);
-        _handler(args.Message.Data);
+        if (!_isClosed) _handler(args.Message.Data);
     }
 
     private void ErrorHandler(object? sender, ExceptionEventArgs e)
