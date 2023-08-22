@@ -32,7 +32,7 @@ namespace TonSdk.Contracts.Jetton {
     public static class JettonWallet {
         public static Cell CreateTransferRequest(JettonTransferOptions opt) {
             /*
-                 transfer query_id:uint64 amount:(VarUInteger 16) destination:MsgAddress
+                 transfer#f8a7ea5 query_id:uint64 amount:(VarUInteger 16) destination:MsgAddress
                  response_destination:MsgAddress custom_payload:(Maybe ^Cell)
                  forward_ton_amount:(VarUInteger 16) forward_payload:(Either Cell ^Cell)
                  = InternalMsgBody;
@@ -51,11 +51,10 @@ namespace TonSdk.Contracts.Jetton {
             bool isBitsCountExceeded = opt.ForwardPayload?.BitsCount > builder.RemainderBits;
             bool isRefsCountExceeded = opt.ForwardPayload?.RefsCount > builder.RemainderRefs;
 
-            if (isForwardPayloadNull || (isBitsCountExceeded || isRefsCountExceeded)) {
+            if (isForwardPayloadNull || !(isBitsCountExceeded || isRefsCountExceeded)) {
                 builder.StoreBit(false);
                 if (!isForwardPayloadNull) builder.StoreCellSlice(opt.ForwardPayload!.Parse());
-            }
-            else {
+            } else {
                 builder.StoreBit(true).StoreRef(opt.ForwardPayload!);
             }
 
