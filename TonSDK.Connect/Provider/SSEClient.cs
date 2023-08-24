@@ -51,7 +51,6 @@ public class SSEClient
         {
             var request = new HttpRequestMessage(HttpMethod.Get, _url);
             request.Headers.Add("Accept", "text/event-stream");
-            //request.Headers.Add("Last-Event-ID", _lastEventId);
 
             using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -59,10 +58,7 @@ public class SSEClient
             while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
             {
                 var line = await reader.ReadLineAsync(cancellationToken);
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    _handler(line);
-                }
+                if (!string.IsNullOrWhiteSpace(line)) _handler(line);
             }
         }
         catch (Exception ex)

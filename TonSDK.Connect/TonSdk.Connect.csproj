@@ -10,8 +10,9 @@
 
   <ItemGroup>
 	  <PackageReference Include="LaunchDarkly.EventSource" Version="5.0.1" />
+	  <PackageReference Include="NaCl.Net" Version="0.1.13" />
 	  <PackageReference Include="Sodium.Core" Version="1.3.3" />
-	  <PackageReference Include="TonSdk.Core" Version="0.2.1" />
+	  <PackageReference Include="TonSdk.Core" Version="0.2.2" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

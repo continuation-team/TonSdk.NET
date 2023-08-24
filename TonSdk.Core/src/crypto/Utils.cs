@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Crypto.Digests;
+using System.Reflection;
 
 namespace TonSdk.Core.Crypto {
     public static class Utils {
@@ -72,19 +73,27 @@ namespace TonSdk.Core.Crypto {
             return byteArray;
         }
 
-        public static string[] GenerateWords() {
-            byte[] entropy = GenerateRandomBytes(32);
-            BitArray checkSumBits = DeriveChecksumBits(entropy);
-            BitArray entropyBits = BytesToBits(entropy);
-            BitArray fullBits = entropyBits.Concat(checkSumBits);
+        public static string[] GenerateWords() 
+        {
+            List<string> words = new List<string>();
 
-            List<BitArray> chunks = SplitBitArray(fullBits, 11);
-            string[] words = chunks.Select(chunk => {
-                int index = BitArrayToInt(chunk);
-                return MnemonicWords.Bip0039En[index];
-            }).ToArray();
+            while(true)
+            {
+                words = new List<string>();
+                byte[] entropy = GenerateRandomBytes(24);
 
-            return words;
+                for (int i = 0; i < 24; i++)
+                {
+                    words.Add(MnemonicWords.Bip0039En[entropy[i] & 2047]); // We loose 5 out of 16 bits of entropy here, good enough
+                }
+
+                if(words.Count == 0)
+                {
+                    continue;
+                }
+                break;
+            }
+            return words.ToArray();
         }
 
         public static byte[] GenerateSeedBIP39(string[] mnemonic, string salt, int rounds, int keyLength) {

@@ -1,4 +1,6 @@
-﻿namespace TonSdk.Connect;
+﻿using TonSdk.Core.Crypto;
+
+namespace TonSdk.Connect;
 
 public class BridgeSession
 {
@@ -12,4 +14,14 @@ public class BridgeSession
         WalletPublicKey = sessionInfo?.WalletPublicKey ?? null;
         BridgeUrl = sessionInfo?.BridgeUrl ?? null;
     }
+
+    public SessionInfo GetSessionInfo()
+    {
+        return new SessionInfo()
+        {
+            SessionPrivateKey = Utils.BytesToHex(CryptedSessionInfo.KeyPair.PrivateKey),
+            WalletPublicKey = WalletPublicKey,
+            BridgeUrl = BridgeUrl
+        };
+    }        
 }

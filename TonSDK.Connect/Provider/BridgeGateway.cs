@@ -9,7 +9,7 @@ public class BridgeGateway
     private readonly string SSE_PATH = "events";
     private readonly string POST_PATH = "message";
 
-    private bool _isClosed;
+    public bool isClosed { get; private set; }
     private string _bridgeUrl;
     private string _sessionId;
     private SSEClient? _sseClient;
@@ -19,7 +19,7 @@ public class BridgeGateway
 
     public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler)
     {
-        _isClosed = false;
+        isClosed = false;
         _bridgeUrl = bridgeUrl;
         _sessionId = sessionId;
 
@@ -30,14 +30,14 @@ public class BridgeGateway
 
     public async Task RegisterSession()
     {
-        if(_isClosed) return;
+        if(isClosed) return;
 
         string bridgeBase = _bridgeUrl.TrimEnd('/');
         string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
         string? lastEventId = await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID);
-        if(lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
-        await Console.Out.WriteLineAsync($"Bridge URL: {bridgeUrl}");
+        //if(lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
+        await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 
         _sseClient?.Close();
         _sseClient = new(bridgeUrl, _handler, _errorHandler);
@@ -70,7 +70,7 @@ public class BridgeGateway
 
     public void Close()
     {
-        _isClosed = true;
+        isClosed = true;
         Pause();
     }
 }

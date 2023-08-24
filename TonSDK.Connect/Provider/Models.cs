@@ -1,11 +1,12 @@
-﻿using Org.BouncyCastle.Bcpg.Sig;
+﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace TonSdk.Connect;
 
 public struct BridgeIncomingMessage
 {
-    public string? From { get; set; }
-    public string? Message { get; set; }
+    [JsonProperty("from")] public string? From { get; set; }
+    [JsonProperty("message")] public string? Message { get; set; }
 }
 
 public class ConnectAdditionalRequest
@@ -34,9 +35,9 @@ public struct ConnectionInfo
 {
     public string? Type { get; set; }
     public SessionInfo? Session { get; set; }
-    public int LastWalletEventId { get; set; }
+    public int? LastWalletEventId { get; set; }
     public int NextRpcRequestId { get; set; }
-    public ConnectEvent ConnectEvent { get; set; }
+    public dynamic ConnectEvent { get; set; }
 }
 
 public struct ConnectEvent
