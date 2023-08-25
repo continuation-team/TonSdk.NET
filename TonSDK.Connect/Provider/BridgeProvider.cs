@@ -126,8 +126,6 @@ public class BridgeProvider
 
     public void CloseGateways() => _gateway?.Close();
 
-    
-
     public void CloseConnection()
     {
         CloseGateways();
@@ -136,8 +134,6 @@ public class BridgeProvider
         _pendingRequests = new();
         _listeners = new List<WalletEventListener>();
     }
-
-    // TODO: send request and disconnect
 
     public void Pause() => _gateway?.Pause();
 
@@ -166,69 +162,64 @@ public class BridgeProvider
         connection.NextRpcRequestId = 0;
 
         string jsonString = JsonConvert.SerializeObject(connection);
-
+        await Console.Out.WriteLineAsync(jsonString);
         await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
     }
 
     private async Task ParseGatewayMessage(BridgeIncomingMessage message)
     {
-        try
+        string json = _session!.CryptedSessionInfo!.Decrypt(Convert.FromBase64String(message.Message), message.From);
+        if (json == null || json.Length == 0) return;
+            
+
+        dynamic data = JsonConvert.DeserializeObject<dynamic>(json);
+        if(data.@event == null)
         {
-            string json = _session!.CryptedSessionInfo!.Decrypt(Convert.FromBase64String(message.Message), message.From);
-            if (json == null || json.Length == 0) return;
-
-            dynamic data = JsonConvert.DeserializeObject<dynamic>(json);
-            if(data.@event == null)
+            if(data.id != null)
             {
-                if(data.id != null)
+                string id = data.id;
+                if(!_pendingRequests.ContainsKey(id))
                 {
-                    string id = data.id;
-                    if(!_pendingRequests.ContainsKey(id))
-                    {
-                        await Console.Out.WriteLineAsync($"Response id {id} doesn't match any request's id");
-                        return;
-                    }
-
-                    _pendingRequests[id].SetResult(message);
-                    _pendingRequests.Remove(id);
+                    await Console.Out.WriteLineAsync($"Response id {id} doesn't match any request's id");
+                    return;
                 }
-                return;
+
+                _pendingRequests[id].SetResult(message);
+                _pendingRequests.Remove(id);
             }
-
-            if (data.id != null)
-            {
-                int id = (int)data.id;
-                ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
-                int lastId = connection.LastWalletEventId ?? 0;
-
-                if (id <= lastId) throw new TonConnectError($"Received event id (={id}) must be greater than stored last wallet event id (={lastId})");
-
-                if (data.@event != null && data.@event != "connect")
-                {
-                    connection.LastWalletEventId = id;
-                    string dumpedConnection = JsonConvert.SerializeObject(connection);
-                    await Console.Out.WriteLineAsync(dumpedConnection);
-                    await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, dumpedConnection);
-                }
-            }
-
-            List<WalletEventListener> listenersTemp = _listeners;
-
-            if (data.@event != null && data.@event == "connect") UpdateSession(data, message.From);
-
-            if (data.@event != null && data.@event == "disconnect") RemoveSession();
-
-            foreach (WalletEventListener listener in listenersTemp)
-            {
-                listener(data);
-            }
-
             return;
         }
-        catch (Exception e)
+
+        if (data.id != null)
         {
-            throw new TonConnectError(e.Message);
+            int id = (int)data.id;
+            ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
+            int lastId = connection.LastWalletEventId ?? 0;
+
+            if (id <= lastId) throw new TonConnectError($"Received event id (={id}) must be greater than stored last wallet event id (={lastId})");
+
+            if (data.@event != null && (string)data.@event != "connect")
+            {
+                connection.LastWalletEventId = id;
+                string dumpedConnection = JsonConvert.SerializeObject(connection);
+                await Console.Out.WriteLineAsync(dumpedConnection);
+                await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, dumpedConnection);
+            }
         }
+
+        List<WalletEventListener> listenersTemp = _listeners;
+
+        if (data.@event != null && (string)data.@event == "connect") UpdateSession(data, message.From);
+
+        if (data.@event != null && (string)data.@event == "disconnect") RemoveSession();
+
+        foreach (WalletEventListener listener in listenersTemp)
+        {
+            listener(data);
+            //Console.WriteLine(data.@event);
+        }
+
+        return;
         
     }
 

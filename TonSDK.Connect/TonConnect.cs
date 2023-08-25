@@ -128,10 +128,12 @@ public class TonConnect
 
     private void WalletEventsListener(dynamic eventData)
     {
-        switch (eventData.@event)
+        Console.WriteLine(eventData);
+        switch ((string)eventData.@event)
         {
             case "connect":
                 {
+                    OnWalletConnected(eventData.payload);
                     break;
                 }
             case "connect_error":
@@ -149,6 +151,10 @@ public class TonConnect
     private void OnWalletConnected(dynamic payload)
     {
         Wallet wallet = ConnectEventParser.ParseResponse(payload);
+        foreach(StatusChangeCallback listener in _statusChangeCallbacksSubscriptions)
+        {
+            listener(wallet);
+        }
     }
 
 

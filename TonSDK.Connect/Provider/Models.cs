@@ -74,19 +74,18 @@ public class ConnectEventParser
         if (payload.items == null) throw new TonConnectError("items not contains in payload");
 
         Wallet wallet = new();
-        wallet.TonProof = payload.items[0];
 
-        foreach(var item in payload.items)
+        foreach (var item in payload.items)
         {
             if(item.name != null)
             {
-                if (item.name == "ton_addr") wallet.Account = new Account(); // Доделать парсинг аккаунта
-                else if (item.name == "ton_proof") wallet.TonProof = new TonProof(); // Доделать парсинг пруфа
+                if ((string)item.name == "ton_addr") wallet.Account = Account.Parse(item);
+                else if ((string)item.name == "ton_proof") wallet.TonProof = TonProof.Parse(item);
             }
         }
 
         if (wallet.Account == null) throw new TonConnectError("ton_addr not contains in items");
-        wallet.Device = new DeviceInfo(); // сделать парсинг девайса
+        wallet.Device = DeviceInfo.Parse(payload.device);
 
         return wallet;
     }
