@@ -162,7 +162,6 @@ public class BridgeProvider
         connection.NextRpcRequestId = 0;
 
         string jsonString = JsonConvert.SerializeObject(connection);
-        await Console.Out.WriteLineAsync(jsonString);
         await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
     }
 
@@ -216,11 +215,8 @@ public class BridgeProvider
         foreach (WalletEventListener listener in listenersTemp)
         {
             listener(data);
-            //Console.WriteLine(data.@event);
         }
-
         return;
-        
     }
 
     private async void GatewayMessageListener(string eventData)

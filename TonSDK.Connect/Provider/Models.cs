@@ -67,6 +67,23 @@ public enum CHAIN
     TESTNET = -3
 }
 
+public enum CONNECT_EVENT_ERROR_CODE
+{
+    UNKNOWN_ERROR = 0,
+    BAD_REQUEST_ERROR = 1,
+    MANIFEST_NOT_FOUND_ERROR = 2,
+    MANIFEST_CONTENT_ERROR = 3,
+    UNKNOWN_APP_ERROR = 100,
+    USER_REJECTS_ERROR = 300,
+    METHOD_NOT_SUPPORTED = 400
+}
+
+public struct ConnectErrorData
+{
+    public CONNECT_EVENT_ERROR_CODE Code { get; set; }
+    public string Message { get; set; }
+}
+
 public class ConnectEventParser
 {
     public static Wallet ParseResponse(dynamic payload)
@@ -89,26 +106,17 @@ public class ConnectEventParser
 
         return wallet;
     }
+
+    public static ConnectErrorData ParseError(dynamic payload)
+    {
+        ConnectErrorData data = new()
+        {
+            Code = (CONNECT_EVENT_ERROR_CODE)payload.code,
+            Message = payload.message.ToString()
+        };
+        return data;
+    }
 }
-//    def parse_response(payload: dict) -> WalletInfo:
-//        if 'items' not in payload:
-//            raise TonConnectError('items not contains in payload')
-
-//        wallet = WalletInfo()
-
-//        for item in payload['items']:
-//            if 'name' in item:
-//                if item['name'] == 'ton_addr':
-//                    wallet.account = Account.from_dict(item)
-//                elif item['name'] == 'ton_proof':
-//                    wallet.ton_proof = TonProof.from_dict(item)
-
-//        if wallet.account is None:
-//            raise TonConnectError('ton_addr not contains in items')
-
-//        wallet.device = DeviceInfo.from_dict(payload['device'])
-
-//        return wallet
 
 
 //    def parse_error(payload: dict) -> TonConnectError:

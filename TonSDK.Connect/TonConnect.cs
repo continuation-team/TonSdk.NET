@@ -1,17 +1,7 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Linq;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Org.BouncyCastle.Utilities;
-using System.Xml.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
-
-namespace TonSdk.Connect;
+﻿namespace TonSdk.Connect;
 
 public delegate void StatusChangeCallback(Wallet wallet);
-public delegate void StatusChangeErrorsHandler(TonConnectError error);
+public delegate void StatusChangeErrorsHandler(string error);
 
 public class TonConnectOptions
 {
@@ -128,7 +118,6 @@ public class TonConnect
 
     private void WalletEventsListener(dynamic eventData)
     {
-        Console.WriteLine(eventData);
         switch ((string)eventData.@event)
         {
             case "connect":
@@ -138,6 +127,7 @@ public class TonConnect
                 }
             case "connect_error":
                 {
+                    OnWalletConnectError(eventData.payload);
                     break;
                 }
             case "disconnect":
@@ -150,51 +140,29 @@ public class TonConnect
 
     private void OnWalletConnected(dynamic payload)
     {
-        Wallet wallet = ConnectEventParser.ParseResponse(payload);
+        _wallet = ConnectEventParser.ParseResponse(payload);
         foreach(StatusChangeCallback listener in _statusChangeCallbacksSubscriptions)
         {
-            listener(wallet);
+            listener((Wallet)_wallet);
         }
     }
 
+    private void OnWalletConnectError(dynamic payload)
+    {
+        ConnectErrorData errorData = ConnectEventParser.ParseError(payload);
+        foreach (StatusChangeErrorsHandler listener in _statusChangeErrorSubscriptions)
+        {
+            listener(errorData.Message);
+        }
 
-//    private onWalletConnected(connectEvent: ConnectEventSuccess['payload']) : void {
-//        const tonAccountItem: TonAddressItemReply | undefined = connectEvent.items.find(
-//            item => item.name === 'ton_addr'
-//        ) as TonAddressItemReply | undefined;
-
-//        const tonProofItem: TonProofItemReply | undefined = connectEvent.items.find(
-//            item => item.name === 'ton_proof'
-//        ) as TonProofItemReply | undefined;
-
-//        if (!tonAccountItem) {
-//            throw new TonConnectError('ton_addr connection item was not found');
-//    }
-
-//    const wallet: Wallet = {
-//                device: connectEvent.device,
-//                provider: this.provider!.type,
-//                account: {
-//                    address: tonAccountItem.address,
-//    chain: tonAccountItem.network,
-//                    walletStateInit: tonAccountItem.walletStateInit,
-//                    publicKey: tonAccountItem.publicKey
-//                }
-//            };
-
-//    if (tonProofItem)
-//    {
-//        wallet.connectItems = {
-//        tonProof: tonProofItem
-//                };
-//    }
-
-//this.wallet = wallet;
-//    }
-
+        if(errorData.Code == CONNECT_EVENT_ERROR_CODE.MANIFEST_CONTENT_ERROR 
+        || errorData.Code == CONNECT_EVENT_ERROR_CODE.MANIFEST_NOT_FOUND_ERROR)
+        {
+            throw new TonConnectError(errorData.Message);
+        }
+    }
 
     private void OnWalletDisconnected() => _wallet = null;
-
 
     private ConnectRequest CreateConnectRequest(ConnectAdditionalRequest? connectAdditionalRequest = null)
     {
