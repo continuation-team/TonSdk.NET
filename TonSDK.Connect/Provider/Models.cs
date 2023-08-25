@@ -9,6 +9,20 @@ public struct BridgeIncomingMessage
     [JsonProperty("message")] public string? Message { get; set; }
 }
 
+public interface RpcRequest 
+{
+    public string method { get; set; }
+    public string id { get; set; }
+};
+
+public class DisconnectRpcRequest : RpcRequest
+{
+    public string method { get; set; } = "disconnect";
+
+    public object[] @params;
+    public string id { get; set; }
+}
+
 public class ConnectAdditionalRequest
 {
     public string? TonProof { get; set; }
@@ -36,7 +50,7 @@ public struct ConnectionInfo
     public string? Type { get; set; }
     public SessionInfo? Session { get; set; }
     public int? LastWalletEventId { get; set; }
-    public int NextRpcRequestId { get; set; }
+    public int? NextRpcRequestId { get; set; }
     public dynamic ConnectEvent { get; set; }
 }
 

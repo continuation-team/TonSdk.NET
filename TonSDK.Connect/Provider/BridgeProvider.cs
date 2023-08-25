@@ -1,11 +1,15 @@
 ﻿using LaunchDarkly.EventSource;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System;
 
 namespace TonSdk.Connect;
 
 public delegate void ProviderMessageHandler(string eventData);
 public delegate void ProviderErrorHandler(Exception args);
 public delegate void WalletEventListener(dynamic walletEvent);
+
+public delegate void OnRequestSentHandler();
 
 public class BridgeProvider
 {
@@ -16,7 +20,7 @@ public class BridgeProvider
     private BridgeSession? _session;
     private BridgeGateway? _gateway;
 
-    private Dictionary<string, object>? _pendingRequests;
+    private Dictionary<string, TaskCompletionSource<object>>? _pendingRequests;
     private List<WalletEventListener>? _listeners;
 
     public BridgeProvider(WalletConfig wallet)
@@ -25,7 +29,7 @@ public class BridgeProvider
         _session = new BridgeSession();
         _gateway = null;
 
-        _pendingRequests = new Dictionary<string, object>();
+        _pendingRequests = new Dictionary<string, TaskCompletionSource<object>>();
         _listeners = new List<WalletEventListener>();
     }
 
@@ -67,6 +71,50 @@ public class BridgeProvider
         }
     }
 
+    public async Task<object> SendRequest(RpcRequest request, OnRequestSentHandler? onRequestSent = null)
+    {
+        if (_gateway == null || _session == null || _session.WalletPublicKey == null) throw new TonConnectError("Trying to send bridge request without session.");
+        string connectionJsonString = await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}");
+        ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(connectionJsonString);
+
+        int id = connection.NextRpcRequestId ?? 0;
+        connection.NextRpcRequestId = id + 1;
+
+        string jsonString = JsonConvert.SerializeObject(connection);
+        await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
+
+        request.id = id.ToString();
+
+        string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
+
+        await _gateway.Send(encryptedRequest, _session.WalletPublicKey, request.method);
+
+        TaskCompletionSource<object> resolve = new();
+        _pendingRequests.Add(id.ToString(), resolve);
+
+        onRequestSent?.Invoke();
+        object result = await resolve.Task;
+        return result;
+    }
+
+    public async Task Disconnect()
+    {
+        try
+        {
+            DisconnectRpcRequest request = new()
+            {
+                method = "disconnect",
+                @params = Array.Empty<object>()
+            };
+            await SendRequest(request, RemoveSession);
+        }
+        catch(Exception ex)
+        {
+            await Console.Out.WriteLineAsync(ex.Message);
+            RemoveSession();
+        }
+    }
+
     private string GenerateUniversalLink(string universalLink, ConnectRequest connectRequest)
     {
         UriBuilder url = new UriBuilder(universalLink);
@@ -95,7 +143,7 @@ public class BridgeProvider
         CloseGateways();
         _session = new BridgeSession();
         _gateway = null;
-        // _pending_requests = { }
+        _pendingRequests = new();
         _listeners = new List<WalletEventListener>();
     }
 
@@ -144,13 +192,15 @@ public class BridgeProvider
             {
                 if(data.id != null)
                 {
-                    //id = wallet_message['id']
-                    //if id not in self._pending_requests:
-                    //    _LOGGER.debug(f"Response id {id} doesn't match any request's id")
-                    //    return
+                    string id = data.id;
+                    if(!_pendingRequests.ContainsKey(id))
+                    {
+                        await Console.Out.WriteLineAsync($"Response id {id} doesn't match any request's id");
+                        return;
+                    }
 
-                    //self._pending_requests[id].set_result(wallet_message)
-                    //del self._pending_requests[id]
+                    _pendingRequests[id].SetResult(message);
+                    _pendingRequests.Remove(id);
                 }
                 return;
             }
