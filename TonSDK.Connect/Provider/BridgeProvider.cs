@@ -126,17 +126,7 @@ public class BridgeProvider
 
     public void CloseGateways() => _gateway?.Close();
 
-    private async void GatewayMessageListener(string eventData)
-    {
-        if(eventData.StartsWith("id:")) await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, eventData[4..]);
-
-        if(eventData.StartsWith("data:") && _gateway != null && !_gateway.isClosed)
-        {
-            string data = eventData["data: ".Length..];
-            BridgeIncomingMessage dataMessage = JsonConvert.DeserializeObject<BridgeIncomingMessage>(data);
-            await ParseGatewayMessage(dataMessage);
-        }
-    }
+    
 
     public void CloseConnection()
     {
@@ -240,6 +230,18 @@ public class BridgeProvider
             throw new TonConnectError(e.Message);
         }
         
+    }
+
+    private async void GatewayMessageListener(string eventData)
+    {
+        if (eventData.StartsWith("id:")) await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, eventData[4..]);
+
+        if (eventData.StartsWith("data:") && _gateway != null && !_gateway.isClosed)
+        {
+            string data = eventData["data: ".Length..];
+            BridgeIncomingMessage dataMessage = JsonConvert.DeserializeObject<BridgeIncomingMessage>(data);
+            await ParseGatewayMessage(dataMessage);
+        }
     }
 
     private void GatewayErrorListener(Exception e)

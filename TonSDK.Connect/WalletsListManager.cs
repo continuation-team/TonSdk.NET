@@ -75,7 +75,7 @@ public class WalletsListManager
 
     public WalletsListManager(string walletsListSource = null, int cacheTtl = 0)
     {
-        if (walletsListSource != null)
+        if (walletsListSource != null && walletsListSource != "")
             this.walletsListSource = walletsListSource;
 
         this.cacheTtl = cacheTtl;
