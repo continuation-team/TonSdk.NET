@@ -11,17 +11,25 @@ public struct BridgeIncomingMessage
     [JsonProperty("message")] public string? Message { get; set; }
 }
 
-public interface RpcRequest 
+public interface IRpcRequest 
 {
     public string method { get; set; }
     public string id { get; set; }
 };
 
-public class DisconnectRpcRequest : RpcRequest
+public class DisconnectRpcRequest : IRpcRequest
 {
     public string method { get; set; } = "disconnect";
 
-    public object[] @params;
+    public string[] @params;
+    public string id { get; set; }
+}
+
+public class SendTransactionRpcRequest : IRpcRequest
+{
+    public string method { get; set; } = "sendTransaction";
+
+    public string[] @params;
     public string id { get; set; }
 }
 
@@ -117,15 +125,3 @@ public class ConnectEventParser
         return data;
     }
 }
-
-
-//    def parse_error(payload: dict) -> TonConnectError:
-//        error_constructor: TonConnectError = UnknownError
-
-//        code = payload.get('error', {}).get('code', None)
-//        if code is not None and code in CONNECT_EVENT_ERRORS:
-//error_constructor = CONNECT_EVENT_ERRORS[code]
-
-
-//        message = payload.get('error', { }).get('message', None)
-//        return error_constructor(message)

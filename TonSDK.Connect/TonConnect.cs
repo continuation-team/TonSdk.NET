@@ -1,4 +1,11 @@
-﻿namespace TonSdk.Connect;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Transactions;
+using Org.BouncyCastle.Bcpg.Sig;
+using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace TonSdk.Connect;
 
 public delegate void StatusChangeCallback(Wallet wallet);
 public delegate void StatusChangeErrorsHandler(string error);
@@ -53,6 +60,7 @@ public class TonConnect
     /// Current connected wallet or None if no account is connected.
     /// </summary>
     public Wallet Wallet { get => (Wallet)_wallet; }
+
 
     public TonConnect(TonConnectOptions options)
     {
@@ -109,15 +117,116 @@ public class TonConnect
         return await _provider.ConnectAsync(CreateConnectRequest(connectAdditionalRequest));
     }
 
+    /// <summary>
+    /// Try to restore existing session and reconnect to the corresponding wallet. Call it immediately when your app is loaded.
+    /// </summary>
+    /// <returns>True if connection is restored</returns>
+    public async Task<bool> RestoreConnection()
+    {
+        _provider = new BridgeProvider();
+        _provider.Listen(new WalletEventListener(WalletEventsListener));
+        bool isRestored = await _provider.RestoreConnection();
+
+        if (!isRestored)
+        {
+            _provider = null;
+            DefaultStorage.RemoveItem(DefaultStorage.KEY_CONNECTION);
+        }
+        return isRestored;
+    }
+
+    /// <summary>
+    /// Asks connected wallet to sign and send the transaction.
+    /// </summary>
+    /// <param name="request">Transaction to send</param>
+    /// <returns>Signed transaction boc that allows you to find the transaction in the blockchain.</returns>
+    public async Task<SendTransactionResult?> SendTransaction(SendTrasactionRequest request)
+    {
+        if (!IsConnected) throw new TonConnectError("Error while sending transaction. Reason: Wallet not Connected");
+        ValidateTransactionSupport(_wallet?.Device.Features, request.Messages.Length);
+
+        SendTrasactionRequest trasactionRequest = new()
+        {
+            ValidUntil = request.ValidUntil ?? null,
+            From = request.From ?? _wallet?.Account.Address,
+            Network = request.Network ?? _wallet?.Account.Chain,
+            Messages = request.Messages ?? Array.Empty<Message>()
+        };
+
+        dynamic response = await _provider.SendRequest(
+        new SendTransactionRpcRequest()
+        {
+            method = "sendTransaction",
+            @params = new string[] {JsonConvert.SerializeObject(trasactionRequest)},
+        });
+
+        return ParseSendTransactionResponse(response);
+    }
+
+    /// <summary>
+    /// Disconnect from wallet and drop current session.
+    /// </summary>
+    /// <exception cref="TonConnectError">Wallet not connected.</exception>
+    public async Task Disconnect()
+    {
+        if (!IsConnected) throw new TonConnectError("Wallet not connected.");
+        await _provider.Disconnect();
+        OnWalletDisconnected();
+    }
+
+    /// <summary>
+    /// Pause bridge HTTP connection. Might be helpful, if you use SDK on backend and want to save server resources.
+    /// </summary>
+    public void PauseConnection() => _provider.Pause();
+
+    /// <summary>
+    /// Unpause bridge HTTP connection if it is paused.
+    /// </summary>
+    public async Task UnPauseConnection() => await _provider.UnPause();
+
+
+    private SendTransactionResult? ParseSendTransactionResponse(dynamic response)
+    {
+        if(response.error != null) throw new TonConnectError($"Send transaction error. Message: {response.error.message}. Code: {response.error.code}.");
+
+        if (response.result != null) return new SendTransactionResult() { Boc = response.result };
+        return null;
+    }
+
+    private void ValidateTransactionSupport(object[] walletFeatures, int messagesCount)
+    {
+        bool supportDepricatedSend = walletFeatures.Contains("SendTransaction");
+        dynamic sendFeature = null;
+
+        foreach(object feature in walletFeatures) 
+        {
+            if(feature is JObject featureItem)
+            {
+                dynamic currentFeature = featureItem.ToObject<dynamic>();
+                if (currentFeature != null && currentFeature.name != null && currentFeature.name == "SendTransaction") sendFeature = currentFeature;
+            }
+        }
+
+        if (!supportDepricatedSend && sendFeature == null) throw new TonConnectError("Wallet doesn't support SendTransaction feature.");
+        if (sendFeature != null)
+        {
+            int maxMessages = (int)sendFeature.maxMessages;
+            if (maxMessages < messagesCount)
+                throw new TonConnectError($"Wallet is not able to handle such SendTransaction request. Max support messages number is {maxMessages}, but {messagesCount} is required.");
+        }
+        else Console.WriteLine("Connected wallet didn't provide information about max allowed messages in the SendTransaction request. Request may be rejected by the wallet.");
+    }
+
     private BridgeProvider CreateProvider(WalletConfig walletConfig)
     {
-        BridgeProvider provider = new BridgeProvider(walletConfig);
+        BridgeProvider provider = new (walletConfig);
         provider.Listen(new WalletEventListener(WalletEventsListener));
         return provider;
     }
 
     private void WalletEventsListener(dynamic eventData)
     {
+
         switch ((string)eventData.@event)
         {
             case "connect":

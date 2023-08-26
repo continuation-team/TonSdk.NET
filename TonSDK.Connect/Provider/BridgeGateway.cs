@@ -36,15 +36,13 @@ public class BridgeGateway
         string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
         string? lastEventId = await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID);
-        //if(lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
+        if(lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
         await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 
         _sseClient?.Close();
         _sseClient = new(bridgeUrl, _handler, _errorHandler);
         await _sseClient.StartAsync();
-        //_eventSource.MessageReceived += MessageHandler;
-        //_eventSource.Error += ErrorHandler;
-        //await _eventSource.StartAsync();
+        
     }
 
     public async Task Send(string request, string receiverPublicKey, string topic, int? ttl = null)
