@@ -1,9 +1,7 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Transactions;
-using Org.BouncyCastle.Bcpg.Sig;
-using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TonSdk.Core;
+using TonSdk.Core.Boc;
 
 namespace TonSdk.Connect;
 
@@ -140,24 +138,22 @@ public class TonConnect
     /// </summary>
     /// <param name="request">Transaction to send</param>
     /// <returns>Signed transaction boc that allows you to find the transaction in the blockchain.</returns>
-    public async Task<SendTransactionResult?> SendTransaction(SendTrasactionRequest request)
+    public async Task<SendTransactionResult?> SendTransaction(SendTransactionRequest request)
     {
         if (!IsConnected) throw new TonConnectError("Error while sending transaction. Reason: Wallet not Connected");
         ValidateTransactionSupport(_wallet?.Device.Features, request.Messages.Length);
 
-        SendTrasactionRequest trasactionRequest = new()
-        {
-            ValidUntil = request.ValidUntil ?? null,
-            From = request.From ?? _wallet?.Account.Address,
-            Network = request.Network ?? _wallet?.Account.Chain,
-            Messages = request.Messages ?? Array.Empty<Message>()
-        };
+        SendTransactionRequest transactionRequest = 
+            new(request.Messages ?? Array.Empty<Message>(), request.ValidUntil ?? null, 
+            request.Network ?? _wallet?.Account.Chain, request.From ?? _wallet?.Account.Address);
+
+        ProviderModels.SendTransactionRequestSerialized serializedRequest = new(transactionRequest);
 
         dynamic response = await _provider.SendRequest(
         new SendTransactionRpcRequest()
         {
             method = "sendTransaction",
-            @params = new string[] {JsonConvert.SerializeObject(trasactionRequest)},
+            @params = new string[] {JsonConvert.SerializeObject(serializedRequest) },
         });
 
         return ParseSendTransactionResponse(response);
@@ -189,7 +185,7 @@ public class TonConnect
     {
         if(response.error != null) throw new TonConnectError($"Send transaction error. Message: {response.error.message}. Code: {response.error.code}.");
 
-        if (response.result != null) return new SendTransactionResult() { Boc = response.result };
+        if (response.result != null) return new SendTransactionResult() { Boc = Cell.From(response.result.ToString()) };
         return null;
     }
 

@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Bcpg.Sig;
 using static LaunchDarkly.Logging.LogCapture;
 using System;
+using TonSdk.Core;
 
 namespace TonSdk.Connect;
 
@@ -123,5 +124,46 @@ public class ConnectEventParser
             Message = payload.message.ToString()
         };
         return data;
+    }
+}
+
+public class ProviderModels
+{
+    public class SendTransactionRequestSerialized
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public long? valid_until { get; set; }
+        public string network { get; set; }
+        public string from { get; set; }
+        public SendTransactionMessageSerialized[] messages { get; set; }
+
+        public SendTransactionRequestSerialized(SendTransactionRequest request)
+        {
+            valid_until = request.ValidUntil;
+            network = ((int)request.Network!).ToString();
+            from = request.From!.ToString(AddressType.Raw);
+
+            List<SendTransactionMessageSerialized> messagesList = new();
+            foreach(Message message in request.Messages)
+            {
+                messagesList.Add(new SendTransactionMessageSerialized(message));
+            }
+            messages = messagesList.ToArray();
+        }
+    }
+
+    public class SendTransactionMessageSerialized
+    {
+        public string address { get; set; }
+        public string amount { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string? stateInit { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public string? payload { get; set; }
+
+        public SendTransactionMessageSerialized(Message message)
+        {
+            address = message.Address.ToString();
+            amount = message.Amount.ToNano();
+            stateInit = message.StateInit?.ToString();
+            payload = message.Payload?.ToString();
+        }
     }
 }

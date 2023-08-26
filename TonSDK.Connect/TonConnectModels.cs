@@ -1,6 +1,8 @@
 ﻿using System.Security.Principal;
 using System;
 using Newtonsoft.Json;
+using TonSdk.Core;
+using TonSdk.Core.Boc;
 
 namespace TonSdk.Connect;
 
@@ -34,14 +36,9 @@ public class DeviceInfo
     }
 }
 
-public class DeviceFeature
-{
-
-}
-
 public class Account
 {
-    public string? Address { get; set; }
+    public Address? Address { get; set; }
     public CHAIN Chain { get; set; }
     public string? WalletStateInit { get; set; }
     public string? PublicKey { get; set; }
@@ -52,7 +49,7 @@ public class Account
 
         Account account = new()
         {
-            Address = item.address.ToString(),
+            Address = new Address(item.address.ToString()),
             Chain = (CHAIN)(int)item.network,
             WalletStateInit = item.walletStateInit.ToString(),
             PublicKey = item.publicKey?.ToString()
@@ -87,27 +84,35 @@ public class TonProof
     }
 }
 
-public class SendTrasactionRequest
+public class SendTransactionRequest
 {
     /// <summary>
     /// Sending transaction deadline in unix epoch seconds.
     /// </summary>
-    [JsonProperty("valid_until")] public long? ValidUntil { get; set; }
+    public long? ValidUntil { get; set; }
 
     /// <summary>
     /// The network (mainnet or testnet) where DApp intends to send the transaction. If not set, the transaction is sent to the network currently set in the wallet, but this is not safe and DApp should always strive to set the network. If the network parameter is set, but the wallet has a different network set, the wallet should show an alert and DO NOT ALLOW TO SEND this transaction.
     /// </summary>
-    [JsonProperty("network")] public CHAIN? Network { get; set; }
+    public CHAIN? Network { get; set; }
 
     /// <summary>
     /// The sender address in wc:hex format from which DApp intends to send the transaction. Current account.address by default.
     /// </summary>
-    [JsonProperty("from")] public string? From { get; set; }
+    public Address? From { get; set; }
 
     /// <summary>
     /// Messages to send: min is 1, max is 4.
     /// </summary>
-    [JsonProperty("messages")] public Message[] Messages { get; set; }
+    public Message[] Messages { get; set; }
+
+    public SendTransactionRequest(Message[] messages, long? validUntil = null, CHAIN? network = null, Address? from = null)
+    {
+        Messages = messages;
+        ValidUntil = validUntil;
+        Network = network;
+        From = from;
+    }
 }
 
 public struct Message
@@ -115,25 +120,33 @@ public struct Message
     /// <summary>
     /// Receiver's address.
     /// </summary>
-    [JsonProperty("address")] public string Address { get; set; }
+    public Address Address { get; set; }
 
     /// <summary>
     /// Amount to send in nanoTon.
     /// </summary>
-    [JsonProperty("amount")] public string Amount { get; set; }
+    public Coins Amount { get; set; }
 
     /// <summary>
     /// Contract specific data to add to the transaction.
     /// </summary>
-    [JsonProperty("stateInit")] public string? StateInit { get; set; }
+    public Cell? StateInit { get; set; }
 
     /// <summary>
     /// Contract specific data to add to the transaction.
     /// </summary>
-    [JsonProperty("payload")] public string? Payload { get; set; }
+    public Cell? Payload { get; set; }
+
+    public Message(Address receiver, Coins amount, Cell? stateInit = null, Cell? payload = null)
+    {
+        Address = receiver;
+        Amount = amount;
+        Payload = payload;
+        StateInit = stateInit;
+    }
 }
 
 public struct SendTransactionResult
 {
-    public string Boc { get; set; }
+    public Cell Boc { get; set; }
 }
