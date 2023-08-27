@@ -1,27 +1,29 @@
 ﻿using TonSdk.Core.Crypto;
 
-namespace TonSdk.Connect;
-
-public class BridgeSession
+namespace TonSdk.Connect
 {
-    public CryptedSessionInfo? CryptedSessionInfo { get; set; }
-    public string? WalletPublicKey { get; set; }
-    public string? BridgeUrl { get; set; }
 
-    public BridgeSession(SessionInfo? sessionInfo = null)
+    public class BridgeSession
     {
-        CryptedSessionInfo = sessionInfo?.SessionPrivateKey != null ? new(sessionInfo?.SessionPrivateKey) : null;
-        WalletPublicKey = sessionInfo?.WalletPublicKey ?? null;
-        BridgeUrl = sessionInfo?.BridgeUrl ?? null;
-    }
+        public CryptedSessionInfo? CryptedSessionInfo { get; set; }
+        public string? WalletPublicKey { get; set; }
+        public string? BridgeUrl { get; set; }
 
-    public SessionInfo GetSessionInfo()
-    {
-        return new SessionInfo()
+        public BridgeSession(SessionInfo? sessionInfo = null)
         {
-            SessionPrivateKey = Utils.BytesToHex(CryptedSessionInfo.KeyPair.PrivateKey),
-            WalletPublicKey = WalletPublicKey,
-            BridgeUrl = BridgeUrl
-        };
-    }        
+            CryptedSessionInfo = sessionInfo?.SessionPrivateKey != null ? new CryptedSessionInfo(sessionInfo?.SessionPrivateKey) : null;
+            WalletPublicKey = sessionInfo?.WalletPublicKey ?? null;
+            BridgeUrl = sessionInfo?.BridgeUrl ?? null;
+        }
+
+        public SessionInfo GetSessionInfo()
+        {
+            return new SessionInfo()
+            {
+                SessionPrivateKey = Utils.BytesToHex(CryptedSessionInfo.KeyPair.PrivateKey),
+                WalletPublicKey = WalletPublicKey,
+                BridgeUrl = BridgeUrl
+            };
+        }
+    }
 }
