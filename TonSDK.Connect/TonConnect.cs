@@ -16,7 +16,6 @@ namespace TonSdk.Connect
     {
         /// <summary>
         /// Url to the [manifest]{@link https://github.com/ton-connect/docs/blob/main/requests-responses.md#app-manifest} with the Dapp metadata that will be displayed in the user's wallet.
-        /// If not passed, manifest from `${window.location.origin}/tonconnect-manifest.json` will be taken.
         /// </summary>
         public string ManifestUrl { get; set; }
 
@@ -45,6 +44,8 @@ namespace TonSdk.Connect
         private Wallet? _wallet;
         private WalletsListManager? _walletsList = new WalletsListManager();
 
+        private RemoteStorage _storage;
+
         private List<StatusChangeCallback> _statusChangeCallbacksSubscriptions;
         private List<StatusChangeErrorsHandler> _statusChangeErrorSubscriptions;
 
@@ -64,12 +65,13 @@ namespace TonSdk.Connect
         public Wallet Wallet { get => (Wallet)_wallet; }
 
 
-        public TonConnect(TonConnectOptions options)
+        public TonConnect(TonConnectOptions options, RemoteStorage storage = null)
         {
             _walletsList = new WalletsListManager(options.WalletsListSource, options.WalletsListCacheTTLMs);
 
             _provider = null;
             _manifestUrl = options.ManifestUrl;
+            _storage = storage;
 
             _wallet = null;
 
@@ -132,7 +134,10 @@ namespace TonSdk.Connect
             if (!isRestored)
             {
                 _provider = null;
-                DefaultStorage.RemoveItem(DefaultStorage.KEY_CONNECTION);
+                if (_storage != null)
+                    _storage.RemoveItem(RemoteStorage.KEY_CONNECTION);
+                else
+                    DefaultStorage.RemoveItem(DefaultStorage.KEY_CONNECTION);
             }
             return isRestored;
         }

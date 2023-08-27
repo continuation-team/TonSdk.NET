@@ -14,11 +14,12 @@ namespace TonSdk.Connect
         private string _bridgeUrl;
         private string _sessionId;
         private SSEClient? _sseClient;
+        private RemoteStorage _storage;
 
         private ProviderMessageHandler _handler;
         private ProviderErrorHandler _errorHandler;
 
-        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler)
+        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage)
         {
             isClosed = false;
             _bridgeUrl = bridgeUrl;
@@ -27,6 +28,7 @@ namespace TonSdk.Connect
             _sseClient = null;
             _handler = handler;
             _errorHandler = errorHandler;
+            _storage = storage;
         }
 
         public async Task RegisterSession()
@@ -36,7 +38,7 @@ namespace TonSdk.Connect
             string bridgeBase = _bridgeUrl.TrimEnd('/');
             string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
-            string? lastEventId = await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID);
+            string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID);
             if (lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
             await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 

@@ -5,7 +5,6 @@ using System.Net.Http;
 
 namespace TonSdk.Connect
 {
-
     public struct WalletConfig
     {
         public string Name { get; set; }

@@ -1,10 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.IsolatedStorage;
 using System.Threading.Tasks;
 
 namespace TonSdk.Connect
 {
-
     public class DefaultStorage
     {
         public static readonly string KEY_LAST_EVENT_ID = "last_event_id";
