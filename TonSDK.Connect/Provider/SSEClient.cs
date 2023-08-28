@@ -6,8 +6,15 @@ using System.Threading.Tasks;
 
 namespace TonSdk.Connect
 {
+    public delegate void ListenEventsFunction(CancellationToken token, string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler);
 
-    public class SSEClient
+    public interface ISSEClient 
+    {
+        public void StartClient();
+        public void StopClient();
+    }
+
+    public class SSEClient : ISSEClient
     {
         private readonly string _url;
         private readonly HttpClient _httpClient;
@@ -16,8 +23,9 @@ namespace TonSdk.Connect
 
         private ProviderMessageHandler _handler;
         private ProviderErrorHandler _errorHandler;
+        private ListenEventsFunction eventsFunction;
 
-        public SSEClient(string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler)
+        public SSEClient(string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, ListenEventsFunction listenEventsFunction)
         {
             _url = url;
             _httpClient = new HttpClient();
@@ -25,19 +33,21 @@ namespace TonSdk.Connect
 
             _handler = handler;
             _errorHandler = errorHandler;
+            eventsFunction = listenEventsFunction;
         }
 
-        public async Task StartAsync()
+        public void StartClient()
         {
             if (_isRunning) return;
             _isRunning = true;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            ListenForEvents(_cancellationTokenSource.Token);
+            if (eventsFunction == null) ListenForEvents(_cancellationTokenSource.Token);
+            else eventsFunction(_cancellationTokenSource.Token, _url, _handler, _errorHandler);
         }
 
-        public void Close()
+        public void StopClient()
         {
             if (!_isRunning) return;
 

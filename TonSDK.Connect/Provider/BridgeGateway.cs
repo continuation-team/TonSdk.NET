@@ -13,22 +13,24 @@ namespace TonSdk.Connect
         public bool isClosed { get; private set; }
         private string _bridgeUrl;
         private string _sessionId;
-        private SSEClient? _sseClient;
-        private RemoteStorage _storage;
+        private ISSEClient _sseClient;
+        public RemoteStorage _storage;
 
         private ProviderMessageHandler _handler;
         private ProviderErrorHandler _errorHandler;
+        private ListenEventsFunction _eventsFunction;
 
-        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage)
+        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage, ListenEventsFunction eventsFunction)
         {
             isClosed = false;
             _bridgeUrl = bridgeUrl;
             _sessionId = sessionId;
 
-            _sseClient = null;
             _handler = handler;
             _errorHandler = errorHandler;
             _storage = storage;
+            _eventsFunction = eventsFunction;
+            _sseClient = null;
         }
 
         public async Task RegisterSession()
@@ -42,9 +44,9 @@ namespace TonSdk.Connect
             if (lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
             await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 
-            _sseClient?.Close();
-            _sseClient = new SSEClient(bridgeUrl, _handler, _errorHandler);
-            await _sseClient.StartAsync();
+            _sseClient?.StopClient();
+            _sseClient = new SSEClient(bridgeUrl, _handler, _errorHandler, _eventsFunction);
+            _sseClient?.StartClient();
 
         }
 
@@ -63,7 +65,7 @@ namespace TonSdk.Connect
 
         public void Pause()
         {
-            _sseClient?.Close();
+            _sseClient?.StopClient();
             _sseClient = null;
         }
 

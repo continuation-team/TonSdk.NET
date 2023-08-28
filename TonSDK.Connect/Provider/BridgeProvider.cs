@@ -20,17 +20,20 @@ namespace TonSdk.Connect
         private WalletConfig? _wallet;
         private BridgeSession? _session;
         private BridgeGateway? _gateway;
-        private RemoteStorage _storage;
+
+        public RemoteStorage _storage;
 
         private Dictionary<string, TaskCompletionSource<object>>? _pendingRequests;
         private List<WalletEventListener>? _listeners;
+        public ListenEventsFunction _listenEventsFunction;
 
-        public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null)
+        public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null)
         {
             _wallet = wallet;
             _session = new BridgeSession();
             _gateway = null;
             _storage = storage;
+            _listenEventsFunction = eventsFunction;
 
             _pendingRequests = new Dictionary<string, TaskCompletionSource<object>>();
             _listeners = new List<WalletEventListener>();
@@ -44,7 +47,7 @@ namespace TonSdk.Connect
             string bridgeUrl = _wallet?.BridgeUrl;
             string universalUrl = _wallet?.UniversalUrl ?? STANDART_UNIVERSAL_URL;
 
-            _gateway = new BridgeGateway(bridgeUrl, sessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage);
+            _gateway = new BridgeGateway(bridgeUrl, sessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction);
             await _gateway.RegisterSession();
 
             _session.CryptedSessionInfo = sessionInfo;
@@ -64,7 +67,7 @@ namespace TonSdk.Connect
             if (connection.Session == null) return false;
             _session = new BridgeSession(connection.Session);
 
-            _gateway = new BridgeGateway(_session.BridgeUrl, _session.CryptedSessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage);
+            _gateway = new BridgeGateway(_session.BridgeUrl, _session.CryptedSessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction);
             await _gateway.RegisterSession();
 
             foreach (var listener in _listeners)
@@ -126,6 +129,7 @@ namespace TonSdk.Connect
         private string GenerateUniversalLink(string universalLink, ConnectRequest connectRequest)
         {
             UriBuilder url = new UriBuilder(universalLink);
+            url.Port = -1;
             url.Query += $"v={2}";
             url.Query += $"&id={_session?.CryptedSessionInfo?.SesionId}";
             url.Query += $"&r={JsonConvert.SerializeObject(connectRequest)}";

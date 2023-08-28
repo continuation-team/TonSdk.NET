@@ -45,6 +45,7 @@ namespace TonSdk.Connect
         private WalletsListManager? _walletsList = new WalletsListManager();
 
         private RemoteStorage _storage;
+        private ListenEventsFunction _listenEventsFunction;
 
         private List<StatusChangeCallback> _statusChangeCallbacksSubscriptions;
         private List<StatusChangeErrorsHandler> _statusChangeErrorSubscriptions;
@@ -64,8 +65,7 @@ namespace TonSdk.Connect
         /// </summary>
         public Wallet Wallet { get => (Wallet)_wallet; }
 
-
-        public TonConnect(TonConnectOptions options, RemoteStorage storage = null)
+        public TonConnect(TonConnectOptions options, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null)
         {
             _walletsList = new WalletsListManager(options.WalletsListSource, options.WalletsListCacheTTLMs);
 
@@ -74,6 +74,8 @@ namespace TonSdk.Connect
             _storage = storage;
 
             _wallet = null;
+
+            _listenEventsFunction = eventsFunction;
 
             _statusChangeCallbacksSubscriptions = new List<StatusChangeCallback>();
             _statusChangeErrorSubscriptions = new List<StatusChangeErrorsHandler>();
@@ -127,7 +129,11 @@ namespace TonSdk.Connect
         /// <returns>True if connection is restored</returns>
         public async Task<bool> RestoreConnection()
         {
-            _provider = new BridgeProvider();
+            _provider = new BridgeProvider()
+            {
+                _storage = _storage,
+                _listenEventsFunction = _listenEventsFunction
+            };
             _provider.Listen(new WalletEventListener(WalletEventsListener));
             bool isRestored = await _provider.RestoreConnection();
 
@@ -220,11 +226,11 @@ namespace TonSdk.Connect
                     throw new TonConnectError($"Wallet is not able to handle such SendTransaction request. Max support messages number is {maxMessages}, but {messagesCount} is required.");
             }
             else Console.WriteLine("Connected wallet didn't provide information about max allowed messages in the SendTransaction request. Request may be rejected by the wallet.");
-        }
+        } 
 
         private BridgeProvider CreateProvider(WalletConfig walletConfig)
         {
-            BridgeProvider provider = new BridgeProvider(walletConfig);
+            BridgeProvider provider = new BridgeProvider(walletConfig, _storage, _listenEventsFunction);
             provider.Listen(new WalletEventListener(WalletEventsListener));
             return provider;
         }
