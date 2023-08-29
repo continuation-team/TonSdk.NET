@@ -117,7 +117,7 @@ namespace TonSdk.Connect
         /// <exception cref="TonConnectError">Wallet already connected</exception>
         public async Task<string> Connect(WalletConfig walletConfig, ConnectAdditionalRequest? connectAdditionalRequest = null)
         {
-            if (IsConnected) throw new TonConnectError("Wallet already connected");
+            if (IsConnected) throw new WalletAlreadyConnectedError();
             _provider?.CloseConnection();
             _provider = CreateProvider(walletConfig);
             return await _provider.ConnectAsync(CreateConnectRequest(connectAdditionalRequest));
@@ -155,7 +155,7 @@ namespace TonSdk.Connect
         /// <returns>Signed transaction boc that allows you to find the transaction in the blockchain.</returns>
         public async Task<SendTransactionResult?> SendTransaction(SendTransactionRequest request)
         {
-            if (!IsConnected) throw new TonConnectError("Error while sending transaction. Reason: Wallet not Connected");
+            if (!IsConnected) throw new WalletNotConnectedError();
             ValidateTransactionSupport(_wallet?.Device.Features, request.Messages.Length);
 
             SendTransactionRequest transactionRequest =
@@ -198,7 +198,17 @@ namespace TonSdk.Connect
 
         private SendTransactionResult? ParseSendTransactionResponse(dynamic response)
         {
-            if (response.error != null) throw new TonConnectError($"Send transaction error. Message: {response.error.message}. Code: {response.error.code}.");
+            if (response.error != null)
+            {
+                switch((int)response.error.code)
+                {
+                    case 0: throw new UnknownError();
+                    case 1: throw new BadRequestError();
+                    case 100: throw new UnknownAppError();
+                    case 300: throw new UserRejectsError();
+                    case 400: throw new WalletNotSupportFeatureError();
+                }
+            }
 
             if (response.result != null) return new SendTransactionResult() { Boc = Cell.From(response.result.ToString()) };
             return null;
@@ -275,10 +285,14 @@ namespace TonSdk.Connect
                 listener(errorData.Message);
             }
 
-            if (errorData.Code == CONNECT_EVENT_ERROR_CODE.MANIFEST_CONTENT_ERROR
-            || errorData.Code == CONNECT_EVENT_ERROR_CODE.MANIFEST_NOT_FOUND_ERROR)
+            switch ((int)errorData.Code)
             {
-                throw new TonConnectError(errorData.Message);
+                case 0: throw new UnknownError();
+                case 1: throw new BadRequestError();
+                case 2: throw new ManifestNotFoundError();
+                case 3: throw new ManifestContentError();
+                case 100: throw new UnknownAppError();
+                case 300: throw new UserRejectsError();
             }
         }
 
