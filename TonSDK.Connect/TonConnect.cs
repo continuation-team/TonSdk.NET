@@ -181,20 +181,19 @@ namespace TonSdk.Connect
         public async Task Disconnect()
         {
             if (!IsConnected) throw new TonConnectError("Wallet not connected.");
-            await _provider.Disconnect();
+            await _provider?.Disconnect();
             OnWalletDisconnected();
         }
 
         /// <summary>
         /// Pause bridge HTTP connection. Might be helpful, if you use SDK on backend and want to save server resources.
         /// </summary>
-        public void PauseConnection() => _provider.Pause();
+        public void PauseConnection() => _provider?.Pause();
 
         /// <summary>
         /// Unpause bridge HTTP connection if it is paused.
         /// </summary>
-        public async Task UnPauseConnection() => await _provider.UnPause();
-
+        public async Task UnPauseConnection() => await _provider?.UnPause();
 
         private SendTransactionResult? ParseSendTransactionResponse(dynamic response)
         {
