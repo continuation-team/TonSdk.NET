@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -95,7 +96,6 @@ namespace TonSdk.Connect
                 await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
 
             request.id = id.ToString();
-            await Console.Out.WriteLineAsync(">>>>" + JsonConvert.SerializeObject(request) + "<<<<<");
             string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
 
             await _gateway.Send(encryptedRequest, _session.WalletPublicKey, request.method);
@@ -217,9 +217,9 @@ namespace TonSdk.Connect
             {
                 int id = (int)data.id;
                 ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
-                int lastId = connection.LastWalletEventId ?? 0;
+                int? lastId = connection.LastWalletEventId;
 
-                if (id <= lastId)
+                if (lastId != null && id <= lastId)
                 {
                     await Console.Out.WriteLineAsync($"Received event id (={id}) must be greater than stored last wallet event id (={lastId})");
                     return;

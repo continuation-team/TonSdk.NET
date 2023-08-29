@@ -1,4 +1,8 @@
-﻿using Org.BouncyCastle.Crypto.Parameters;
+﻿using NaCl;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,6 +17,8 @@ namespace TonSdk.Connect
         public KeyPair KeyPair { get; private set; }
         public string SesionId { get; private set; }
 
+        public Logger logger { get; set; }
+
         public CryptedSessionInfo(string? seed = null)
         {
             byte[] seedBytes = (seed != null ? Utils.HexToBytes(seed) : GenerateRandomBytes(32));
@@ -22,14 +28,21 @@ namespace TonSdk.Connect
 
         public string Encrypt(string message, string receiverPubKeyHex)
         {
-            byte[] nonce = Sodium.PublicKeyBox.GenerateNonce();
-            byte[] receiverPkBytes = Sodium.Utilities.HexToBinary(receiverPubKeyHex);
+            byte[] receiverPkBytes = Utils.HexToBytes(receiverPubKeyHex);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            Curve25519XSalsa20Poly1305 box = new Curve25519XSalsa20Poly1305(KeyPair.PrivateKey, receiverPkBytes);
 
-            byte[] encrypted = Sodium.PublicKeyBox.Create(message, nonce, KeyPair.PrivateKey, receiverPkBytes);
+            using var rng = RandomNumberGenerator.Create();
+            byte[] nonce = new byte[XSalsa20Poly1305.NonceLength];
+            rng.GetBytes(nonce);
 
-            byte[] result = new byte[NONCE_SIZE + encrypted.Length];
+            byte[] cipherText = new byte[message.Length + XSalsa20Poly1305.TagLength];
+
+            box.Encrypt(cipherText, messageBytes, nonce);
+
+            byte[] result = new byte[NONCE_SIZE + cipherText.Length];
             Array.Copy(nonce, 0, result, 0, NONCE_SIZE);
-            Array.Copy(encrypted, 0, result, NONCE_SIZE, encrypted.Length);
+            Array.Copy(cipherText, 0, result, NONCE_SIZE, cipherText.Length);
 
             return Convert.ToBase64String(result);
         }
@@ -42,10 +55,16 @@ namespace TonSdk.Connect
             Array.Copy(message, 0, nonce, 0, NONCE_SIZE);
             Array.Copy(message, NONCE_SIZE, internalMessage, 0, internalMessage.Length);
 
-            byte[] senderPkBytes = Sodium.Utilities.HexToBinary(senderPubKeyHex);
-            byte[] decrypted = Sodium.PublicKeyBox.Open(internalMessage, nonce, KeyPair.PrivateKey, senderPkBytes);
+            byte[] senderPkBytes = Utils.HexToBytes(senderPubKeyHex);
+            Curve25519XSalsa20Poly1305 box = new Curve25519XSalsa20Poly1305(KeyPair.PrivateKey, senderPkBytes);
+            byte[] decryptedMessage = new byte[internalMessage.Length - XSalsa20Poly1305.TagLength];
 
-            return Encoding.UTF8.GetString(decrypted);
+            bool isDecrypted = box.TryDecrypt(decryptedMessage, internalMessage, nonce);
+            Console.WriteLine(isDecrypted.ToString());
+            string messageText = Encoding.UTF8.GetString(decryptedMessage);
+            //byte[] decrypted = Sodium.PublicKeyBox.Open(internalMessage, nonce, KeyPair.PrivateKey, senderPkBytes);
+
+            return messageText;
         }
 
         public static KeyPair GenerateKeyPair(byte[] seed)
@@ -64,6 +83,8 @@ namespace TonSdk.Connect
             randomNumberGenerator.GetBytes(randomBytes);
             return randomBytes;
         }
+
+
     }
 
     public struct SessionInfo

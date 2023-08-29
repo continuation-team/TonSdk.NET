@@ -40,8 +40,8 @@ namespace TonSdk.Connect
             string bridgeBase = _bridgeUrl.TrimEnd('/');
             string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
-            string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID);
-            if (lastEventId != null) bridgeUrl += $"&last_event_id={lastEventId}";
+            string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID, null);
+            if (lastEventId != null && lastEventId != "") bridgeUrl += $"&last_event_id={lastEventId}";
             await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 
             _sseClient?.StopClient();
