@@ -17,8 +17,6 @@ namespace TonSdk.Connect
         public KeyPair KeyPair { get; private set; }
         public string SesionId { get; private set; }
 
-        public Logger logger { get; set; }
-
         public CryptedSessionInfo(string? seed = null)
         {
             byte[] seedBytes = (seed != null ? Utils.HexToBytes(seed) : GenerateRandomBytes(32));
