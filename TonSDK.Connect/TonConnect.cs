@@ -181,7 +181,9 @@ namespace TonSdk.Connect
         public async Task Disconnect()
         {
             if (!IsConnected) throw new TonConnectError("Wallet not connected.");
+            System.Console.WriteLine("Disconnecting...");
             await _provider.Disconnect();
+            System.Console.WriteLine("Disconnected.");
             OnWalletDisconnected();
         }
 

@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TonSdk.Connect
@@ -98,13 +99,13 @@ namespace TonSdk.Connect
             request.id = id.ToString();
             string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
 
-            await _gateway.Send(encryptedRequest, _session.WalletPublicKey, request.method);
-
+            await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
+            
             TaskCompletionSource<dynamic> resolve = new TaskCompletionSource<dynamic>();
             _pendingRequests.Add(id.ToString(), resolve);
 
-            onRequestSent?.Invoke();
             dynamic result = await resolve.Task;
+            onRequestSent?.Invoke();
             return result;
         }
 
@@ -117,12 +118,13 @@ namespace TonSdk.Connect
                     method = "disconnect",
                     @params = Array.Empty<string>(),
                 };
-                await SendRequest(request, RemoveSession);
+                dynamic result = await SendRequest(request, RemoveSession);
             }
             catch (Exception ex)
             {
                 await Console.Out.WriteLineAsync(ex.Message);
                 RemoveSession();
+
             }
         }
 
@@ -191,6 +193,7 @@ namespace TonSdk.Connect
         private async Task ParseGatewayMessage(BridgeIncomingMessage message)
         {
             string json = _session!.CryptedSessionInfo!.Decrypt(Convert.FromBase64String(message.Message), message.From);
+            
             if (json == null || json.Length == 0) return;
 
 

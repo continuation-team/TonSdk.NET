@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace TonSdk.Connect
 {
@@ -50,18 +51,23 @@ namespace TonSdk.Connect
 
         }
 
-        public async Task Send(string request, string receiverPublicKey, string topic, int? ttl = null)
+        public async Task Send(byte[] message, string receiver, string topic, int? ttl = null)
         {
-            string bridgeBase = _bridgeUrl.TrimEnd('/');
-            string bridgeUrl = $"{bridgeBase}/{POST_PATH}?client_id={_sessionId}";
-            bridgeUrl += $"&to={receiverPublicKey}";
-            bridgeUrl += $"&ttl={ttl ?? DEFAULT_TTL}";
-            bridgeUrl += $"&topic={topic}";
+            var url = new Uri($"{_bridgeUrl}/{POST_PATH}");
+            var queryString = HttpUtility.ParseQueryString(url.Query);
+            queryString["client_id"] = _sessionId;
+            queryString["to"] = receiver;
+            queryString["ttl"] = (ttl ?? DEFAULT_TTL).ToString();
+            queryString["topic"] = topic.ToString();
+            url = new Uri(url.GetLeftPart(UriPartial.Path) + "?" + queryString.ToString());
 
-            using HttpClient client = new HttpClient();
-            StringContent content = new StringContent(request);
-            await client.PostAsync(bridgeUrl, content);
+            using (var client = new HttpClient())
+            {
+                var content = new ByteArrayContent(message);
+                await client.PostAsync(url, content);
+            }
         }
+
 
         public void Pause()
         {
