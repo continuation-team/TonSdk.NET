@@ -1,10 +1,10 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
 
 namespace TonSdk.Connect
 {
-
     public struct Wallet
     {
         public DeviceInfo Device { get; set; }
@@ -21,15 +21,15 @@ namespace TonSdk.Connect
         public int MaxProtocolVersion { get; set; }
         public object[]? Features { get; set; }
 
-        public static DeviceInfo Parse(dynamic device)
+        public static DeviceInfo Parse(JObject device)
         {
             DeviceInfo deviceInfo = new DeviceInfo()
             {
-                Platform = (string)device.platform,
-                AppName = (string)device.appName,
-                AppVersion = (string)device.appVersion,
-                MaxProtocolVersion = (int)device.maxProtocolVersion,
-                Features = device.features.ToObject<object[]>()
+                Platform = (string)device["platform"],
+                AppName = (string)device["appName"],
+                AppVersion = (string)device["appVersion"],
+                MaxProtocolVersion = (int)device["maxProtocolVersion"],
+                Features = device["features"].ToObject<object[]>()
             };
             return deviceInfo;
         }
@@ -42,16 +42,16 @@ namespace TonSdk.Connect
         public string? WalletStateInit { get; set; }
         public string? PublicKey { get; set; }
 
-        public static Account Parse(dynamic item)
+        public static Account Parse(JObject item)
         {
-            if (item.address == null) throw new TonConnectError("address not contains in ton_addr");
+            if (item["address"] == null) throw new TonConnectError("address not contains in ton_addr");
 
             Account account = new Account()
             {
-                Address = new Address(item.address.ToString()),
-                Chain = (CHAIN)(int)item.network,
-                WalletStateInit = item.walletStateInit.ToString(),
-                PublicKey = item.publicKey?.ToString()
+                Address = new Address(item["address"].ToString()),
+                Chain = (CHAIN)(int)item["network"],
+                WalletStateInit = item["walletStateInit"].ToString(),
+                PublicKey = item["publicKey"]?.ToString()
             };
             return account;
         }
@@ -65,19 +65,19 @@ namespace TonSdk.Connect
         public string? Payload { get; set; }
         public byte[]? Signature { get; set; }
 
-        public static TonProof Parse(dynamic item)
+        public static TonProof Parse(JObject item)
         {
-            if (item.proof == null) throw new TonConnectError("proof not contains in ton_proof");
+            if (item["proof"] == null) throw new TonConnectError("proof not contains in ton_proof");
 
-            dynamic proof = item.proof;
+            JObject proof = (JObject)item["proof"];
 
             TonProof tonProof = new TonProof()
             {
-                Timestamp = (uint)proof.timestamp,
-                DomainLen = (int)proof.domain.lengthBytes,
-                DomainVal = (string)proof.domain.value,
-                Payload = (string)proof.payload,
-                Signature = Convert.FromBase64String((string)proof.signature)
+                Timestamp = (uint)proof["timestamp"],
+                DomainLen = (int)((JObject)proof["domain"])["lengthBytes"],
+                DomainVal = (string)((JObject)proof["domain"])["value"],
+                Payload = (string)proof["payload"],
+                Signature = Convert.FromBase64String((string)proof["signature"])
             };
             return tonProof;
         }

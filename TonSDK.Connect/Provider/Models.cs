@@ -1,9 +1,37 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TonSdk.Core;
 
 namespace TonSdk.Connect
 {
+    public interface IProvider 
+    {
+        public void CloseConnection();
+        public Task<bool> RestoreConnection();
+        public Task Disconnect();
+        public Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler? onRequestSent = null);
+        public void Listen(WalletEventListener listener);
+    }
+
+    public interface IHttpProvider : IProvider 
+    {
+        public const string Type = "http";
+        public Task<string> ConnectAsync(ConnectRequest connectRequest);
+
+        public void Pause();
+        public Task UnPause();
+    }
+
+    public interface IInternalProvider : IProvider
+    {
+        public const string Type = "injected";
+
+        public string Connect(ConnectRequest connectRequest);
+    }
+
     public struct BridgeIncomingMessage
     {
         [JsonProperty("from")] public string? From { get; set; }
@@ -16,6 +44,7 @@ namespace TonSdk.Connect
         public string id { get; set; }
     };
 
+    [Serializable]
     public class DisconnectRpcRequest : IRpcRequest
     {
         public string method { get; set; } = "disconnect";
@@ -24,6 +53,7 @@ namespace TonSdk.Connect
         public string id { get; set; }
     }
 
+    [JsonObject]
     public class SendTransactionRpcRequest : IRpcRequest
     {
         public string method { get; set; } = "sendTransaction";
@@ -32,31 +62,35 @@ namespace TonSdk.Connect
         public string id { get; set; }
     }
 
+    [JsonObject]
     public class ConnectAdditionalRequest
     {
-        public string? TonProof { get; set; }
+        public string TonProof { get; set; }
     }
 
     public interface IConnectItem
     {
-        public string? name { get; set; }
+        [JsonProperty("name")] public string name { get; set; }
     }
 
+    [JsonObject]
     public class ConnectRequest
     {
-        public string? manifestUrl { get; set; }
-        public IConnectItem[] items { get; set; }
+        [JsonProperty("manifestUrl")] public string manifestUrl { get; set; }
+        [JsonProperty("items")] public IConnectItem[] items { get; set; }
     }
 
+    [JsonObject]
     public class ConnectAddressItem : IConnectItem
     {
-        public string? name { get; set; }
+        [JsonProperty("name")] public string name { get; set; }
     }
 
+    [JsonObject]
     public class ConnectProofItem : IConnectItem
     {
-        public string? name { get; set; }
-        public string? payload { get; set; }
+        [JsonProperty("name")] public string name { get; set; }
+        [JsonProperty("payload")] public string payload { get; set; }
     }
 
     public struct ConnectionInfo
@@ -65,7 +99,7 @@ namespace TonSdk.Connect
         public SessionInfo? Session { get; set; }
         public int? LastWalletEventId { get; set; }
         public int? NextRpcRequestId { get; set; }
-        public dynamic ConnectEvent { get; set; }
+        public JObject ConnectEvent { get; set; }
     }
 
     public enum CHAIN
@@ -93,33 +127,33 @@ namespace TonSdk.Connect
 
     public class ConnectEventParser
     {
-        public static Wallet ParseResponse(dynamic payload)
+        public static Wallet ParseResponse(JObject payload)
         {
-            if (payload.items == null) throw new TonConnectError("items not contains in payload");
+            if (payload["items"] == null) throw new TonConnectError("items not contains in payload");
 
             Wallet wallet = new Wallet();
 
-            foreach (var item in payload.items)
+            foreach (var item in payload["items"])
             {
-                if (item.name != null)
+                if (item["name"] != null)
                 {
-                    if ((string)item.name == "ton_addr") wallet.Account = Account.Parse(item);
-                    else if ((string)item.name == "ton_proof") wallet.TonProof = TonProof.Parse(item);
+                    if ((string)item["name"] == "ton_addr") wallet.Account = Account.Parse((JObject)item);
+                    else if ((string)item["name"] == "ton_proof") wallet.TonProof = TonProof.Parse((JObject)item);
                 }
             }
 
             if (wallet.Account == null) throw new TonConnectError("ton_addr not contains in items");
-            wallet.Device = DeviceInfo.Parse(payload.device);
+            wallet.Device = DeviceInfo.Parse((JObject)payload["device"]);
 
             return wallet;
         }
 
-        public static ConnectErrorData ParseError(dynamic payload)
+        public static ConnectErrorData ParseError(JObject payload)
         {
             ConnectErrorData data = new ConnectErrorData()
             {
-                Code = (CONNECT_EVENT_ERROR_CODE)payload.code,
-                Message = payload.message.ToString()
+                Code = (CONNECT_EVENT_ERROR_CODE)(int)payload["code"],
+                Message = payload["message"].ToString()
             };
             return data;
         }

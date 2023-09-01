@@ -8,7 +8,6 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Connect
 {
-
     public delegate void StatusChangeCallback(Wallet wallet);
     public delegate void StatusChangeErrorsHandler(string error);
 
@@ -39,7 +38,7 @@ namespace TonSdk.Connect
 
     public class TonConnect
     {
-        private BridgeProvider? _provider;
+        private IProvider? _provider;
         private string _manifestUrl;
         private Wallet? _wallet;
         private WalletsListManager? _walletsList = new WalletsListManager();
@@ -120,7 +119,10 @@ namespace TonSdk.Connect
             if (IsConnected) throw new WalletAlreadyConnectedError();
             _provider?.CloseConnection();
             _provider = CreateProvider(walletConfig);
-            return await _provider.ConnectAsync(CreateConnectRequest(connectAdditionalRequest));
+
+            if(_provider is IHttpProvider) return await (_provider as IHttpProvider).ConnectAsync(CreateConnectRequest(connectAdditionalRequest));
+            else if (_provider is IInternalProvider) return (_provider as IInternalProvider).Connect(CreateConnectRequest(connectAdditionalRequest));
+            return null;
         }
 
         /// <summary>
@@ -164,7 +166,7 @@ namespace TonSdk.Connect
 
             ProviderModels.SendTransactionRequestSerialized serializedRequest = new ProviderModels.SendTransactionRequestSerialized(transactionRequest);
 
-            dynamic response = await _provider.SendRequest(
+            JObject response = await _provider.SendRequest(
             new SendTransactionRpcRequest()
             {
                 method = "sendTransaction",
@@ -190,18 +192,24 @@ namespace TonSdk.Connect
         /// <summary>
         /// Pause bridge HTTP connection. Might be helpful, if you use SDK on backend and want to save server resources.
         /// </summary>
-        public void PauseConnection() => _provider.Pause();
+        public void PauseConnection()
+        {
+            if(_provider is IHttpProvider) (_provider as IHttpProvider).Pause();
+        }
 
         /// <summary>
         /// Unpause bridge HTTP connection if it is paused.
         /// </summary>
-        public async Task UnPauseConnection() => await _provider.UnPause();
-
-        private SendTransactionResult? ParseSendTransactionResponse(dynamic response)
+        public async Task UnPauseConnection()
         {
-            if (response.error != null)
+            if(_provider is IHttpProvider) await (_provider as IHttpProvider).UnPause();
+        }
+
+        private SendTransactionResult? ParseSendTransactionResponse(JObject response)
+        {
+            if (response["error"] != null)
             {
-                switch((int)response.error.code)
+                switch((int)((JObject)response["error"])["code"])
                 {
                     case 0: throw new UnknownError();
                     case 1: throw new BadRequestError();
@@ -211,28 +219,28 @@ namespace TonSdk.Connect
                 }
             }
 
-            if (response.result != null) return new SendTransactionResult() { Boc = Cell.From(response.result.ToString()) };
+            if (response["result"] != null) return new SendTransactionResult() { Boc = Cell.From(response["result"].ToString()) };
             return null;
         }
 
         private void ValidateTransactionSupport(object[] walletFeatures, int messagesCount)
         {
             bool supportDepricatedSend = walletFeatures.Contains("SendTransaction");
-            dynamic sendFeature = null;
+            JObject sendFeature = null;
 
             foreach (object feature in walletFeatures)
             {
                 if (feature is JObject featureItem)
                 {
-                    dynamic currentFeature = featureItem.ToObject<dynamic>();
-                    if (currentFeature != null && currentFeature.name != null && currentFeature.name == "SendTransaction") sendFeature = currentFeature;
+                    JObject currentFeature = featureItem.ToObject<JObject>();
+                    if (currentFeature != null && currentFeature["name"] != null && currentFeature["name"].ToString() == "SendTransaction") sendFeature = currentFeature;
                 }
             }
 
             if (!supportDepricatedSend && sendFeature == null) throw new TonConnectError("Wallet doesn't support SendTransaction feature.");
             if (sendFeature != null)
             {
-                int maxMessages = (int)sendFeature.maxMessages;
+                int maxMessages = (int)sendFeature["maxMessages"];
                 if (maxMessages < messagesCount)
                     throw new TonConnectError($"Wallet is not able to handle such SendTransaction request. Max support messages number is {maxMessages}, but {messagesCount} is required.");
             }
@@ -246,19 +254,19 @@ namespace TonSdk.Connect
             return provider;
         }
 
-        private void WalletEventsListener(dynamic eventData)
+        private void WalletEventsListener(JObject eventData)
         {
 
-            switch ((string)eventData.@event)
+            switch ((string)eventData["event"])
             {
                 case "connect":
                     {
-                        OnWalletConnected(eventData.payload);
+                        OnWalletConnected((JObject)eventData["payload"]);
                         break;
                     }
                 case "connect_error":
                     {
-                        OnWalletConnectError(eventData.payload);
+                        OnWalletConnectError((JObject)eventData["payload"]);
                         break;
                     }
                 case "disconnect":
@@ -269,7 +277,7 @@ namespace TonSdk.Connect
             }
         }
 
-        private void OnWalletConnected(dynamic payload)
+        private void OnWalletConnected(JObject payload)
         {
             _wallet = ConnectEventParser.ParseResponse(payload);
             foreach (StatusChangeCallback listener in _statusChangeCallbacksSubscriptions)
@@ -278,7 +286,7 @@ namespace TonSdk.Connect
             }
         }
 
-        private void OnWalletConnectError(dynamic payload)
+        private void OnWalletConnectError(JObject payload)
         {
             ConnectErrorData errorData = ConnectEventParser.ParseError(payload);
             foreach (StatusChangeErrorsHandler listener in _statusChangeErrorSubscriptions)
@@ -304,9 +312,9 @@ namespace TonSdk.Connect
             ConnectRequest connectRequest = new ConnectRequest();
             connectRequest.manifestUrl = _manifestUrl;
             List<IConnectItem> connectItems = new List<IConnectItem>()
-        {
-            new ConnectAddressItem() { name = "ton_addr" }
-        };
+            {
+                new ConnectAddressItem() { name = "ton_addr" }
+            };
             if (connectAdditionalRequest != null && connectAdditionalRequest?.TonProof != null && connectAdditionalRequest?.TonProof != "")
             {
                 connectItems.Add(new ConnectProofItem() { name = "ton_proof", payload = connectAdditionalRequest?.TonProof });

@@ -11,6 +11,7 @@ namespace TonSdk.Connect
         public string Image { get; set; }
         public string AboutUrl { get; set; }
         public string BridgeUrl { get; set; }
+        public string JsBridgeKey { get; set; }
         public string UniversalUrl { get; set; }
     }
 
@@ -154,11 +155,19 @@ namespace TonSdk.Connect
 
                     walletConfig.BridgeUrl = bridge["url"].ToString();
                     if (wallet.TryGetValue("universal_url", out object url)) walletConfig.UniversalUrl = url.ToString();
-                    break;
+                }
+                else if(value.ToString() == "js")
+                {
+                    if(!bridge.ContainsKey("key"))
+                    {
+                        Console.WriteLine("Not supported wallet: bridge key not found, config -> " + wallet);
+                        return null;
+                    }
+                    walletConfig.JsBridgeKey = bridge["key"].ToString();
                 }
             }
 
-            if (walletConfig.BridgeUrl == null || walletConfig.BridgeUrl.Length == 0) return null;
+            if (walletConfig.BridgeUrl == null && walletConfig.JsBridgeKey == null) return null;
             return walletConfig;
         }
     }

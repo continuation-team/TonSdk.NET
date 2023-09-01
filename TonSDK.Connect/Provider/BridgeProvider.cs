@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
@@ -10,23 +11,23 @@ namespace TonSdk.Connect
 
     public delegate void ProviderMessageHandler(string eventData);
     public delegate void ProviderErrorHandler(Exception args);
-    public delegate void WalletEventListener(dynamic walletEvent);
+    public delegate void WalletEventListener(JObject walletEvent);
 
     public delegate void OnRequestSentHandler();
 
-    public class BridgeProvider
+    public class BridgeProvider : IHttpProvider
     {
         private readonly int DISCONNECT_TIMEOUT = 600;
         private readonly string STANDART_UNIVERSAL_URL = "tc://";
 
         private WalletConfig? _wallet;
-        private BridgeSession? _session;
-        private BridgeGateway? _gateway;
+        private BridgeSession _session;
+        private BridgeGateway _gateway;
 
         public RemoteStorage _storage;
 
-        private Dictionary<string, TaskCompletionSource<object>>? _pendingRequests;
-        private List<WalletEventListener>? _listeners;
+        private Dictionary<string, TaskCompletionSource<JObject>> _pendingRequests;
+        private List<WalletEventListener> _listeners;
         public ListenEventsFunction _listenEventsFunction;
 
         public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null)
@@ -37,7 +38,7 @@ namespace TonSdk.Connect
             _storage = storage;
             _listenEventsFunction = eventsFunction;
 
-            _pendingRequests = new Dictionary<string, TaskCompletionSource<object>>();
+            _pendingRequests = new Dictionary<string, TaskCompletionSource<JObject>>();
             _listeners = new List<WalletEventListener>();
         }
 
@@ -80,7 +81,7 @@ namespace TonSdk.Connect
             return true;
         }
 
-        public async Task<dynamic> SendRequest(IRpcRequest request, OnRequestSentHandler? onRequestSent = null)
+        public async Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler? onRequestSent = null)
         {
             if (_gateway == null || _session == null || _session.WalletPublicKey == null) throw new TonConnectError("Trying to send bridge request without session.");
             string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}");
@@ -101,10 +102,10 @@ namespace TonSdk.Connect
 
             await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
             
-            TaskCompletionSource<dynamic> resolve = new TaskCompletionSource<dynamic>();
+            TaskCompletionSource<JObject> resolve = new TaskCompletionSource<JObject>();
             _pendingRequests.Add(id.ToString(), resolve);
 
-            dynamic result = await resolve.Task;
+            JObject result = await resolve.Task;
             onRequestSent?.Invoke();
             return result;
         }
@@ -118,7 +119,7 @@ namespace TonSdk.Connect
                     method = "disconnect",
                     @params = Array.Empty<string>(),
                 };
-                dynamic result = await SendRequest(request, RemoveSession);
+                JObject result = await SendRequest(request, RemoveSession);
             }
             catch (Exception ex)
             {
@@ -134,6 +135,8 @@ namespace TonSdk.Connect
             url.Port = -1;
             url.Query += $"v={2}";
             url.Query += $"&id={_session?.CryptedSessionInfo?.SesionId}";
+            //System.Console.WriteLine(connectRequest.manifestUrl);
+            //System.Console.WriteLine(connectRequest.items.Length);
             url.Query += $"&r={JsonConvert.SerializeObject(connectRequest)}";
             return url.ToString();
         }
@@ -145,7 +148,7 @@ namespace TonSdk.Connect
             CloseGateways();
             _session = new BridgeSession();
             _gateway = null;
-            _pendingRequests = new Dictionary<string, TaskCompletionSource<object>>();
+            _pendingRequests = new Dictionary<string, TaskCompletionSource<JObject>>();
             _listeners = new List<WalletEventListener>();
         }
 
@@ -173,13 +176,14 @@ namespace TonSdk.Connect
             }
         }
 
-        private async void UpdateSession(dynamic walletMessage, string walletPublicKey)
+        private async void UpdateSession(JObject walletMessage, string walletPublicKey)
         {
             _session.WalletPublicKey = walletPublicKey;
+            //System.Console.WriteLine();
             ConnectionInfo connection = new ConnectionInfo();
             connection.Type = "http";
             connection.Session = _session.GetSessionInfo();
-            connection.LastWalletEventId = walletMessage.id ?? null;
+            connection.LastWalletEventId = (int?)walletMessage["id"] ?? null;
             connection.ConnectEvent = walletMessage;
             connection.NextRpcRequestId = 0;
 
@@ -193,17 +197,16 @@ namespace TonSdk.Connect
         private async Task ParseGatewayMessage(BridgeIncomingMessage message)
         {
             string json = _session!.CryptedSessionInfo!.Decrypt(Convert.FromBase64String(message.Message), message.From);
-            
             if (json == null || json.Length == 0) return;
 
 
-            dynamic data = JsonConvert.DeserializeObject<dynamic>(json);
+            JObject data = JsonConvert.DeserializeObject<JObject>(json);
             await Console.Out.WriteLineAsync(data.ToString());
-            if (data.@event == null)
+            if (data["event"] == null)
             {
-                if (data.id != null)
+                if (data["id"] != null)
                 {
-                    string id = data.id;
+                    string id = data["id"].ToString();
                     if (!_pendingRequests.ContainsKey(id))
                     {
                         await Console.Out.WriteLineAsync($"Response id {id} doesn't match any request's id");
@@ -216,10 +219,11 @@ namespace TonSdk.Connect
                 return;
             }
 
-            if (data.id != null)
+            if (data["id"] != null)
             {
-                int id = (int)data.id;
+                int id = (int)data["id"];
                 ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
+                System.Console.WriteLine("Here");
                 int? lastId = connection.LastWalletEventId;
 
                 if (lastId != null && id <= lastId)
@@ -228,7 +232,7 @@ namespace TonSdk.Connect
                     return;
                 }
 
-                if (data.@event != null && (string)data.@event != "connect")
+                if (data["event"] != null && (string)data["event"] != "connect")
                 {
                     connection.LastWalletEventId = id;
                     string dumpedConnection = JsonConvert.SerializeObject(connection);
@@ -242,9 +246,9 @@ namespace TonSdk.Connect
 
             List<WalletEventListener> listenersTemp = _listeners;
 
-            if (data.@event != null && (string)data.@event == "connect") UpdateSession(data, message.From);
+            if (data["event"] != null && (string)data["event"] == "connect") UpdateSession(data, message.From);
 
-            if (data.@event != null && (string)data.@event == "disconnect") RemoveSession();
+            if (data["event"] != null && (string)data["event"] == "disconnect") RemoveSession();
 
             foreach (WalletEventListener listener in listenersTemp)
             {
@@ -252,6 +256,8 @@ namespace TonSdk.Connect
             }
             return;
         }
+
+        
 
         private async void GatewayMessageListener(string eventData)
         {
