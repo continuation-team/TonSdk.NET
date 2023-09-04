@@ -60,4 +60,9 @@ namespace TonSdk.Connect
     {
         protected static new string Info = "Passed `tonconnect-manifest.json` contains errors. Check format of your manifest. See more https://github.com/ton-connect/docs/blob/main/requests-responses.md#app-manifest";
     }
+
+    public class WalletNotInjectedError : TonConnectError
+    {
+        protected static new string Info = "There is an attempt to connect to the injected wallet while it is not exists in the webpage.";
+    }
 }

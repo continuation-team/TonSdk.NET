@@ -10,26 +10,45 @@ namespace TonSdk.Connect
     public interface IProvider 
     {
         public void CloseConnection();
-        public Task<bool> RestoreConnection();
-        public Task Disconnect();
-        public Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler? onRequestSent = null);
+        
         public void Listen(WalletEventListener listener);
+        public Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler onRequestSent = null);
     }
 
     public interface IHttpProvider : IProvider 
     {
         public const string Type = "http";
         public Task<string> ConnectAsync(ConnectRequest connectRequest);
-
+        public Task Disconnect();
+        public Task<bool> RestoreConnection();
         public void Pause();
         public Task UnPause();
+        
     }
 
     public interface IInternalProvider : IProvider
     {
         public const string Type = "injected";
+        public void Connect(ConnectRequest connectRequest, int protocolVersion);
+        public void Disconnect();
+        public Task<bool> RestoreConnection(string key);
+        public void ParseMessage(string message);
+    }
 
-        public string Connect(ConnectRequest connectRequest);
+    public class WebWalletInfo
+    {
+        public string name;
+        public string app_name;
+        public string tondns;
+        public string image;
+        public string about_url;
+        public string platforms;
+    }
+
+    public class AdditionalConnectOptions
+    {
+        public ListenEventsFunction listenEventsFunction {get; set;}
+        public IInternalProvider internalProvider {get; set;}
     }
 
     public struct BridgeIncomingMessage
@@ -100,6 +119,7 @@ namespace TonSdk.Connect
         public int? LastWalletEventId { get; set; }
         public int? NextRpcRequestId { get; set; }
         public JObject ConnectEvent { get; set; }
+        public string JsBridgeKey { get; set; }
     }
 
     public enum CHAIN

@@ -257,8 +257,6 @@ namespace TonSdk.Connect
             return;
         }
 
-        
-
         private async void GatewayMessageListener(string eventData)
         {
             if (eventData.StartsWith("id:"))
