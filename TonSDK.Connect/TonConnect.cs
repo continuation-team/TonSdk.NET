@@ -233,6 +233,9 @@ namespace TonSdk.Connect
             if(_provider is IHttpProvider) await (_provider as IHttpProvider).UnPause();
         }
 
+        /// <summary>
+        /// Using to parse injected provider message.
+        /// </summary>
         public void ParseInjectedProviderMessage(string message)
         {
             if(_provider == null || !(_provider is IInternalProvider)) throw new TonConnectError("Attempt to parse message from non-injected provider.");

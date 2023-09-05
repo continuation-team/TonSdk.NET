@@ -76,7 +76,6 @@ namespace TonSdk.Connect
             }
         }
 
-
         public void Pause()
         {
             _sseClient?.StopClient();
