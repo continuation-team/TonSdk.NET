@@ -63,7 +63,6 @@ public class InjectedProvider : IInternalProvider
     {
         string connectionJsonString = _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}");
         ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(connectionJsonString);
-
         int id = connection.NextRpcRequestId ?? 0;
         connection.NextRpcRequestId = id + 1;
 
@@ -73,14 +72,12 @@ public class InjectedProvider : IInternalProvider
         request.id = id.ToString();
 
         string key = GenerateRandomString(10);
-
         TaskCompletionSource<object> resolve = new TaskCompletionSource<object>();
         _pendingRequests.Add(key, resolve);
+        System.Console.WriteLine("Again request: " + JsonConvert.SerializeObject(request));
         CallSendRequest(JsonConvert.SerializeObject(request), _bridgeKey, key);
         JObject result = (JObject)await resolve.Task;
-        
-
-        return result;
+        return new JObject();
     }
 
     public void Disconnect()
@@ -105,7 +102,6 @@ public class InjectedProvider : IInternalProvider
     public void ParseMessage(string message)
     {
         JObject fullData = JsonConvert.DeserializeObject<JObject>(message);
-        Console.WriteLine(fullData.ToString());
 
         if(fullData["type"] != null)
         {

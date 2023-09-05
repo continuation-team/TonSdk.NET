@@ -13,6 +13,7 @@ namespace TonSdk.Connect
         public string BridgeUrl { get; set; }
         public string JsBridgeKey { get; set; }
         public string UniversalUrl { get; set; }
+        public string AppName { get; set; }
     }
 
     public class WalletsListManager

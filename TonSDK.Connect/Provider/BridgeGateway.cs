@@ -5,6 +5,7 @@ using System.Web;
 
 namespace TonSdk.Connect
 {
+    public delegate void SendGatewayMessage(string bridgeUrl, string postPath, string sessionId, string receiver, int ttl, string topic, byte[] message);
     public class BridgeGateway
     {
         private readonly int DEFAULT_TTL = 300;
@@ -20,8 +21,9 @@ namespace TonSdk.Connect
         private ProviderMessageHandler _handler;
         private ProviderErrorHandler _errorHandler;
         private ListenEventsFunction _eventsFunction;
+        private SendGatewayMessage _sendGatewayMessage;
 
-        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage, ListenEventsFunction eventsFunction)
+        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage, ListenEventsFunction eventsFunction, SendGatewayMessage sendGatewayMessage)
         {
             isClosed = false;
             _bridgeUrl = bridgeUrl;
@@ -31,6 +33,7 @@ namespace TonSdk.Connect
             _errorHandler = errorHandler;
             _storage = storage;
             _eventsFunction = eventsFunction;
+            _sendGatewayMessage = sendGatewayMessage;
             _sseClient = null;
         }
 
@@ -53,6 +56,11 @@ namespace TonSdk.Connect
 
         public async Task Send(byte[] message, string receiver, string topic, int? ttl = null)
         {
+            if(_sendGatewayMessage != null)
+            {
+                _sendGatewayMessage(_bridgeUrl, POST_PATH, _sessionId, receiver, ttl ?? DEFAULT_TTL, topic, message);
+                return;
+            }
             var url = new Uri($"{_bridgeUrl}/{POST_PATH}");
             var queryString = HttpUtility.ParseQueryString(url.Query);
             queryString["client_id"] = _sessionId;

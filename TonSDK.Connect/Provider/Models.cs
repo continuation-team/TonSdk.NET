@@ -48,7 +48,7 @@ namespace TonSdk.Connect
     public class AdditionalConnectOptions
     {
         public ListenEventsFunction listenEventsFunction {get; set;}
-        public IInternalProvider internalProvider {get; set;}
+        public SendGatewayMessage sendGatewayMessage {get; set;}
     }
 
     public struct BridgeIncomingMessage
@@ -61,6 +61,7 @@ namespace TonSdk.Connect
     {
         public string method { get; set; }
         public string id { get; set; }
+        public string[] @params {get; set;}
     };
 
     [Serializable]
@@ -68,7 +69,7 @@ namespace TonSdk.Connect
     {
         public string method { get; set; } = "disconnect";
 
-        public string[] @params;
+        public string[] @params {get; set;}
         public string id { get; set; }
     }
 
@@ -77,7 +78,7 @@ namespace TonSdk.Connect
     {
         public string method { get; set; } = "sendTransaction";
 
-        public string[] @params;
+        public string[] @params {get; set;}
         public string id { get; set; }
     }
 

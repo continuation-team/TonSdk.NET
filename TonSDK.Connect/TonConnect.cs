@@ -45,7 +45,7 @@ namespace TonSdk.Connect
 
         private RemoteStorage _storage;
         private ListenEventsFunction _listenEventsFunction;
-        private IInternalProvider _internalProviderModel;
+        private SendGatewayMessage _sendGatewayMessage;
 
         private List<StatusChangeCallback> _statusChangeCallbacksSubscriptions;
         private List<StatusChangeErrorsHandler> _statusChangeErrorSubscriptions;
@@ -78,7 +78,7 @@ namespace TonSdk.Connect
             if(additionalOptions != null)
             {
                 _listenEventsFunction = additionalOptions.listenEventsFunction;
-                //_internalProviderModel = additionalOptions.internalProvider;
+                _sendGatewayMessage = additionalOptions.sendGatewayMessage;
             }
 
             _statusChangeCallbacksSubscriptions = new List<StatusChangeCallback>();
@@ -150,7 +150,8 @@ namespace TonSdk.Connect
                 _provider = new BridgeProvider()
                 {
                     _storage = _storage,
-                    _listenEventsFunction = _listenEventsFunction
+                    _listenEventsFunction = _listenEventsFunction,
+                    sendGatewayMessage = _sendGatewayMessage
                 };
                 _provider.Listen(new WalletEventListener(WalletEventsListener));
                 isRestored = await (_provider as IHttpProvider).RestoreConnection();
@@ -282,7 +283,7 @@ namespace TonSdk.Connect
 
         private BridgeProvider CreateProvider(WalletConfig walletConfig)
         {
-            BridgeProvider provider = new BridgeProvider(walletConfig, _storage, _listenEventsFunction);
+            BridgeProvider provider = new BridgeProvider(walletConfig, _storage, _listenEventsFunction, _sendGatewayMessage);
             provider.Listen(new WalletEventListener(WalletEventsListener));
             return provider;
         }

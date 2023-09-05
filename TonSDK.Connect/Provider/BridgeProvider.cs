@@ -29,14 +29,16 @@ namespace TonSdk.Connect
         private Dictionary<string, TaskCompletionSource<JObject>> _pendingRequests;
         private List<WalletEventListener> _listeners;
         public ListenEventsFunction _listenEventsFunction;
+        public SendGatewayMessage sendGatewayMessage;
 
-        public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null)
+        public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null, SendGatewayMessage sendGatewayMessage = null)
         {
             _wallet = wallet;
             _session = new BridgeSession();
             _gateway = null;
             _storage = storage;
             _listenEventsFunction = eventsFunction;
+            this.sendGatewayMessage = sendGatewayMessage;
 
             _pendingRequests = new Dictionary<string, TaskCompletionSource<JObject>>();
             _listeners = new List<WalletEventListener>();
@@ -50,7 +52,7 @@ namespace TonSdk.Connect
             string bridgeUrl = _wallet?.BridgeUrl;
             string universalUrl = _wallet?.UniversalUrl ?? STANDART_UNIVERSAL_URL;
 
-            _gateway = new BridgeGateway(bridgeUrl, sessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction);
+            _gateway = new BridgeGateway(bridgeUrl, sessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction, sendGatewayMessage);
             await _gateway.RegisterSession();
 
             _session.CryptedSessionInfo = sessionInfo;
@@ -70,7 +72,7 @@ namespace TonSdk.Connect
             if (connection.Session == null) return false;
             _session = new BridgeSession(connection.Session);
 
-            _gateway = new BridgeGateway(_session.BridgeUrl, _session.CryptedSessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction);
+            _gateway = new BridgeGateway(_session.BridgeUrl, _session.CryptedSessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction, sendGatewayMessage);
             await _gateway.RegisterSession();
 
             foreach (var listener in _listeners)
@@ -86,18 +88,19 @@ namespace TonSdk.Connect
             if (_gateway == null || _session == null || _session.WalletPublicKey == null) throw new TonConnectError("Trying to send bridge request without session.");
             string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}");
             ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(connectionJsonString);
-
+            
             int id = connection.NextRpcRequestId ?? 0;
             connection.NextRpcRequestId = id + 1;
 
             string jsonString = JsonConvert.SerializeObject(connection);
-
+            
             if (_storage != null) 
                 _storage.SetItem(RemoteStorage.KEY_CONNECTION, jsonString);
             else 
                 await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
 
             request.id = id.ToString();
+            System.Console.WriteLine("TX Request: " + JsonConvert.SerializeObject(request));
             string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
 
             await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
