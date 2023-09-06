@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <LangVersion>8.0</LangVersion>
+        <RootNamespace>TonSdk.Connect</RootNamespace>
+        <PackageId>TonSdk.Connect</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Continuation Team</Authors>
+        <PackageDescription>Library that allows to interact with Ton Connect 2.0</PackageDescription>
+        <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+	  <PackageReference Include="NaCl.Net" Version="0.1.13" />
+	  <PackageReference Include="TonSdk.Core" Version="0.2.2" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+</Project>
