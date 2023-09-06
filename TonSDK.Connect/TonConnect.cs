@@ -90,7 +90,7 @@ namespace TonSdk.Connect
         /// </summary>
         /// <param name="current">Set false, if you want to get dafault wallet list, true - current TonConnect instance</param>
         /// <returns>WalletConfig array</returns>
-        public WalletConfig[] GetWallets(bool current = true) => current ? _walletsList.GetWallets().ToArray() : new WalletsListManager().GetWallets().ToArray();
+        public WalletConfig[] GetWallets(bool current = true, bool includeInjected = false) => current ? _walletsList.GetWallets(includeInjected).ToArray() : new WalletsListManager().GetWallets(includeInjected).ToArray();
 
         /// <summary>
         /// Allows to subscribe to connection status changes and handle connection errors.
@@ -123,7 +123,7 @@ namespace TonSdk.Connect
         {
             if (IsConnected) throw new WalletAlreadyConnectedError();
             _provider?.CloseConnection();
-            if(walletConfig.JsBridgeKey != null) 
+            if(walletConfig.JsBridgeKey != null && walletConfig.BridgeUrl == null) 
             {
                 _provider = new InjectedProvider(walletConfig, _storage);
                 _provider.Listen(new WalletEventListener(WalletEventsListener));
@@ -211,10 +211,10 @@ namespace TonSdk.Connect
         {
             if (!IsConnected) throw new TonConnectError("Wallet not connected.");
             System.Console.WriteLine("Disconnecting...");
+            OnWalletDisconnected();
             if(_provider is IHttpProvider) await (_provider as IHttpProvider).Disconnect();
             else if (_provider is IInternalProvider) (_provider as IInternalProvider).Disconnect();
             System.Console.WriteLine("Disconnected.");
-            OnWalletDisconnected();
         }
 
         /// <summary>
@@ -342,7 +342,14 @@ namespace TonSdk.Connect
             }
         }
 
-        private void OnWalletDisconnected() => _wallet = null;
+        private void OnWalletDisconnected()
+        {
+            _wallet = null;
+            foreach (StatusChangeCallback listener in _statusChangeCallbacksSubscriptions)
+            {
+                listener(new Wallet());
+            }
+        }
 
         private ConnectRequest CreateConnectRequest(ConnectAdditionalRequest? connectAdditionalRequest = null)
         {

@@ -80,7 +80,7 @@ namespace TonSdk.Connect
             this.walletsListCacheCreationTimestamp = 0;
         }
 
-        public List<WalletConfig> GetWallets()
+        public List<WalletConfig> GetWallets(bool includeInjected = false)
         {
             if (cacheTtl > 0 && walletsListCacheCreationTimestamp > 0 && DateTimeOffset.UtcNow.ToUnixTimeSeconds() > walletsListCacheCreationTimestamp + cacheTtl)
                 walletsListCache = null;
@@ -104,72 +104,74 @@ namespace TonSdk.Connect
                 }
 
                 walletsListCache = new List<WalletConfig>();
-                foreach (Dictionary<string, object> wallet in walletsList)
+
+                for(int i = 0; i < walletsList.Count; i++)
                 {
-                    WalletConfig? supportedWallet = GetSupportedWalletConfig(wallet);
-                    if (supportedWallet != null) walletsListCache.Add((WalletConfig)supportedWallet);
+                    if (walletsList[i] == null)
+                    {
+                        Console.WriteLine("Not supported wallet: is not a dictionary -> " + walletsList[i]);
+                        continue;
+                    }
+
+                    if (!walletsList[i].ContainsKey("name") || !walletsList[i].ContainsKey("image") || !walletsList[i].ContainsKey("about_url") || !walletsList[i].ContainsKey("bridge"))
+                    {
+                        Console.WriteLine("Not supported wallet. Config -> " + walletsList[i]);
+                        continue;
+                    }
+
+                    List<Dictionary<string, object>> bridges = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(walletsList[i]["bridge"].ToString());
+                    if (bridges == null || bridges.Count == 0)
+                    {
+                        Console.WriteLine("Not supported wallet: bridges is not a list or len is equal 0, config -> " + walletsList[i]);
+                        continue;
+                    }
+
+                    WalletConfig walletConfig = new WalletConfig()
+                    {
+                        Name = walletsList[i]["name"].ToString(),
+                        Image = walletsList[i]["image"].ToString(),
+                        AboutUrl = walletsList[i]["about_url"].ToString(),
+                        AppName = walletsList[i]["app_name"].ToString()
+                    };
+
+                    foreach (Dictionary<string, object> bridge in bridges)
+                    {
+                        if (bridge.TryGetValue("type", out object value) && value.ToString() == "sse")
+                        {
+                            if (!bridge.ContainsKey("url"))
+                            {
+                                Console.WriteLine("Not supported wallet: bridge url not found, config -> " + walletsList[i]);
+                                continue;
+                            }
+
+                            walletConfig.BridgeUrl = bridge["url"].ToString();
+                            if (walletsList[i].TryGetValue("universal_url", out object urlUni)) walletConfig.UniversalUrl = urlUni.ToString();
+                            if(walletConfig.JsBridgeKey != null) walletConfig.JsBridgeKey = null;
+                            walletsListCache.Add(walletConfig);
+                        }
+                        else if(value.ToString() == "js")
+                        {
+                            if(includeInjected)
+                            {
+                                if(!bridge.ContainsKey("key"))
+                                {
+                                    Console.WriteLine("Not supported wallet: bridge key not found, config -> " + walletsList[i]);
+                                    continue;
+                                }
+                                walletConfig.JsBridgeKey = bridge["key"].ToString();
+                                if(walletConfig.BridgeUrl != null) walletConfig.BridgeUrl = null;
+                                walletsListCache.Add(walletConfig);
+                            }
+                        }
+                    }
+
+                    if (walletConfig.BridgeUrl == null && walletConfig.JsBridgeKey == null) continue;
                 }
 
                 walletsListCacheCreationTimestamp = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
 
             return walletsListCache;
-        }
-
-        private WalletConfig? GetSupportedWalletConfig(Dictionary<string, object> wallet)
-        {
-            if (wallet == null)
-            {
-                Console.WriteLine("Not supported wallet: is not a dictionary -> " + wallet);
-                return null;
-            }
-
-            if (!wallet.ContainsKey("name") || !wallet.ContainsKey("image") || !wallet.ContainsKey("about_url") || !wallet.ContainsKey("bridge"))
-            {
-                Console.WriteLine("Not supported wallet. Config -> " + wallet);
-                return null;
-            }
-
-            List<Dictionary<string, object>> bridges = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(wallet["bridge"].ToString());
-            if (bridges == null || bridges.Count == 0)
-            {
-                Console.WriteLine("Not supported wallet: bridges is not a list or len is equal 0, config -> " + wallet);
-                return null;
-            }
-
-            WalletConfig walletConfig = new WalletConfig()
-            {
-                Name = wallet["name"].ToString(),
-                Image = wallet["image"].ToString(),
-                AboutUrl = wallet["about_url"].ToString(),
-            };
-
-            foreach (Dictionary<string, object> bridge in bridges)
-            {
-                if (bridge.TryGetValue("type", out object value) && value.ToString() == "sse")
-                {
-                    if (!bridge.ContainsKey("url"))
-                    {
-                        Console.WriteLine("Not supported wallet: bridge url not found, config -> " + wallet);
-                        return null;
-                    }
-
-                    walletConfig.BridgeUrl = bridge["url"].ToString();
-                    if (wallet.TryGetValue("universal_url", out object url)) walletConfig.UniversalUrl = url.ToString();
-                }
-                else if(value.ToString() == "js")
-                {
-                    if(!bridge.ContainsKey("key"))
-                    {
-                        Console.WriteLine("Not supported wallet: bridge key not found, config -> " + wallet);
-                        return null;
-                    }
-                    walletConfig.JsBridgeKey = bridge["key"].ToString();
-                }
-            }
-
-            if (walletConfig.BridgeUrl == null && walletConfig.JsBridgeKey == null) return null;
-            return walletConfig;
         }
     }
 }

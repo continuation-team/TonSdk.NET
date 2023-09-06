@@ -128,7 +128,6 @@ namespace TonSdk.Connect
             {
                 await Console.Out.WriteLineAsync(ex.Message);
                 RemoveSession();
-
             }
         }
 
