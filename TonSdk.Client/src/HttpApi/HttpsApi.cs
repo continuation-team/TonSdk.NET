@@ -20,7 +20,12 @@ namespace TonSdk.Client
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
 
-        public HttpApi(HttpApiParameters  httpApiParameters)
+        /// <summary>
+        /// Initializes a new instance of the HttpApi class with the specified options.
+        /// </summary>
+        /// <param name="httpApiParameters">The HTTP API parameters.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the endpoint field in the options is null.</exception>
+        public HttpApi(HttpApiParameters httpApiParameters)
         {
             if (string.IsNullOrEmpty(httpApiParameters.Endpoint))
             {
@@ -108,7 +113,8 @@ namespace TonSdk.Client
             string afterHash = null,
             int? count = null)
         {
-            var requestBody = new InBlockTransactions(workchain, shard, seqno, rootHash, fileHash, afterLt, afterHash, count);
+            var requestBody =
+                new InBlockTransactions(workchain, shard, seqno, rootHash, fileHash, afterLt, afterHash, count);
             var result = await new TonRequest(new RequestParameters("getBlockTransactions", requestBody), _httpClient)
                 .Call();
             RootBlockTransactions rootBlockTransactions = JsonConvert.DeserializeObject<RootBlockTransactions>(result);
