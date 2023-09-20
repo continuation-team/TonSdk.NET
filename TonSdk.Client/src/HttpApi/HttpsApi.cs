@@ -20,7 +20,7 @@ namespace TonSdk.Client
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
 
-        public HttpApi(TonClientParameters httpApiParameters)
+        public HttpApi(HttpApiParameters  httpApiParameters)
         {
             if (string.IsNullOrEmpty(httpApiParameters.Endpoint))
             {
