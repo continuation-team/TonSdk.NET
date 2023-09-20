@@ -39,6 +39,17 @@ namespace TonSdk.Client
             throw new Exception($"Unknown type of element: {element}");
         }
         // in
+        public struct EmptyBody : IRequestBody
+        {
+        }
+        
+        public struct InShardsBody : IRequestBody
+        {
+            public long seqno { get; set; }
+
+            public InShardsBody(long seqno) => this.seqno = seqno;
+        }
+
         public struct InAdressInformationBody : IRequestBody
         {
             public string address { get; set; }
@@ -101,6 +112,22 @@ namespace TonSdk.Client
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
 
+        public struct RootMasterchainInformation
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutMasterchanInformationResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        public struct RootShardsInformation
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutShardsInformationResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
         public struct RootTransactions
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
@@ -155,6 +182,18 @@ namespace TonSdk.Client
             [JsonProperty("sync_utime")] public long SyncUtime;
         }
 
+        public struct OutMasterchanInformationResult
+        {
+            [JsonProperty("last")] public BlockIdExternal LastBlock;
+            [JsonProperty("init")] public BlockIdExternal InitBlock;
+            [JsonProperty("state_root_hash")] public string StateRootHash;
+        }
+
+        public struct OutShardsInformationResult
+        {
+            [JsonProperty("shards")] public BlockIdExternal[] Shards;
+        }
+
         public struct OutTransactionsResult
         {
             [JsonProperty("utime")] public long Utime;
@@ -202,8 +241,6 @@ namespace TonSdk.Client
             [JsonProperty("root_hash")] public string RootHash;
             [JsonProperty("file_hash")] public string FileHash;
         }
-
-
     }
 
     public struct AddressInformationResult
@@ -249,6 +286,30 @@ namespace TonSdk.Client
             BlockId = outAddressInformationResult.BlockId;
             FrozenHash = outAddressInformationResult.FrozenHash;
             SyncUtime = outAddressInformationResult.SyncUtime;
+        }
+    }
+
+    public struct MasterchainInformationResult
+    {
+        public BlockIdExternal LastBlock;
+        public BlockIdExternal InitBlock;
+        public string StateRootHash;
+
+        public MasterchainInformationResult(OutMasterchanInformationResult outAddressInformationResult)
+        {
+            LastBlock = outAddressInformationResult.LastBlock;
+            InitBlock = outAddressInformationResult.InitBlock;
+            StateRootHash = outAddressInformationResult.StateRootHash;
+        }
+    }
+
+    public struct ShardsInformationResult
+    {
+        public BlockIdExternal[] Shards;
+
+        public ShardsInformationResult(OutShardsInformationResult outShardsInformationResult)
+        {
+            Shards = outShardsInformationResult.Shards;
         }
     }
 

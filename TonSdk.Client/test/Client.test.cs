@@ -14,6 +14,19 @@ public class ClientTest
     }
 
     [Test]
+    public async Task Test_GetMasterchainInfo()
+    {
+        Assert.That(await client.GetMasterchainInfo() is MasterchainInformationResult , Is.EqualTo(true));
+    }
+
+    [Test]
+    public async Task Test_Shards()
+    {
+        var masterchainInfo = await client.GetMasterchainInfo(); 
+        Assert.That(await client.Shards(masterchainInfo.LastBlock.Seqno) is ShardsInformationResult , Is.EqualTo(true));
+    }
+
+    [Test]
     public async Task Test_IsContractDeployed()
     {
         Assert.That(await client.IsContractDeployed(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N")), Is.EqualTo(true));

@@ -3,8 +3,9 @@ using TonSdk.Core;
 
 namespace TonSdk.Client
 {
-
-    public class TonClientParameters : HttpApiParameters { }
+    public class TonClientParameters : HttpApiParameters
+    {
+    }
 
     public class TonClient : HttpApi
     {
@@ -16,7 +17,7 @@ namespace TonSdk.Client
         /// <summary>
         /// Initializes a new instance of the TonClient class with the specified options.
         /// </summary>
-        /// <param name="options">The Ton Client parameters.</param>
+        /// <param name="httpApiParameters">The Ton Client parameters.</param>
         public TonClient(TonClientParameters httpApiParameters) : base(httpApiParameters)
         {
             Wallet = new Wallet(this);
