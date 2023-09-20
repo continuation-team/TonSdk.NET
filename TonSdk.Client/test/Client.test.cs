@@ -4,7 +4,6 @@ namespace TonSdk.Client.Tests;
 public class ClientTest
 {
     TonClient client = new(new() { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "0efdbc011a4c1c36fc74c3c4291bd9a1eccbf960b9113516fc62bc9e6a127d6d" });
-    TonClient testClient = new(new() { Endpoint = "https://testnet.toncenter.com/api/v2/jsonRPC", ApiKey = "121b25e9de909d7e9846ac4ca6e5877ab56c78cbec92e9ae8e89ca73966d73aa" });
 
     [Test]
     public async Task Test_AddressBalance()
