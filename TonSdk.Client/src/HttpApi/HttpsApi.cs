@@ -15,7 +15,7 @@ namespace TonSdk.Client
         public string ApiKey { get; set; }
     }
 
-    public abstract class HttpApi
+    public abstract class HttpApi : IDisposable
     {
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
@@ -212,6 +212,11 @@ namespace TonSdk.Client
             RootGetConfigParam resultRoot = JsonConvert.DeserializeObject<RootGetConfigParam>(result);
             ConfigParamResult outConfigParam = new ConfigParamResult(resultRoot.Result.Config);
             return outConfigParam;
+        }
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
         }
     }
 }
