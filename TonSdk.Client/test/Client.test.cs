@@ -1,6 +1,4 @@
-﻿using TonSdk.Client;
-using TonSdk.Core;
-using TonSdk.Core.Boc;
+﻿using TonSdk.Core;
 
 namespace TonSdk.Client.Tests;
 public class ClientTest
@@ -11,6 +9,25 @@ public class ClientTest
     public async Task Test_AddressBalance()
     {
         Assert.That((await client.GetBalance(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"))) is Coins , Is.EqualTo(true));
+    }
+
+    [Test]
+    public void Test_GetMasterchainInfo()
+    {
+        Assert.DoesNotThrowAsync(() => client.GetMasterchainInfo());
+    }
+
+    [Test]
+    public async Task Test_Shards()
+    {
+        var masterchainInfo = await client.GetMasterchainInfo(); 
+        Assert.DoesNotThrowAsync(() => client.Shards(masterchainInfo.LastBlock.Seqno));
+    }
+
+    [Test]
+    public void Test_GetBlockTransactions()
+    {
+        Assert.DoesNotThrowAsync(() => client.GetBlockTransactions(0, -9223372036854775808, 14255576, count: 40));
     }
 
     [Test]
@@ -28,7 +45,7 @@ public class ClientTest
     }
 
     [Test]
-    public async Task Test_WalletGetSubwalletAndPluginList()
+    public void Test_WalletGetSubwalletAndPluginList()
     {
         Assert.DoesNotThrowAsync(async Task() => await client.Wallet.GetSubwalletId(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N")));
         Assert.DoesNotThrowAsync(async Task() => await client.Wallet.GetPluginList(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N")));

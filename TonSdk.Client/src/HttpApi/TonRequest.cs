@@ -5,36 +5,35 @@ using System.Threading.Tasks;
 
 namespace TonSdk.Client
 {
-
-    public interface IRequestBody { }
+    public interface IRequestBody
+    {
+    }
 
     public struct RequestParameters
     {
         public string MethodName { get; private set; }
         public IRequestBody RequestBody { get; private set; }
-        public HttpApiParameters HttpApiParameters { get; private set; }
-
-        public RequestParameters(string methodName, IRequestBody requestBody, HttpApiParameters httpApiParameters)
+        public RequestParameters(string methodName, IRequestBody requestBody)
         {
             MethodName = methodName;
             RequestBody = requestBody;
-            HttpApiParameters = httpApiParameters;
         }
     }
 
     public class TonRequest
     {
+
         private readonly RequestParameters _params;
-        public TonRequest(RequestParameters _params) => this._params = _params;
+        private readonly HttpClient _httpClient;
+
+        public TonRequest(RequestParameters requestParameters, HttpClient httpClient)
+        {
+            _params = requestParameters;
+            _httpClient = httpClient;
+        }
 
         public async Task<string> Call()
         {
-            HttpClient httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromMilliseconds(Convert.ToDouble(_params.HttpApiParameters.Timeout));
-            //httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-
-            if (_params.HttpApiParameters.ApiKey != null && _params.HttpApiParameters.ApiKey != string.Empty)
-                httpClient.DefaultRequestHeaders.Add("X-API-Key", _params.HttpApiParameters.ApiKey);
 
             string data = JsonConvert.SerializeObject(new
             {
@@ -45,9 +44,10 @@ namespace TonSdk.Client
             });
 
             StringContent content = new StringContent(data, System.Text.Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await httpClient.PostAsync(_params.HttpApiParameters.Endpoint, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(string.Empty, content);
 
-            if (!response.IsSuccessStatusCode) throw new Exception($"Received error: {await response.Content.ReadAsStringAsync()}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Received error: {await response.Content.ReadAsStringAsync()}");
             string result = await response.Content.ReadAsStringAsync();
 
             return result;

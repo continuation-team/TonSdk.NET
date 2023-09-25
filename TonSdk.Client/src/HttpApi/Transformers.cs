@@ -9,7 +9,6 @@ using static TonSdk.Client.Transformers;
 
 namespace TonSdk.Client
 {
-
     public static class Transformers
     {
         public static string[] PackRequestStack(object element)
@@ -18,27 +17,75 @@ namespace TonSdk.Client
             {
                 return new string[] { "tvm.Cell", ((Cell)element).ToString() };
             }
+
             if (element is BigInteger || element is uint || element is int || element is long || element is ulong)
             {
-
                 return new string[] { "num", element.ToString()! };
             }
+
             if (element is Coins)
             {
                 return new string[] { "num", ((Coins)element).ToNano() };
             }
+
             if (element is CellSlice)
             {
                 return new string[] { "tvm.Slice", ((CellSlice)element).RestoreRemainder().ToString()! };
             }
+
             if (element is Address)
             {
                 return new string[] { "tvm.Slice", ((Address)element).ToBOC() };
             }
+
             // TODO: Message Layout
             throw new Exception($"Unknown type of element: {element}");
         }
+
         // in
+        public struct EmptyBody : IRequestBody
+        {
+        }
+
+        public struct InShardsBody : IRequestBody
+        {
+            public long seqno { get; set; }
+
+            public InShardsBody(long seqno) => this.seqno = seqno;
+        }
+
+        public struct InBlockTransactions : IRequestBody
+        {
+            public int workchain { get; set; }
+            public long shard { get; set; }
+            public long seqno { get; set; }
+            public string root_hash { get; set; }
+            public string file_hash { get; set; }
+            public ulong? after_lt { get; set; }
+            public string after_hash { get; set; }
+            public int? count { get; set; }
+
+            public InBlockTransactions(
+                int workchain,
+                long shard,
+                long seqno,
+                string root_hash = null,
+                string file_hash = null,
+                ulong? after_lt = null,
+                string after_hash = null,
+                int? count = null)
+            {
+                this.workchain = workchain;
+                this.shard = shard;
+                this.seqno = seqno;
+                this.root_hash = root_hash;
+                this.file_hash = file_hash;
+                this.after_lt = after_lt;
+                this.after_hash = after_hash;
+                this.count = count;
+            }
+        }
+
         public struct InAdressInformationBody : IRequestBody
         {
             public string address { get; set; }
@@ -91,12 +138,38 @@ namespace TonSdk.Client
         //  ]
 
         // out
-        public interface OutResult { }
+        public interface OutResult
+        {
+        }
 
         public struct RootAddressInformation
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
             [JsonProperty("result")] public OutAddressInformationResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        public struct RootMasterchainInformation
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutMasterchanInformationResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        public struct RootShardsInformation
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutShardsInformationResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        public struct RootBlockTransactions
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutBlockTransactionsResult Result { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
@@ -155,6 +228,34 @@ namespace TonSdk.Client
             [JsonProperty("sync_utime")] public long SyncUtime;
         }
 
+        public struct OutMasterchanInformationResult
+        {
+            [JsonProperty("last")] public BlockIdExternal LastBlock;
+            [JsonProperty("init")] public BlockIdExternal InitBlock;
+            [JsonProperty("state_root_hash")] public string StateRootHash;
+        }
+
+        public struct OutShardsInformationResult
+        {
+            [JsonProperty("shards")] public BlockIdExternal[] Shards;
+        }
+
+        public struct OutBlockTransactionsResult
+        {
+            [JsonProperty("id")] public BlockIdExternal Id;
+            [JsonProperty("req_count")] public int ReqCount;
+            [JsonProperty("incomplete")] public bool Incomplete;
+            [JsonProperty("transactions")] public ShortTransactionsResult[] Transactions;
+        }
+
+        public struct ShortTransactionsResult
+        {
+            [JsonProperty("mode")] public int Mode;
+            [JsonProperty("account")] public string Account;
+            [JsonProperty("lt")] public ulong Lt;
+            [JsonProperty("hash")] public string Hash;
+        }
+
         public struct OutTransactionsResult
         {
             [JsonProperty("utime")] public long Utime;
@@ -202,8 +303,6 @@ namespace TonSdk.Client
             [JsonProperty("root_hash")] public string RootHash;
             [JsonProperty("file_hash")] public string FileHash;
         }
-
-
     }
 
     public struct AddressInformationResult
@@ -222,26 +321,27 @@ namespace TonSdk.Client
             switch (outAddressInformationResult.State)
             {
                 case "active":
-                    {
-                        State = AccountState.Active;
-                        break;
-                    }
+                {
+                    State = AccountState.Active;
+                    break;
+                }
                 case "frozen":
-                    {
-                        State = AccountState.Frozen;
-                        break;
-                    }
+                {
+                    State = AccountState.Frozen;
+                    break;
+                }
                 case "uninitialized":
-                    {
-                        State = AccountState.Uninit;
-                        break;
-                    }
+                {
+                    State = AccountState.Uninit;
+                    break;
+                }
                 default:
-                    {
-                        State = AccountState.NonExist;
-                        break;
-                    }
+                {
+                    State = AccountState.NonExist;
+                    break;
+                }
             }
+
             Balance = new Coins(outAddressInformationResult.Balance, new CoinsOptions(true, 9));
             Code = outAddressInformationResult.Code == "" ? null : Cell.From(outAddressInformationResult.Code);
             Data = outAddressInformationResult.Data == "" ? null : Cell.From(outAddressInformationResult.Data);
@@ -249,6 +349,46 @@ namespace TonSdk.Client
             BlockId = outAddressInformationResult.BlockId;
             FrozenHash = outAddressInformationResult.FrozenHash;
             SyncUtime = outAddressInformationResult.SyncUtime;
+        }
+    }
+
+    public struct MasterchainInformationResult
+    {
+        public BlockIdExternal LastBlock;
+        public BlockIdExternal InitBlock;
+        public string StateRootHash;
+
+        public MasterchainInformationResult(OutMasterchanInformationResult outAddressInformationResult)
+        {
+            LastBlock = outAddressInformationResult.LastBlock;
+            InitBlock = outAddressInformationResult.InitBlock;
+            StateRootHash = outAddressInformationResult.StateRootHash;
+        }
+    }
+
+    public struct ShardsInformationResult
+    {
+        public BlockIdExternal[] Shards;
+
+        public ShardsInformationResult(OutShardsInformationResult outShardsInformationResult)
+        {
+            Shards = outShardsInformationResult.Shards;
+        }
+    }
+    
+    public struct BlockTransactionsResult
+    {
+        public BlockIdExternal Id;
+        public int ReqCount;
+        public bool Incomplete;
+        public ShortTransactionsResult[] Transactions;
+
+        public BlockTransactionsResult(OutBlockTransactionsResult outBlockTransactionsResult)
+        {
+            Id = outBlockTransactionsResult.Id;
+            ReqCount = outBlockTransactionsResult.ReqCount;
+            Incomplete = outBlockTransactionsResult.Incomplete;
+            Transactions = outBlockTransactionsResult.Transactions;
         }
     }
 
@@ -305,7 +445,9 @@ namespace TonSdk.Client
 
         public RawMessage(OutRawMessage outRawMessage)
         {
-            Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0 ? new Address(outRawMessage.Source) : null;
+            Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0
+                ? new Address(outRawMessage.Source)
+                : null;
             Destination = new Address(outRawMessage.Destination);
             Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
             FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
@@ -367,6 +509,7 @@ namespace TonSdk.Client
                     {
                         list[c] = ParseObject((JObject)x["elements"][c]);
                     }
+
                     return list;
                 case "tvm.cell":
                     return Cell.From(x["bytes"].ToString()); // Cell.From should be defined elsewhere in your code.

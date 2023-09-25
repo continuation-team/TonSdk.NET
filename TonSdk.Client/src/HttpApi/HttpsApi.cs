@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
@@ -7,7 +8,6 @@ using static TonSdk.Client.Transformers;
 
 namespace TonSdk.Client
 {
-
     public class HttpApiParameters
     {
         public string Endpoint { get; set; }
@@ -15,25 +15,32 @@ namespace TonSdk.Client
         public string ApiKey { get; set; }
     }
 
-    public class HttpApi
+    public abstract class HttpApi : IDisposable
     {
-        protected readonly HttpApiParameters ApiOptions;
+        // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
+        private readonly HttpClient _httpClient;
 
         /// <summary>
         /// Initializes a new instance of the HttpApi class with the specified options.
         /// </summary>
-        /// <param name="options">The HTTP API parameters.</param>
+        /// <param name="httpApiParameters">The HTTP API parameters.</param>
         /// <exception cref="ArgumentNullException">Thrown when the endpoint field in the options is null.</exception>
-        public HttpApi(HttpApiParameters options)
+        public HttpApi(HttpApiParameters httpApiParameters)
         {
-            if (options.Endpoint == null || options.Endpoint.Length == 0) { throw new ArgumentNullException("Endpoint field in Http options cannot be null."); }
-
-            this.ApiOptions = new HttpApiParameters
+            if (string.IsNullOrEmpty(httpApiParameters.Endpoint))
             {
-                Endpoint = options.Endpoint,
-                Timeout = options.Timeout ?? 30000,
-                ApiKey = options.ApiKey ?? ""
-            };
+                throw new ArgumentNullException("Endpoint field in Http options cannot be null.");
+            }
+
+            _httpClient = new HttpClient();
+
+            _httpClient.Timeout = TimeSpan.FromMilliseconds(Convert.ToDouble(httpApiParameters.Timeout ?? 30000));
+            //httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+
+            if (!string.IsNullOrEmpty(httpApiParameters.ApiKey))
+                _httpClient.DefaultRequestHeaders.Add("X-API-Key", httpApiParameters.ApiKey);
+
+            _httpClient.BaseAddress = new Uri(httpApiParameters.Endpoint);
         }
 
         /// <summary>
@@ -43,11 +50,76 @@ namespace TonSdk.Client
         /// <returns>An object containing the address information.</returns>
         public async Task<AddressInformationResult> GetAddressInformation(Address address)
         {
-            InAdressInformationBody requestBody = new InAdressInformationBody(address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, false)));
-            var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody, ApiOptions)).Call();
-            RootAddressInformation resultAddressInformation = JsonConvert.DeserializeObject<RootAddressInformation>(result);
-            AddressInformationResult addressInformationResult = new AddressInformationResult(resultAddressInformation.Result);
+            InAdressInformationBody requestBody =
+                new InAdressInformationBody(address.ToString(AddressType.Base64,
+                    new AddressStringifyOptions(true, false, false)));
+            var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody), _httpClient)
+                .Call();
+            RootAddressInformation resultAddressInformation =
+                JsonConvert.DeserializeObject<RootAddressInformation>(result);
+            AddressInformationResult addressInformationResult =
+                new AddressInformationResult(resultAddressInformation.Result);
             return addressInformationResult;
+        }
+
+        /// <summary>
+        /// Get up-to-date masterchain state.
+        /// </summary>
+        /// <returns>An object containing the masterchain information.</returns>
+        public async Task<MasterchainInformationResult> GetMasterchainInfo()
+        {
+            var result = await new TonRequest(new RequestParameters("getMasterchainInfo", new EmptyBody()), _httpClient)
+                .Call();
+            RootMasterchainInformation rootMasterchainInformation =
+                JsonConvert.DeserializeObject<RootMasterchainInformation>(result);
+            MasterchainInformationResult masterchainInformationResult =
+                new MasterchainInformationResult(rootMasterchainInformation.Result);
+            return masterchainInformationResult;
+        }
+
+        /// <summary>
+        /// Get shards information.
+        /// </summary>
+        /// <param name="seqno">Masterchain seqno to fetch shards of.</param>
+        /// <returns>An object containing the shards information.</returns>
+        public async Task<ShardsInformationResult> Shards(long seqno)
+        {
+            var requestBody = new InShardsBody(seqno);
+            var result = await new TonRequest(new RequestParameters("shards", requestBody), _httpClient).Call();
+            RootShardsInformation rootShardsInformation = JsonConvert.DeserializeObject<RootShardsInformation>(result);
+            ShardsInformationResult shardsInformationResult = new ShardsInformationResult(rootShardsInformation.Result);
+            return shardsInformationResult;
+        }
+
+        /// <summary>
+        /// Get transactions of the given block.
+        /// </summary>
+        /// <param name="workchain"></param>
+        /// <param name="shard"></param>
+        /// <param name="seqno"></param>
+        /// <param name="rootHash"></param>
+        /// <param name="fileHash"></param>
+        /// <param name="afterLt"></param>
+        /// <param name="afterHash"></param>
+        /// <param name="count"></param>
+        /// <returns>An object containing the shards information.</returns>
+        public async Task<BlockTransactionsResult> GetBlockTransactions(
+            int workchain,
+            long shard,
+            long seqno,
+            string rootHash = null,
+            string fileHash = null,
+            ulong? afterLt = null,
+            string afterHash = null,
+            int? count = null)
+        {
+            var requestBody =
+                new InBlockTransactions(workchain, shard, seqno, rootHash, fileHash, afterLt, afterHash, count);
+            var result = await new TonRequest(new RequestParameters("getBlockTransactions", requestBody), _httpClient)
+                .Call();
+            RootBlockTransactions rootBlockTransactions = JsonConvert.DeserializeObject<RootBlockTransactions>(result);
+            BlockTransactionsResult blockTransactionsResult = new BlockTransactionsResult(rootBlockTransactions.Result);
+            return blockTransactionsResult;
         }
 
         /// <summary>
@@ -60,7 +132,8 @@ namespace TonSdk.Client
         /// <param name="to_lt">The logical time of the transaction to retrieve up to (optional).</param>
         /// <param name="archival">Specifies whether to retrieve transactions from archival nodes (optional).</param>
         /// <returns>An array of transaction information results.</returns>
-        public async Task<TransactionsInformationResult[]> GetTransactions(Address address, int limit = 10, ulong? lt = null, string hash = null, ulong? to_lt = null, bool? archival = null)
+        public async Task<TransactionsInformationResult[]> GetTransactions(Address address, int limit = 10,
+            ulong? lt = null, string hash = null, ulong? to_lt = null, bool? archival = null)
         {
             InTransactionsBody requestBody = new InTransactionsBody()
             {
@@ -72,10 +145,12 @@ namespace TonSdk.Client
             if (to_lt != null) requestBody.to_lt = (ulong)to_lt;
             if (archival != null) requestBody.archival = (bool)archival;
 
-            var result = await new TonRequest(new RequestParameters("getTransactions", requestBody, ApiOptions)).Call();
+            var result = await new TonRequest(new RequestParameters("getTransactions", requestBody), _httpClient)
+                .Call();
             RootTransactions resultRoot = JsonConvert.DeserializeObject<RootTransactions>(result);
 
-            TransactionsInformationResult[] transactionsInformationResult = new TransactionsInformationResult[resultRoot.Result.Length];
+            TransactionsInformationResult[] transactionsInformationResult =
+                new TransactionsInformationResult[resultRoot.Result.Length];
             for (int i = 0; i < resultRoot.Result.Length; i++)
             {
                 transactionsInformationResult[i] = new TransactionsInformationResult(resultRoot.Result[i]);
@@ -99,7 +174,7 @@ namespace TonSdk.Client
                 method = method,
                 stack = stack ?? Array.Empty<string[]>()
             };
-            var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody, ApiOptions)).Call();
+            var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody), _httpClient).Call();
             RootRunGetMethod resultRoot = JsonConvert.DeserializeObject<RootRunGetMethod>(result);
             RunGetMethodResult outRunGetMethod = new RunGetMethodResult(resultRoot.Result);
             return outRunGetMethod;
@@ -116,7 +191,7 @@ namespace TonSdk.Client
             {
                 boc = boc.ToString("base64")
             };
-            var result = await new TonRequest(new RequestParameters("sendBoc", requestBody, ApiOptions)).Call();
+            var result = await new TonRequest(new RequestParameters("sendBoc", requestBody), _httpClient).Call();
             RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
             SendBocResult outSendBoc = resultRoot.Result;
             return outSendBoc;
@@ -134,11 +209,20 @@ namespace TonSdk.Client
             {
                 config_id = configId,
             };
-            if (seqno != null) { requestBody.seqno = (int)seqno; }
-            var result = await new TonRequest(new RequestParameters("getConfigParam", requestBody, ApiOptions)).Call();
+            if (seqno != null)
+            {
+                requestBody.seqno = (int)seqno;
+            }
+
+            var result = await new TonRequest(new RequestParameters("getConfigParam", requestBody), _httpClient).Call();
             RootGetConfigParam resultRoot = JsonConvert.DeserializeObject<RootGetConfigParam>(result);
             ConfigParamResult outConfigParam = new ConfigParamResult(resultRoot.Result.Config);
             return outConfigParam;
+        }
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
         }
     }
 }
