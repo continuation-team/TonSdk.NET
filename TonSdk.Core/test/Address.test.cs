@@ -39,6 +39,10 @@ public class AddressTest
     public void Test_InToString()
     {
         Assert.That(new Address("0:83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8").ToString(), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
+        Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(AddressType.Raw), Is.EqualTo("0:83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8"));
+        Assert.That(new Address("0:83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8").ToString(AddressType.Raw), Is.EqualTo("0:83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8"));
+        Assert.That(new Address("0:47e504ce941428b12510b4e174ef00f1009457f889eab18ab59e51218c765490").ToString(AddressType.Raw), Is.EqualTo("0:47e504ce941428b12510b4e174ef00f1009457f889eab18ab59e51218c765490"));
+        Assert.That(new Address("UQBH5QTOlBQosSUQtOF07wDxAJRX-InqsYq1nlEhjHZUkAWi").ToString(AddressType.Raw), Is.EqualTo("0:47e504ce941428b12510b4e174ef00f1009457f889eab18ab59e51218c765490"));
         Assert.That(new Address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N").ToString(), Is.EqualTo("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N"));
         Assert.That(new Address("kQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqKYH").ToString(), Is.EqualTo("kQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqKYH"));
         Assert.That(new Address("0QCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqPvC").ToString(), Is.EqualTo("0QCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqPvC"));

@@ -346,7 +346,7 @@ namespace TonSdk.Core {
             // }
 
             if (type == AddressType.Raw) {
-                return $"{workchain}:{_hash.ToString("x")}";
+                return $"{workchain}:{_hash.ToString("x65").Substring(1)}";
             }
 
             byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly });
