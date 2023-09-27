@@ -75,7 +75,7 @@ namespace TonSdk.Core.Crypto {
 
         public static string[] GenerateWords() 
         {
-            List<string> words = new List<string>();
+            List<string> words;
 
             while(true)
             {
@@ -87,10 +87,7 @@ namespace TonSdk.Core.Crypto {
                     words.Add(MnemonicWords.Bip0039En[entropy[i] & 2047]); // We loose 5 out of 16 bits of entropy here, good enough
                 }
 
-                if(words.Count == 0)
-                {
-                    continue;
-                }
+                if(!IsBasicSeed(MnemonicToEntropy(words.ToArray(), ""))) continue;
                 break;
             }
             return words.ToArray();
@@ -127,6 +124,12 @@ namespace TonSdk.Core.Crypto {
 
         public static string Normalize(string value) {
             return (value ?? "").Normalize(NormalizationForm.FormKD);
+        }
+
+        private static bool IsBasicSeed(byte[] entropy)
+        {
+            byte[] seed = Pbkdf2Sha512(entropy, "TON seed version", Math.Max(1, (int)Math.Floor(100000 / 256.0)));
+            return seed[0] == 0;
         }
 
         private static byte[] MnemonicToEntropy(string[] mnemonicArray, string password = "") {
