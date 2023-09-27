@@ -269,7 +269,7 @@ namespace TonSdk.Core {
                 Bounceable = bounceable,
                 TestOnly = testOnly,
                 Workchain = workchain,
-                Hash = hash
+                Hash = hash 
             };
         }
 
@@ -346,7 +346,7 @@ namespace TonSdk.Core {
             // }
 
             if (type == AddressType.Raw) {
-                return $"{workchain}:{_hash.ToString("x").Substring(1)}";
+                return $"{workchain}:{_hash.ToString("x")}";
             }
 
             byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly });
