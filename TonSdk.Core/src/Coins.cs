@@ -287,5 +287,11 @@ namespace TonSdk.Core {
         public BigInteger ToBigInt() {
             return new BigInteger(Value);
         }
+
+        /// <summary>
+        /// Return the pointed value of the Coins instance in decimal.
+        /// </summary>
+        /// <returns>A Decimal representation of the value.</returns>
+        public decimal ToDecimal() => Value / Multiplier;
     }
 }
