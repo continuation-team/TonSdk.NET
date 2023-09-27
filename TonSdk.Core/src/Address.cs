@@ -269,7 +269,7 @@ namespace TonSdk.Core {
                 Bounceable = bounceable,
                 TestOnly = testOnly,
                 Workchain = workchain,
-                Hash = hash 
+                Hash = hash
             };
         }
 
