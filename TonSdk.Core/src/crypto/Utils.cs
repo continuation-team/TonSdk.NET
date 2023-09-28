@@ -125,6 +125,9 @@ namespace TonSdk.Core.Crypto {
         public static string Normalize(string value) {
             return (value ?? "").Normalize(NormalizationForm.FormKD);
         }
+        
+        public static bool IsMnemonicValid(string[] mnemonic) => 
+            mnemonic.All(word => MnemonicWords.Bip0039En.Contains(word)) && IsBasicSeed(MnemonicToEntropy(mnemonic.ToArray(), ""));
 
         private static bool IsBasicSeed(byte[] entropy)
         {

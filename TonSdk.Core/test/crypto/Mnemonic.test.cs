@@ -24,6 +24,33 @@ public class MnemonicTest
     }
 
     [Test]
+    public void Test_MnemonicValidation()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Utils.IsMnemonicValid(new Mnemonic().Words), Is.EqualTo(true));
+            Assert.That(Utils.IsMnemonicValid(new string[]
+            { "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat",
+            "ton", "testton", "testtoncat" }), Is.EqualTo(false));
+            Assert.That(Utils.IsMnemonicValid(new string[]
+            { "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent",
+            "absent", "absent", "absent" }), Is.EqualTo(false));
+        });
+    }
+
+    [Test]
     public void Test_ConstructorMnemonic()
     {
         Assert.That(new Mnemonic().Words.Length, Is.EqualTo(24));
