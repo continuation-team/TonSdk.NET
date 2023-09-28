@@ -68,6 +68,7 @@ public class CoinsTest
         Assert.That(new Coins("10").IsPositive, Is.EqualTo(true));
         Assert.That(new Coins(0).IsZero, Is.EqualTo(true));
         Assert.DoesNotThrow(() =>new Coins(10).ToBigInt());
+        Assert.That(new Coins("10,641462085").ToDecimal() == decimal.Parse("10,641462085"), Is.EqualTo(true));
     }
 
     [Test]
