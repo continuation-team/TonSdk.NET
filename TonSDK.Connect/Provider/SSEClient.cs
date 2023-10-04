@@ -8,9 +8,9 @@ namespace TonSdk.Connect
 {
     public delegate void ListenEventsFunction(CancellationToken token, string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler);
 
-    public interface ISSEClient 
+    public interface ISSEClient : IDisposable
     {
-        public void StartClient();
+        public Task StartClient();
         public void StopClient();
     }
 
@@ -24,7 +24,7 @@ namespace TonSdk.Connect
         private ProviderMessageHandler _handler;
         private ProviderErrorHandler _errorHandler;
         private ListenEventsFunction eventsFunction;
-
+        
         public SSEClient(string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, ListenEventsFunction listenEventsFunction)
         {
             _url = url;
@@ -36,14 +36,14 @@ namespace TonSdk.Connect
             eventsFunction = listenEventsFunction;
         }
 
-        public void StartClient()
+        public async Task StartClient()
         {
             if (_isRunning) return;
             _isRunning = true;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            if (eventsFunction == null) ListenForEvents(_cancellationTokenSource.Token);
+            if (eventsFunction == null) await ListenForEvents(_cancellationTokenSource.Token).ConfigureAwait(false);
             else eventsFunction(_cancellationTokenSource.Token, _url, _handler, _errorHandler);
         }
 
@@ -52,11 +52,17 @@ namespace TonSdk.Connect
             if (!_isRunning) return;
 
             _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
+            Dispose();
             _isRunning = false;
         }
+        
+        public void Dispose()
+        {
+            _httpClient.Dispose();
+            _cancellationTokenSource?.Dispose();
+        }
 
-        private async void ListenForEvents(CancellationToken cancellationToken)
+        private async Task ListenForEvents(CancellationToken cancellationToken)
         {
             try
             {

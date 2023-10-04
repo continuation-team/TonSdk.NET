@@ -65,6 +65,12 @@ namespace TonSdk.Connect
         /// </summary>
         public Wallet Wallet { get => (Wallet)_wallet; }
 
+        /// <summary>
+        /// TonConnect Class constructor
+        /// </summary>
+        /// <param name="options">Basic ton connect options</param>
+        /// <param name="storage">Custom storage (optional)</param>
+        /// <param name="additionalOptions">Rewritable methods for working with httpClient (for example, Unity) (optional)</param>
         public TonConnect(TonConnectOptions options, RemoteStorage storage = null, AdditionalConnectOptions additionalOptions = null)
         {
             _walletsList = new WalletsListManager(options.WalletsListSource, options.WalletsListCacheTTLMs);
