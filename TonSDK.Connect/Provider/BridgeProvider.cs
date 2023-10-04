@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace TonSdk.Connect
 {
-
     public delegate void ProviderMessageHandler(string eventData);
     public delegate void ProviderErrorHandler(Exception args);
     public delegate void WalletEventListener(JObject walletEvent);
@@ -53,7 +52,7 @@ namespace TonSdk.Connect
             string universalUrl = _wallet?.UniversalUrl ?? STANDART_UNIVERSAL_URL;
 
             _gateway = new BridgeGateway(bridgeUrl, sessionInfo.SesionId, new ProviderMessageHandler(GatewayMessageListener), new ProviderErrorHandler(GatewayErrorListener), _storage, _listenEventsFunction, sendGatewayMessage);
-            await _gateway.RegisterSession();
+            await _gateway.RegisterSession().ConfigureAwait(false);
 
             _session.CryptedSessionInfo = sessionInfo;
             _session.BridgeUrl = bridgeUrl;
@@ -64,7 +63,7 @@ namespace TonSdk.Connect
         public async Task<bool> RestoreConnection()
         {
             CloseGateways();
-            string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}");
+            string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}").ConfigureAwait(false);
             if (connectionJsonString == null || connectionJsonString == "{}") return false;
 
             ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(connectionJsonString);
@@ -86,7 +85,7 @@ namespace TonSdk.Connect
         public async Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler? onRequestSent = null)
         {
             if (_gateway == null || _session == null || _session.WalletPublicKey == null) throw new TonConnectError("Trying to send bridge request without session.");
-            string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}");
+            string connectionJsonString = _storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}").ConfigureAwait(false);
             ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(connectionJsonString);
             
             int id = connection.NextRpcRequestId ?? 0;
@@ -97,7 +96,7 @@ namespace TonSdk.Connect
             if (_storage != null) 
                 _storage.SetItem(RemoteStorage.KEY_CONNECTION, jsonString);
             else 
-                await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
+                await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString).ConfigureAwait(false);
 
             request.id = id.ToString();
             System.Console.WriteLine("TX Request: " + JsonConvert.SerializeObject(request));
@@ -108,7 +107,7 @@ namespace TonSdk.Connect
             TaskCompletionSource<JObject> resolve = new TaskCompletionSource<JObject>();
             _pendingRequests.Add(id.ToString(), resolve);
 
-            JObject result = await resolve.Task;
+            JObject result = await resolve.Task.ConfigureAwait(false);
             onRequestSent?.Invoke();
             return result;
         }
@@ -122,11 +121,11 @@ namespace TonSdk.Connect
                     method = "disconnect",
                     @params = Array.Empty<string>(),
                 };
-                JObject result = await SendRequest(request, RemoveSession);
+                JObject result = await SendRequest(request, RemoveSession).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.Message).ConfigureAwait(false);
                 RemoveSession();
             }
         }
@@ -137,8 +136,6 @@ namespace TonSdk.Connect
             url.Port = -1;
             url.Query += $"v={2}";
             url.Query += $"&id={_session?.CryptedSessionInfo?.SesionId}";
-            //System.Console.WriteLine(connectRequest.manifestUrl);
-            //System.Console.WriteLine(connectRequest.items.Length);
             url.Query += $"&r={JsonConvert.SerializeObject(connectRequest)}";
             return url.ToString();
         }
@@ -156,7 +153,7 @@ namespace TonSdk.Connect
 
         public void Pause() => _gateway?.Pause();
 
-        public async Task UnPause() => await _gateway?.UnPause();
+        public async Task UnPause() => await _gateway.UnPause().ConfigureAwait(false);
 
         public void Listen(WalletEventListener listener) => _listeners.Add(listener);
 
@@ -193,7 +190,7 @@ namespace TonSdk.Connect
             if (_storage != null)
                 _storage.SetItem(RemoteStorage.KEY_CONNECTION, jsonString);
             else 
-                await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString);
+                await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString).ConfigureAwait(false);
         }
 
         private async Task ParseGatewayMessage(BridgeIncomingMessage message)
@@ -224,8 +221,9 @@ namespace TonSdk.Connect
             if (data["id"] != null)
             {
                 int id = (int)data["id"];
-                ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
-                System.Console.WriteLine("Here");
+                ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null 
+                    ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") 
+                    : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}").ConfigureAwait(false));
                 int? lastId = connection.LastWalletEventId;
 
                 if (lastId != null && id <= lastId)
@@ -242,7 +240,7 @@ namespace TonSdk.Connect
                     if (_storage != null)
                         _storage.SetItem(RemoteStorage.KEY_CONNECTION, dumpedConnection);
                     else
-                        await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, dumpedConnection);
+                        await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, dumpedConnection).ConfigureAwait(false);
                 }
             }
 
@@ -265,13 +263,13 @@ namespace TonSdk.Connect
                 if (_storage != null)
                     _storage.SetItem(RemoteStorage.KEY_LAST_EVENT_ID, eventData.Substring(4));
                 else
-                    await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, eventData.Substring(4));
+                    await DefaultStorage.SetItem(DefaultStorage.KEY_LAST_EVENT_ID, eventData.Substring(4)).ConfigureAwait(false);
 
             if (eventData.StartsWith("data:") && _gateway != null && !_gateway.isClosed)
             {
                 string data = eventData.Substring(5);
                 BridgeIncomingMessage dataMessage = JsonConvert.DeserializeObject<BridgeIncomingMessage>(data);
-                await ParseGatewayMessage(dataMessage);
+                await ParseGatewayMessage(dataMessage).ConfigureAwait(false);
             }
         }
 

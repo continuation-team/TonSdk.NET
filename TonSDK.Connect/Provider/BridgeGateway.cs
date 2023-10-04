@@ -44,7 +44,7 @@ namespace TonSdk.Connect
             string bridgeBase = _bridgeUrl.TrimEnd('/');
             string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
-            string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID, null);
+            string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID, null).ConfigureAwait(false);
             if (lastEventId != null && lastEventId != "") bridgeUrl += $"&last_event_id={lastEventId}";
             await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
 
@@ -72,7 +72,7 @@ namespace TonSdk.Connect
             using (var client = new HttpClient())
             {
                 var content = new ByteArrayContent(message);
-                await client.PostAsync(url, content);
+                await client.PostAsync(url, content).ConfigureAwait(false);
             }
         }
 
@@ -82,7 +82,7 @@ namespace TonSdk.Connect
             _sseClient = null;
         }
 
-        public async Task UnPause() => await RegisterSession();
+        public async Task UnPause() => await RegisterSession().ConfigureAwait(false);
 
         public void Close()
         {

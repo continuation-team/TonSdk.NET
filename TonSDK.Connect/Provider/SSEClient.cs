@@ -63,12 +63,12 @@ namespace TonSdk.Connect
                 var request = new HttpRequestMessage(HttpMethod.Get, _url);
                 request.Headers.Add("Accept", "text/event-stream");
 
-                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                using var stream = await response.Content.ReadAsStreamAsync();
+                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
                 while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
                 {
-                    var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(line)) _handler(line);
                 }
             }

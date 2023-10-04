@@ -130,7 +130,7 @@ namespace TonSdk.Connect
             }
             else _provider = CreateProvider(walletConfig);
 
-            if(_provider is IHttpProvider) return await (_provider as IHttpProvider).ConnectAsync(CreateConnectRequest(connectAdditionalRequest));
+            if(_provider is IHttpProvider) return await (_provider as IHttpProvider).ConnectAsync(CreateConnectRequest(connectAdditionalRequest)).ConfigureAwait(false);
             else if (_provider is IInternalProvider) (_provider as IInternalProvider).Connect(CreateConnectRequest(connectAdditionalRequest), 2);
             return null;
         }
@@ -141,7 +141,9 @@ namespace TonSdk.Connect
         /// <returns>True if connection is restored</returns>
         public async Task<bool> RestoreConnection()
         {
-            ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}"));
+            ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null 
+                ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") 
+                : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}").ConfigureAwait(false));
 
             bool isRestored = false;
             string type = connection.Type;
@@ -154,7 +156,7 @@ namespace TonSdk.Connect
                     sendGatewayMessage = _sendGatewayMessage
                 };
                 _provider.Listen(new WalletEventListener(WalletEventsListener));
-                isRestored = await (_provider as IHttpProvider).RestoreConnection();
+                isRestored = await (_provider as IHttpProvider).RestoreConnection().ConfigureAwait(false);
             }
             else if (type == "injected")
             {
@@ -163,7 +165,7 @@ namespace TonSdk.Connect
                     _storage = _storage
                 };
                 _provider.Listen(new WalletEventListener(WalletEventsListener));
-                isRestored = await (_provider as IInternalProvider).RestoreConnection(connection.JsBridgeKey);
+                isRestored = await (_provider as IInternalProvider).RestoreConnection(connection.JsBridgeKey).ConfigureAwait(false);
             }
 
             if (!isRestored)
@@ -198,7 +200,7 @@ namespace TonSdk.Connect
             {
                 method = "sendTransaction",
                 @params = new string[] { JsonConvert.SerializeObject(serializedRequest) },
-            });
+            }).ConfigureAwait(false);
 
             return ParseSendTransactionResponse(response);
         }
@@ -212,7 +214,7 @@ namespace TonSdk.Connect
             if (!IsConnected) throw new TonConnectError("Wallet not connected.");
             System.Console.WriteLine("Disconnecting...");
             OnWalletDisconnected();
-            if(_provider is IHttpProvider) await (_provider as IHttpProvider).Disconnect();
+            if(_provider is IHttpProvider) await (_provider as IHttpProvider).Disconnect().ConfigureAwait(false);
             else if (_provider is IInternalProvider) (_provider as IInternalProvider).Disconnect();
             System.Console.WriteLine("Disconnected.");
         }
@@ -230,7 +232,7 @@ namespace TonSdk.Connect
         /// </summary>
         public async Task UnPauseConnection()
         {
-            if(_provider is IHttpProvider) await (_provider as IHttpProvider).UnPause();
+            if(_provider is IHttpProvider) await (_provider as IHttpProvider).UnPause().ConfigureAwait(false);
         }
 
         /// <summary>

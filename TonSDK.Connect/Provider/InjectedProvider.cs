@@ -76,7 +76,7 @@ public class InjectedProvider : IInternalProvider
         _pendingRequests.Add(key, resolve);
         System.Console.WriteLine("Again request: " + JsonConvert.SerializeObject(request));
         CallSendRequest(JsonConvert.SerializeObject(request), _bridgeKey, key);
-        JObject result = (JObject)await resolve.Task;
+        JObject result = (JObject)await resolve.Task.ConfigureAwait(false);
         return new JObject();
     }
 
@@ -93,7 +93,7 @@ public class InjectedProvider : IInternalProvider
         TaskCompletionSource<object> resolve = new TaskCompletionSource<object>();
         _pendingRequests.Add(id, resolve);
         CallRestoreConnection(key, id);
-        bool result = (bool)await resolve.Task;
+        bool result = (bool)await resolve.Task.ConfigureAwait(false);
         _bridgeKey = key;
         
         return result;
