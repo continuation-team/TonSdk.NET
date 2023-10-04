@@ -123,7 +123,7 @@ namespace TonSdk.Connect
         /// </summary>
         /// <param name="walletConfig">Wallet wallet's bridge url and universal link for an external wallet or jsBridge key for the injected wallet.</param>
         /// <param name="connectAdditionalRequest">Request (optional) additional request to pass to the wallet while connect (currently only ton_proof is available).</param>
-        /// <returns>Universal link if external wallet was passed or void for the injected wallet.</returns>
+        /// <returns>Universal link if external wallet was passed or "injected" for the injected wallet.</returns>
         /// <exception cref="TonConnectError">Wallet already connected</exception>
         public async Task<string> Connect(WalletConfig walletConfig, ConnectAdditionalRequest? connectAdditionalRequest = null)
         {
@@ -136,9 +136,9 @@ namespace TonSdk.Connect
             }
             else _provider = CreateProvider(walletConfig);
 
-            if(_provider is IHttpProvider) return await (_provider as IHttpProvider).ConnectAsync(CreateConnectRequest(connectAdditionalRequest)).ConfigureAwait(false);
-            else if (_provider is IInternalProvider) (_provider as IInternalProvider).Connect(CreateConnectRequest(connectAdditionalRequest), 2);
-            return null;
+            if(_provider is IHttpProvider provider) return await provider.ConnectAsync(CreateConnectRequest(connectAdditionalRequest)).ConfigureAwait(false);
+            (_provider as IInternalProvider)?.Connect(CreateConnectRequest(connectAdditionalRequest), 2);
+            return "injected";
         }
 
         /// <summary>
