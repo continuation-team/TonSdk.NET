@@ -45,13 +45,11 @@ namespace TonSdk.Connect
             string bridgeUrl = $"{bridgeBase}/{SSE_PATH}?client_id={_sessionId}";
 
             string? lastEventId = _storage != null ? _storage.GetItem(RemoteStorage.KEY_LAST_EVENT_ID) : await DefaultStorage.GetItem(DefaultStorage.KEY_LAST_EVENT_ID, null).ConfigureAwait(false);
-            if (lastEventId != null && lastEventId != "") bridgeUrl += $"&last_event_id={lastEventId}";
-            await Console.Out.WriteLineAsync($"\"{bridgeUrl}\"");
+            if (!string.IsNullOrEmpty(lastEventId)) bridgeUrl += $"&last_event_id={lastEventId}";
 
             _sseClient?.StopClient();
             _sseClient = new SSEClient(bridgeUrl, _handler, _errorHandler, _eventsFunction);
             _sseClient?.StartClient();
-
         }
 
         public async Task Send(byte[] message, string receiver, string topic, int? ttl = null)
@@ -69,11 +67,9 @@ namespace TonSdk.Connect
             queryString["topic"] = topic.ToString();
             url = new Uri(url.GetLeftPart(UriPartial.Path) + "?" + queryString.ToString());
 
-            using (var client = new HttpClient())
-            {
-                var content = new ByteArrayContent(message);
-                await client.PostAsync(url, content).ConfigureAwait(false);
-            }
+            using var client = new HttpClient();
+            var content = new ByteArrayContent(message);
+            await client.PostAsync(url, content).ConfigureAwait(false);
         }
 
         public void Pause()

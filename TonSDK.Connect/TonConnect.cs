@@ -218,11 +218,9 @@ namespace TonSdk.Connect
         public async Task Disconnect()
         {
             if (!IsConnected) throw new TonConnectError("Wallet not connected.");
-            System.Console.WriteLine("Disconnecting...");
             OnWalletDisconnected();
             if(_provider is IHttpProvider) await (_provider as IHttpProvider).Disconnect().ConfigureAwait(false);
             else if (_provider is IInternalProvider) (_provider as IInternalProvider).Disconnect();
-            System.Console.WriteLine("Disconnected.");
         }
 
         /// <summary>
@@ -301,7 +299,6 @@ namespace TonSdk.Connect
 
         private void WalletEventsListener(JObject eventData)
         {
-            Console.WriteLine("WalletEventsListener: " + (string)eventData["event"]);
             switch ((string)eventData["event"])
             {
                 case "connect":

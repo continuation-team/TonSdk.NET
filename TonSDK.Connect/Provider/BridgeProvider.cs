@@ -99,7 +99,6 @@ namespace TonSdk.Connect
                 await DefaultStorage.SetItem(DefaultStorage.KEY_CONNECTION, jsonString).ConfigureAwait(false);
 
             request.id = id.ToString();
-            System.Console.WriteLine("TX Request: " + JsonConvert.SerializeObject(request));
             string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
 
             await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
@@ -178,7 +177,6 @@ namespace TonSdk.Connect
         private async void UpdateSession(JObject walletMessage, string walletPublicKey)
         {
             _session.WalletPublicKey = walletPublicKey;
-            //System.Console.WriteLine();
             ConnectionInfo connection = new ConnectionInfo();
             connection.Type = "http";
             connection.Session = _session.GetSessionInfo();
@@ -200,7 +198,6 @@ namespace TonSdk.Connect
 
 
             JObject data = JsonConvert.DeserializeObject<JObject>(json);
-            await Console.Out.WriteLineAsync(data.ToString());
             if (data["event"] == null)
             {
                 if (data["id"] != null)
@@ -236,7 +233,6 @@ namespace TonSdk.Connect
                 {
                     connection.LastWalletEventId = id;
                     string dumpedConnection = JsonConvert.SerializeObject(connection);
-                    await Console.Out.WriteLineAsync(dumpedConnection);
                     if (_storage != null)
                         _storage.SetItem(RemoteStorage.KEY_CONNECTION, dumpedConnection);
                     else
