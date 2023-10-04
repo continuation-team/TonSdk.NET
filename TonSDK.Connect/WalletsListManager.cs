@@ -16,7 +16,7 @@ namespace TonSdk.Connect
         public string AppName { get; set; }
     }
 
-    public class WalletsListManager
+    internal class WalletsListManager
     {
         private string walletsListSource = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json";
         private int cacheTtl;
@@ -70,7 +70,7 @@ namespace TonSdk.Connect
         }
     };
 
-        public WalletsListManager(string walletsListSource = null, int cacheTtl = 0)
+        internal WalletsListManager(string walletsListSource = null, int cacheTtl = 0)
         {
             if (walletsListSource != null && walletsListSource != "")
                 this.walletsListSource = walletsListSource;

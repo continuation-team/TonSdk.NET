@@ -6,7 +6,7 @@ using System.Web;
 namespace TonSdk.Connect
 {
     public delegate void SendGatewayMessage(string bridgeUrl, string postPath, string sessionId, string receiver, int ttl, string topic, byte[] message);
-    public class BridgeGateway
+    internal class BridgeGateway
     {
         private readonly int DEFAULT_TTL = 300;
         private readonly string SSE_PATH = "events";
@@ -23,7 +23,7 @@ namespace TonSdk.Connect
         private ListenEventsFunction _eventsFunction;
         private SendGatewayMessage _sendGatewayMessage;
 
-        public BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage, ListenEventsFunction eventsFunction, SendGatewayMessage sendGatewayMessage)
+        internal BridgeGateway(string bridgeUrl, string sessionId, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, RemoteStorage storage, ListenEventsFunction eventsFunction, SendGatewayMessage sendGatewayMessage)
         {
             isClosed = false;
             _bridgeUrl = bridgeUrl;

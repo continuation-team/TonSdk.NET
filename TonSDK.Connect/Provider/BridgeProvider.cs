@@ -14,7 +14,7 @@ namespace TonSdk.Connect
 
     public delegate void OnRequestSentHandler();
 
-    public class BridgeProvider : IHttpProvider
+    internal class BridgeProvider : IHttpProvider
     {
         private readonly int DISCONNECT_TIMEOUT = 600;
         private readonly string STANDART_UNIVERSAL_URL = "tc://";
@@ -23,14 +23,14 @@ namespace TonSdk.Connect
         private BridgeSession _session;
         private BridgeGateway _gateway;
 
-        public RemoteStorage _storage;
+        internal RemoteStorage _storage;
 
         private Dictionary<string, TaskCompletionSource<JObject>> _pendingRequests;
         private List<WalletEventListener> _listeners;
-        public ListenEventsFunction _listenEventsFunction;
-        public SendGatewayMessage sendGatewayMessage;
+        internal ListenEventsFunction _listenEventsFunction;
+        internal SendGatewayMessage sendGatewayMessage;
 
-        public BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null, SendGatewayMessage sendGatewayMessage = null)
+        internal BridgeProvider(WalletConfig? wallet = null, RemoteStorage storage = null, ListenEventsFunction eventsFunction = null, SendGatewayMessage sendGatewayMessage = null)
         {
             _wallet = wallet;
             _session = new BridgeSession();

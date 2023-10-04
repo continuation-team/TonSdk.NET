@@ -14,7 +14,7 @@ namespace TonSdk.Connect
         public void StopClient();
     }
 
-    public class SSEClient : ISSEClient
+    internal class SSEClient : ISSEClient
     {
         private readonly string _url;
         private readonly HttpClient _httpClient;
@@ -25,7 +25,7 @@ namespace TonSdk.Connect
         private ProviderErrorHandler _errorHandler;
         private ListenEventsFunction eventsFunction;
         
-        public SSEClient(string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, ListenEventsFunction listenEventsFunction)
+        internal SSEClient(string url, ProviderMessageHandler handler, ProviderErrorHandler errorHandler, ListenEventsFunction listenEventsFunction)
         {
             _url = url;
             _httpClient = new HttpClient();
