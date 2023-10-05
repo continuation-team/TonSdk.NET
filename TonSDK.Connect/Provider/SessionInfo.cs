@@ -58,9 +58,7 @@ namespace TonSdk.Connect
             byte[] decryptedMessage = new byte[internalMessage.Length - XSalsa20Poly1305.TagLength];
 
             bool isDecrypted = box.TryDecrypt(decryptedMessage, internalMessage, nonce);
-            Console.WriteLine(isDecrypted.ToString());
             string messageText = Encoding.UTF8.GetString(decryptedMessage);
-            //byte[] decrypted = Sodium.PublicKeyBox.Open(internalMessage, nonce, KeyPair.PrivateKey, senderPkBytes);
 
             return messageText;
         }

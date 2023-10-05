@@ -54,6 +54,27 @@ RemoteStorage remoteStorage = new(new(PlayerPrefs.GetString), new(PlayerPrefs.Se
 TonConnect tonConnect = new(options, remoteStorage);
 ```
 
+#### Use additional connect options
+```csharp
+// This delegates uses, if platform as the Unity, needs reimplementation of httpClient logic, with using Coroutines.
+// Dont use in usual C# projects.
+
+// Create a custom SSE listen method with implementation of event stream subsctiptions.
+// Example, https://github.com/continuation-team/unity-ton-connect/blob/main/Assets/TonConnect/Scripts/TonConnect/TonConnectHandler.cs#L147C5-L192C6
+private void YourListenEventsMethod() {}
+
+// Create a custom send post message method
+// Example, https://github.com/continuation-team/unity-ton-connect/blob/main/Assets/TonConnect/Scripts/TonConnect/TonConnectHandler.cs#L119C5-L145C6
+private void YourSendPostMethod() {}
+
+// Create a `AdditionalConnectOptions` object with custom methods provided by the user (only in Unity)
+AdditionalConnectOptions additionalOptions = new AdditionalConnectOptions()
+{
+    listenEventsFunction = new ListenEventsFunction(YourListenEventsMethod),
+    sendGatewayMessage = new SendGatewayMessage(YourSendPostMethod)
+}
+```
+
 #### Send transaction example
 ```csharp
 // Create a receiver address and the amount to send
