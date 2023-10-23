@@ -225,8 +225,8 @@ namespace TonSdk.Client
 
             var result = await new TonRequest(new RequestParameters("estimateFee", requestBody), _httpClient).Call();
             RootEstimateFee resultRoot = JsonConvert.DeserializeObject<RootEstimateFee>(result);
-            EstimateFeeResult outSendBoc = resultRoot.Result;
-            return outSendBoc;
+            EstimateFeeResult outEstimateFee = resultRoot.Result;
+            return outEstimateFee;
         }
 
         /// <summary>
