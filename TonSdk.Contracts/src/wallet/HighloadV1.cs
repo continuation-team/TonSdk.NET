@@ -25,6 +25,7 @@ namespace TonSdk.Contracts.Wallet
         private uint _subwalletId;
 
         public uint SubwalletId => _subwalletId;
+        private HashmapOptions<int, WalletTransfer> _oldQueries_hmapOptions;
 
         public HighloadV1(HighloadV1Options opt)
         {
@@ -33,6 +34,27 @@ namespace TonSdk.Contracts.Wallet
             _publicKey = opt.PublicKey;
             _stateInit = buildStateInit();
             _address = new Address(opt.Workchain ?? 0, _stateInit);
+            _oldQueries_hmapOptions = new HashmapOptions<int, WalletTransfer>
+            {
+                KeySize = 16,
+                Serializers = new HashmapSerializers<int, WalletTransfer>
+                {
+                    Key = k => new BitsBuilder(16).StoreInt(k, 16).Build(),
+                    Value = v => new CellBuilder().StoreUInt(v.Mode, 8).StoreRef(v.Message.Cell).Build()
+                },
+                Deserializers = new HashmapDeserializers<int, WalletTransfer>
+                {
+                    Key = kb => (int)kb.Parse().LoadInt(16),
+                    Value = v => {
+                        var vs = v.Parse();
+                        return new WalletTransfer
+                        {
+                            Mode = (byte)vs.LoadUInt(8),
+                            Message = MessageX.Parse(vs)
+                        };
+                    }
+                }
+            };
         }
 
         public HighloadV1Storage ParseStorage(CellSlice slice)
@@ -68,20 +90,14 @@ namespace TonSdk.Contracts.Wallet
                 .StoreUInt(DateTimeOffset.Now.ToUnixTimeSeconds() + timeout, 32)
                 .StoreUInt(seqno, 32);
 
-            var actions = new OutAction[transfers.Length];
+            var dict = new HashmapE<int, WalletTransfer>(_oldQueries_hmapOptions);
 
-            for (var i = 0; i < transfers.Length; i++)
+            for (int i = 0; i < transfers.Length; i++)
             {
-                var transfer = transfers[i];
-                var action = new ActionSendMsg(new ActionSendMsgOptions
-                {
-                    Mode = transfer.Mode,
-                    OutMsg = transfer.Message
-                });
-                actions[i] = action;
+                dict.Set(i, transfers[i]);
             }
 
-            bodyBuilder.StoreRef(new OutList(new OutListOptions { Actions = actions }).Cell);
+            bodyBuilder.StoreDict(dict);
 
             return new ExternalInMessage(new ExternalInMessageOptions
             {
@@ -90,7 +106,6 @@ namespace TonSdk.Contracts.Wallet
                 StateInit = seqno == 0 ? _stateInit : null
             });
         }
-
 
         public ExternalInMessage CreateDeployMessage()
         {
