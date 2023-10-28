@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Connect</RootNamespace>
         <PackageId>TonSdk.Connect</PackageId>
-        <Version>0.1.0</Version>
+        <Version>0.1.2</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Library that allows to interact with Ton Connect 2.0</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
@@ -21,13 +21,13 @@
   </ItemGroup>
 
   <PropertyGroup>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../README.md" Pack="true" PackagePath="" />
-        <None Include="../../LICENSE" Pack="true" PackagePath="" />
+        <None Include="README.MD" Pack="true" PackagePath="" />
+        <None Include="../LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
 
 </Project>

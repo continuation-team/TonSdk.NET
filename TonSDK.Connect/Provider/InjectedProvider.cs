@@ -74,9 +74,8 @@ public class InjectedProvider : IInternalProvider
         string key = GenerateRandomString(10);
         TaskCompletionSource<object> resolve = new TaskCompletionSource<object>();
         _pendingRequests.Add(key, resolve);
-        System.Console.WriteLine("Again request: " + JsonConvert.SerializeObject(request));
         CallSendRequest(JsonConvert.SerializeObject(request), _bridgeKey, key);
-        JObject result = (JObject)await resolve.Task;
+        JObject result = (JObject)await resolve.Task.ConfigureAwait(false);
         return new JObject();
     }
 

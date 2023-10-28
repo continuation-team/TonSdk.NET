@@ -116,6 +116,9 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
     }
 }, seqno).Sign(mnemonic.Keys.PrivateKey, true);
 
+// Pre-calculate fee before sending message
+EstimateFeeResult fees = await _client.EstimateFee(message);
+
 // Send the serialized message
 await tonclient.SendBoc(message.Cell!);
 ```

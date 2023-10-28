@@ -7,7 +7,7 @@ using TonSdk.Core;
 
 namespace TonSdk.Connect
 {
-    public interface IProvider 
+    internal interface IProvider 
     {
         public void CloseConnection();
         
@@ -15,7 +15,7 @@ namespace TonSdk.Connect
         public Task<JObject> SendRequest(IRpcRequest request, OnRequestSentHandler onRequestSent = null);
     }
 
-    public interface IHttpProvider : IProvider 
+    internal interface IHttpProvider : IProvider 
     {
         public const string Type = "http";
         public Task<string> ConnectAsync(ConnectRequest connectRequest);
@@ -26,7 +26,7 @@ namespace TonSdk.Connect
         
     }
 
-    public interface IInternalProvider : IProvider
+    internal interface IInternalProvider : IProvider
     {
         public const string Type = "injected";
         public void Connect(ConnectRequest connectRequest, int protocolVersion);
@@ -51,7 +51,7 @@ namespace TonSdk.Connect
         public SendGatewayMessage sendGatewayMessage {get; set;}
     }
 
-    public struct BridgeIncomingMessage
+    internal struct BridgeIncomingMessage
     {
         [JsonProperty("from")] public string? From { get; set; }
         [JsonProperty("message")] public string? Message { get; set; }
@@ -65,7 +65,7 @@ namespace TonSdk.Connect
     };
 
     [Serializable]
-    public class DisconnectRpcRequest : IRpcRequest
+    internal class DisconnectRpcRequest : IRpcRequest
     {
         public string method { get; set; } = "disconnect";
 
@@ -74,7 +74,7 @@ namespace TonSdk.Connect
     }
 
     [JsonObject]
-    public class SendTransactionRpcRequest : IRpcRequest
+    internal class SendTransactionRpcRequest : IRpcRequest
     {
         public string method { get; set; } = "sendTransaction";
 

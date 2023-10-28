@@ -127,6 +127,15 @@ namespace TonSdk.Client
             public string boc;
         }
 
+        public struct InEstimateFeeBody : IRequestBody
+        {
+            public string address;
+            public string body;
+            public string init_code;
+            public string init_data;
+            public bool ignore_chksig;
+        }
+
         public struct InGetConfigParamBody : IRequestBody
         {
             public int config_id;
@@ -194,6 +203,14 @@ namespace TonSdk.Client
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
             [JsonProperty("result")] public SendBocResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        public struct RootEstimateFee
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public EstimateFeeResult Result { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
@@ -582,6 +599,21 @@ namespace TonSdk.Client
     public struct SendBocResult
     {
         [JsonProperty("@type")] public string Type;
+    }
+
+    public struct EstimateFeeResult
+    {
+        [JsonProperty("@type")] public string Type;
+        [JsonProperty("source_fees")] public SourceFees SourceFees;
+    }
+
+    public struct SourceFees
+    {
+        [JsonProperty("@type")] public string Type;
+        [JsonProperty("in_fwd_fee")] public long InFwdFee;
+        [JsonProperty("storage_fee")] public long StorageFee;
+        [JsonProperty("gas_fee")] public long GasFee;
+        [JsonProperty("fwd_fee")] public long FwdFee;
     }
 
     public enum AccountState
