@@ -204,7 +204,7 @@ namespace TonSdk.Core.Boc {
             var sameBitsLength = sameBitsIndex == -1 ? first.RemainderBits : sameBitsIndex;
 
             // hml_short$0 {m:#} {n:#} len:(Unary ~n) s:(n * Bit) = HmLabel ~n m;
-            if (first.ReadBit() != last.ReadBit() || m == 0) {
+            if (m == 0 || first.ReadBit() != last.ReadBit()) {
                 return serializeLabelShort(new Bits(0));
             }
 
@@ -239,11 +239,16 @@ namespace TonSdk.Core.Boc {
 
         // hml_short$0 {m:#} {n:#} len:(Unary ~n) {n <= m} s:(n * Bit) = HmLabel ~n m;
         protected Bits serializeLabelShort(Bits bits) {
-            return new BitsBuilder()
+            if (bits.Length == 0)
+                return new BitsBuilder()
+                    .StoreBit(false)
+                    .StoreBit(false)
+                    .Build();
+            else
+                return new BitsBuilder()
                 .StoreBit(false)
                 .StoreInt(-1, bits.Length)
                 .StoreBit(false)
-                .StoreBits(bits)
                 .Build();
         }
 
