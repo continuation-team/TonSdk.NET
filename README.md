@@ -1,5 +1,6 @@
 ## TonSdk.NET
 
+You can ask questions that may arise during the use of the SDK in our [Telegram group](https://t.me/cont_team/104).
 
 ## Packages
 
