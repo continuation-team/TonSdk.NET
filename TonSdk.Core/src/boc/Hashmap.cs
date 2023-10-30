@@ -249,6 +249,7 @@ namespace TonSdk.Core.Boc {
                 .StoreBit(false)
                 .StoreInt(-1, bits.Length)
                 .StoreBit(false)
+                .StoreBits(bits)
                 .Build();
         }
 
