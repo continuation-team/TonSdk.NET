@@ -1,7 +1,4 @@
 ﻿using System.Security.Cryptography;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Agreement;
-using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 
 namespace TonSdk.Adnl;
@@ -25,8 +22,9 @@ public class AdnlKeys
         byte[] privateKey = GenerateRandomBytes(32);
         X25519PrivateKeyParameters privateKeyParams = new X25519PrivateKeyParameters(privateKey, 0); 
         X25519PublicKeyParameters publicKey = privateKeyParams.GeneratePublicKey();
+        X25519PublicKeyParameters peerPublicKey = new X25519PublicKeyParameters(_peer);
         byte[] sharedSecret = new byte[32];
-        privateKeyParams.GenerateSecret(publicKey, sharedSecret, 0);
+        privateKeyParams.GenerateSecret(peerPublicKey, sharedSecret, 0);
         _shared = sharedSecret;
         _public = publicKey.GetEncoded();
     }
