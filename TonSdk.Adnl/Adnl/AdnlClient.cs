@@ -1,6 +1,9 @@
 ﻿namespace TonSdk.Adnl;
 
-public interface INetworkClient { }
+public interface INetworkClient
+{
+    public void Connect();
+}
 
 public enum AdnlClientState
 {
@@ -15,11 +18,14 @@ public class AdnlClient
     protected INetworkClient _socket;
     protected string _host;
     protected int _port;
-    
+
+    private byte[] _buffer;
     private AdnlAddress _address;
     private AdnlKeys _keys;
     private AdnlAesParams _params;
     private AdnlClientState _state = AdnlClientState.Closed;
+    private Cipher _cipher; 
+    private Decipher _decipher; 
     
     public event Action Connected;
     public event Action Ready;
@@ -36,7 +42,7 @@ public class AdnlClient
         _socket = socket;
     }
 
-    protected async Task OnBeforeConnect()
+    protected void OnBeforeConnect()
     {
         if (_state != AdnlClientState.Closed) return;
         AdnlKeys keys = new AdnlKeys(_address.PublicKey);
@@ -44,22 +50,14 @@ public class AdnlClient
 
         _keys = keys;
         _params = new AdnlAesParams();
+        _cipher = CryptoFactory.CreateCipheriv(_params.TxKey, _params.TxNonce);
+        _decipher = CryptoFactory.CreateDecipheriv(_params.RxKey, _params.RxNonce);
+        _buffer = Array.Empty<byte>();
+        _state = AdnlClientState.Connecting;
     }
-    
-    /*protected async onBeforeConnect (): Promise<void> {
-        if (this.state !== ADNLClientState.CLOSED) {
-            return undefined
-        }
 
-        const keys = new ADNLKeys(this.address.publicKey)
-
-        await keys.generate()
-
-        this.keys = keys
-        this.params = new ADNLAESParams()
-        this.cipher = createCipheriv('aes-256-ctr', this.params.txKey, this.params.txNonce)
-        this.decipher = createDecipheriv('aes-256-ctr', this.params.rxKey, this.params.rxNonce)
-        this.buffer = Buffer.from([])
-        this._state = ADNLClientState.CONNECTING
-    }*/
+    public async Task Connect()
+    {
+        OnBeforeConnect();
+    }
 }
