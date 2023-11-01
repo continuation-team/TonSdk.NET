@@ -24,7 +24,7 @@ public partial class AdnlAddress
         if (_publicKey.Length != 32) throw new Exception("ADNLAddress: Bad peer public key. Must contain 32 bytes.");
     }
 
-    public byte[] PublicKey() => _publicKey;
+    public byte[] PublicKey => _publicKey;
     
     public byte[] GetHash()
     {

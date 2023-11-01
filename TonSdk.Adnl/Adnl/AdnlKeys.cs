@@ -14,8 +14,8 @@ public class AdnlKeys
         _peer = peerPublicKey;
     }
 
-    public byte[] Public() => _public;
-    public byte[] Shared() => _shared;
+    public byte[] Public => _public;
+    public byte[] Shared => _shared;
 
     public void Generate()
     {
@@ -29,7 +29,7 @@ public class AdnlKeys
         _public = publicKey.GetEncoded();
     }
     
-    private static byte[] GenerateRandomBytes(int byteSize)
+    internal static byte[] GenerateRandomBytes(int byteSize)
     {
         using RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
         byte[] randomBytes = new byte[byteSize];
