@@ -1,10 +1,14 @@
-﻿namespace TonSdk.Adnl;
+﻿using System.Net.Sockets;
+
+namespace TonSdk.Adnl;
 
 public interface IAdnlNetworkClient
 {
-    public void Connect(int port, string host);
+    public Task Connect(int port, string host);
     public void End();
-    public void Write(byte[] data);
+    public Task Write(byte[] data);
+    public Task<int> Read(ArraySegment<byte> buffer);
+    public bool IsConnected();
 }
 
 public enum AdnlClientState
@@ -21,7 +25,7 @@ public class AdnlClient
     protected string _host;
     protected int _port;
 
-    private byte[] _buffer;
+    private List<byte> _buffer;
     private AdnlAddress _address;
     private AdnlKeys _keys;
     private AdnlAesParams _params;
@@ -33,7 +37,7 @@ public class AdnlClient
     public event Action Ready;
     public event Action Closed;
     public event Action<byte[]> DataReceived;
-    public event Action<Exception, bool> ErrorOccurred;
+    public event Action<Exception> ErrorOccurred;
     
     public AdnlClient(IAdnlNetworkClient socket, string url, byte[] peerPublicKey)
     {
@@ -44,7 +48,20 @@ public class AdnlClient
         _socket = socket;
     }
 
-    protected void OnBeforeConnect()
+    private async Task Handshake()
+    {
+        byte[] key = _keys.Shared.Take(16).Concat(_params.Hash.Skip(16).Take(16)).ToArray();
+        byte[] nonce = _params.Hash.Take(4).Concat(_keys.Shared.Skip(20).Take(12)).ToArray();
+
+        Cipher cipher = CryptoFactory.CreateCipheriv(key, nonce);
+
+        byte[] payload = cipher.Update(_params.Bytes).Concat(cipher.Final()).ToArray();
+        byte[] packet = _address.GetHash().Concat(_keys.Public).Concat(_params.Hash).Concat(payload).ToArray();
+        
+        await _socket.Write(packet);
+    }
+
+    private void OnBeforeConnect()
     {
         if (_state != AdnlClientState.Closed) return;
         AdnlKeys keys = new AdnlKeys(_address.PublicKey);
@@ -54,22 +71,97 @@ public class AdnlClient
         _params = new AdnlAesParams();
         _cipher = CryptoFactory.CreateCipheriv(_params.TxKey, _params.TxNonce);
         _decipher = CryptoFactory.CreateDecipheriv(_params.RxKey, _params.RxNonce);
-        _buffer = Array.Empty<byte>();
+        _buffer = new List<byte>();
         _state = AdnlClientState.Connecting;
+    }
+    
+    private async Task ReadDataAsync()
+    {
+        try
+        {
+            byte[] buffer = new byte[4096];
+
+            while (_socket.IsConnected())
+            {
+                ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
+                int bytesRead = await _socket.Read(segment);
+                if (bytesRead > 0) OnDataReceived(segment.Array);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex);
+        }
+        finally
+        {
+            OnClose();
+        }
+    }
+
+    private void OnReady()
+    {
+        _state = AdnlClientState.Open;
+        Ready?.Invoke();
+    }
+
+    private void OnClose()
+    {
+        _state = AdnlClientState.Closed;
+        Closed?.Invoke();
+    }
+
+    private void OnDataReceived(byte[] data)
+    {
+        _buffer.AddRange(Decrypt(data));
+        
+        while (_buffer.Count >= AdnlPacket.PacketMinSize)
+        {
+            AdnlPacket? packet = AdnlPacket.Parse(_buffer.ToArray());
+            if (packet == null) break;
+            
+            _buffer.RemoveRange(0, packet.Length);
+
+            if (_state == AdnlClientState.Connecting)
+            {
+                if (packet.Payload.Length != 0)
+                {
+                    ErrorOccurred?.Invoke(new Exception("AdnlClient: Bad handshake."));
+                    End();
+                    _state = AdnlClientState.Closed;
+                }
+                else OnReady();
+                break;
+            }
+            
+            DataReceived?.Invoke(packet.Payload);
+        }
     }
 
     public AdnlClientState State => _state;
 
-    public void Connect()
+    public async Task Connect()
     {
         OnBeforeConnect();
-        _socket.Connect(_port, _host);
+        try
+        {
+            await _socket.Connect(_port, _host);
+            Task.Run(async () => await ReadDataAsync());
+            Connected?.Invoke();
+            await Handshake();
+        }
+        catch (Exception e)
+        {
+            ErrorOccurred?.Invoke(e);
+            End();
+            _state = AdnlClientState.Closed;
+        }
     }
 
     public void End()
     {
         if (_state == AdnlClientState.Closed || _state == AdnlClientState.Closing) return;
         _socket.End();
+        OnClose();
     }
 
     public void Write(byte[] data)
@@ -79,6 +171,6 @@ public class AdnlClient
         _socket.Write(encrypted);
     }
     
-    protected byte[] Encrypt(byte[] data) => _cipher.Update(data);
-    protected byte[] Decrypt(byte[] data) => _decipher.Update(data);
+    private byte[] Encrypt(byte[] data) => _cipher.Update(data);
+    private byte[] Decrypt(byte[] data) => _decipher.Update(data);
 }

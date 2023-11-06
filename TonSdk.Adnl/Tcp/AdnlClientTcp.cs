@@ -5,10 +5,11 @@ namespace TonSdk.Adnl.Tcp;
 internal class TcpNetworkClient : IAdnlNetworkClient
 {
     private TcpClient _socket;
-    public void Connect(int port, string host) => _socket.Connect(host, port);
+    public Task Connect(int port, string host) => _socket.ConnectAsync(host, port);
     public void End() => _socket.Close();
-
-    public void Write(byte[] data) => _socket.Client.Send(data);
+    public Task Write(byte[] data) => _socket.Client.SendAsync(new ArraySegment<byte>(data));
+    public Task<int> Read(ArraySegment<byte> buffer) => _socket.Client.ReceiveAsync(buffer);
+    public bool IsConnected() => _socket.Connected;
 }
 
 public class AdnlClientTcp : AdnlClient
