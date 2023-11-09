@@ -32,6 +32,11 @@ public partial class AdnlAddress
         byte[] key = new byte[typeEd25519.Length + _publicKey.Length];
         typeEd25519.CopyTo(key, 0);
         _publicKey.CopyTo(key, typeEd25519.Length);
+        foreach (var VARIABLE in key)
+        {
+            Console.Write(VARIABLE + " ");
+        }
+        Console.WriteLine();
         return SHA256.HashData(key);
     }
     

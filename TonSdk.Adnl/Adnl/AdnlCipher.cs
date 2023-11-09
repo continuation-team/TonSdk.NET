@@ -2,48 +2,60 @@
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using System;
 
-namespace TonSdk.Adnl;
-
-public class CipherBase
+public abstract class CipherBase
 {
-    protected IBufferedCipher cipher;
+    protected BufferedBlockCipher cipher;
 
-    public CipherBase(byte[] key, byte[] iv, bool forEncryption)
+    protected CipherBase(byte[] key, byte[] iv)
     {
-        cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
         KeyParameter keyParam = new KeyParameter(key);
-        ParametersWithIV keyWithIV = new ParametersWithIV(keyParam, iv);
-        cipher.Init(forEncryption, keyWithIV);
+        ICipherParameters parameters = new ParametersWithIV(keyParam, iv);
+
+        // CTR mode in Bouncy Castle
+        cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
+        cipher.Init(true, parameters);
     }
 
     public byte[] Final()
     {
-        return Array.Empty<byte>();
+        return new byte[0];
     }
 }
 
 public class Cipher : CipherBase
 {
-    public Cipher(byte[] key, byte[] iv) : base(key, iv, true) { }
+    public Cipher(byte[] key, byte[] iv) : base(key, iv)
+    {
+    }
 
     public byte[] Update(byte[] data)
     {
-        return cipher.DoFinal(data);
+        byte[] result = new byte[cipher.GetOutputSize(data.Length)];
+        int length = cipher.ProcessBytes(data, 0, data.Length, result, 0);
+        cipher.DoFinal(result, length); // Finalize the encryption operation
+        return result;
     }
 }
 
-public class Decipher : CipherBase
+public class Decipher : Cipher
 {
-    public Decipher(byte[] key, byte[] iv) : base(key, iv, false) { }
-
-    public byte[] Update(byte[] data)
+    public Decipher(byte[] key, byte[] iv) : base(key, iv)
     {
-        return cipher.DoFinal(data);
+        cipher.Init(false, new ParametersWithIV(new KeyParameter(key), iv)); // Initialize for decryption
+    }
+
+    public new byte[] Update(byte[] data)
+    {
+        byte[] result = new byte[cipher.GetOutputSize(data.Length)];
+        int length = cipher.ProcessBytes(data, 0, data.Length, result, 0);
+        cipher.DoFinal(result, length); // Finalize the decryption operation
+        return result;
     }
 }
 
-public static class CryptoFactory
+public static class CipherFactory
 {
     public static Cipher CreateCipheriv(byte[] key, byte[] iv)
     {
