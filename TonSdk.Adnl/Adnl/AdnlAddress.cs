@@ -26,19 +26,7 @@ public partial class AdnlAddress
 
     public byte[] PublicKey => _publicKey;
     
-    public byte[] GetHash()
-    {
-        byte[] typeEd25519 = new byte[] { 0xc6, 0xb4, 0x13, 0x48 };
-        byte[] key = new byte[typeEd25519.Length + _publicKey.Length];
-        typeEd25519.CopyTo(key, 0);
-        _publicKey.CopyTo(key, typeEd25519.Length);
-        foreach (var VARIABLE in key)
-        {
-            Console.Write(VARIABLE + " ");
-        }
-        Console.WriteLine();
-        return SHA256.HashData(key);
-    }
+    public byte[] Hash => SHA256.HashData(new byte[] { 0xc6, 0xb4, 0x13, 0x48 }.Concat(_publicKey).ToArray());
     
     private static bool IsHex(string? data)
     {

@@ -1,5 +1,7 @@
 ﻿using System.Security.Cryptography;
 using Org.BouncyCastle.Tls;
+using TonSdk.Core.Boc;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl;
 
@@ -23,14 +25,11 @@ public class AdnlPacket
     public byte[] Hash => SHA256.HashData(_nonce.Concat(_payload).ToArray());
     
     public byte[] Size {
-        get {
-            int size = _payload.Length + 32 + 32;
-            byte[] buffer = BitConverter.GetBytes(size);
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(buffer);
-            }
-            return buffer;
+        get
+        {
+            uint size = (uint)(32 + 32 + _payload.Length);
+            Bits builder = new BitsBuilder().StoreUInt32LE(size).Build();
+            return builder.ToBytes();
         }
     }
     
@@ -42,10 +41,14 @@ public class AdnlPacket
     {
         if (data.Length < 4) return null;
         int cursor = 0;
-        
-        uint size = BitConverter.ToUInt32(data, cursor);
-        cursor += 4;
 
+        BitsSlice slice = new Bits(data).Parse();
+
+        uint size = (uint)slice.LoadUInt32LE();
+        cursor += 4;
+        
+         Console.WriteLine(data.Length - 4);
+         Console.WriteLine(size);
         if (data.Length - 4 < size) return null;
         
         byte[] nonce = new byte[32];

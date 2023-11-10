@@ -4,66 +4,58 @@ using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 
-public abstract class CipherBase
+public class Cipher
 {
-    protected BufferedBlockCipher cipher;
-
-    protected CipherBase(byte[] key, byte[] iv)
+    private readonly IBufferedCipher _cipher;
+    
+    public Cipher(byte[] key, byte[] iv)
     {
-        KeyParameter keyParam = new KeyParameter(key);
-        ICipherParameters parameters = new ParametersWithIV(keyParam, iv);
+        if (key.Length != 32)
+            throw new ArgumentException("Invalid key length. Key must be 256 bits.");
 
-        // CTR mode in Bouncy Castle
-        cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
-        cipher.Init(true, parameters);
-    }
+        if (iv.Length != 16)
+            throw new ArgumentException("Invalid IV length. IV must be 128 bits.");
 
-    public byte[] Final()
-    {
-        return new byte[0];
-    }
-}
-
-public class Cipher : CipherBase
-{
-    public Cipher(byte[] key, byte[] iv) : base(key, iv)
-    {
+        _cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
+        _cipher.Init(true, new ParametersWithIV(new KeyParameter(key), iv));
     }
 
     public byte[] Update(byte[] data)
     {
-        byte[] result = new byte[cipher.GetOutputSize(data.Length)];
-        int length = cipher.ProcessBytes(data, 0, data.Length, result, 0);
-        cipher.DoFinal(result, length); // Finalize the encryption operation
-        return result;
+        byte[] output = new byte[_cipher.GetOutputSize(data.Length)];
+        int length = _cipher.ProcessBytes(data, 0, data.Length, output, 0);
+        _cipher.DoFinal(output, length);
+        return output;
     }
 }
 
-public class Decipher : Cipher
-{
-    public Decipher(byte[] key, byte[] iv) : base(key, iv)
+public class Decipher
+{ 
+    private readonly IBufferedCipher _cipher;
+    public Decipher(byte[] key, byte[] iv)
     {
-        cipher.Init(false, new ParametersWithIV(new KeyParameter(key), iv)); // Initialize for decryption
+        if (key.Length != 16 && key.Length != 24 && key.Length != 32)
+            throw new ArgumentException("Invalid key length. Key must be 128, 192, or 256 bits.");
+
+        if (iv.Length != 16)
+            throw new ArgumentException("Invalid IV length. IV must be 128 bits.");
+
+        _cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
+        _cipher.Init(false, new ParametersWithIV(new KeyParameter(key), iv));
     }
 
-    public new byte[] Update(byte[] data)
+    public byte[] Update(byte[] data)
     {
-        byte[] result = new byte[cipher.GetOutputSize(data.Length)];
-        int length = cipher.ProcessBytes(data, 0, data.Length, result, 0);
-        cipher.DoFinal(result, length); // Finalize the decryption operation
-        return result;
+        byte[] output = new byte[_cipher.GetOutputSize(data.Length)];
+        int length = _cipher.ProcessBytes(data, 0, data.Length, output, 0);
+        _cipher.DoFinal(output, length);
+        return output;
     }
 }
 
 public static class CipherFactory
 {
-    public static Cipher CreateCipheriv(byte[] key, byte[] iv)
-    {
-        return new Cipher(key, iv);
-    }
+    public static Cipher CreateCipheriv(byte[] key, byte[] iv) => new Cipher(key, iv);
 
-    public static Decipher CreateDecipheriv(byte[] key, byte[] iv)
-    {
-        return new Decipher(key, iv);
-    }
+    public static Decipher CreateDecipheriv(byte[] key, byte[] iv) => new Decipher(key, iv);
 }

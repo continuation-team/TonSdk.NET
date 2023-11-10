@@ -8,7 +8,7 @@ public class AdnlAesParams
     
     public byte[] Bytes => _bytes;
     
-    public byte[] RxKey => _bytes.Skip(0).Take(32).ToArray();
+    public byte[] RxKey => _bytes.Take(32).ToArray();
     
     public byte[] TxKey => _bytes.Skip(32).Take(32).ToArray();
     

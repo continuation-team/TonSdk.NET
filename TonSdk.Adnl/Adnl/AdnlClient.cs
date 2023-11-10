@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl;
 
@@ -56,8 +57,8 @@ public class AdnlClientTcp
         
         Cipher cipher = CipherFactory.CreateCipheriv(key, nonce);
         
-        byte[] payload = cipher.Update(_params.Bytes).Concat(cipher.Final()).ToArray();
-        byte[] packet = _address.GetHash().Concat(_keys.Public).Concat(_params.Hash).Concat(payload).ToArray();
+        byte[] payload = cipher.Update(_params.Bytes).ToArray();
+        byte[] packet = _address.Hash.Concat(_keys.Public).Concat(_params.Hash).Concat(payload).ToArray();
         
         await _networkStream.WriteAsync(packet, 0, packet.Length);
     }
@@ -91,6 +92,7 @@ public class AdnlClientTcp
                     
                     OnDataReceived(receivedData);
                 }
+                else if (bytesRead == 0) break;
             }
         }
         catch (Exception ex)
@@ -118,11 +120,9 @@ public class AdnlClientTcp
     private void OnDataReceived(byte[] data)
     {
         _buffer = _buffer.Concat(Decrypt(data)).ToArray();
-        Console.WriteLine(_buffer.Length);
         while (_buffer.Length >= AdnlPacket.PacketMinSize)
         {
-            AdnlPacket? packet = AdnlPacket.Parse(_buffer.ToArray());
-            
+            AdnlPacket? packet = AdnlPacket.Parse(_buffer);
             if (packet == null) break;
             
             _buffer = _buffer.Skip(packet.Length).ToArray();
@@ -158,7 +158,6 @@ public class AdnlClientTcp
         }
         catch (Exception e)
         {
-            Console.WriteLine("error");
             ErrorOccurred?.Invoke(e);
             End();
             _state = AdnlClientState.Closed;
