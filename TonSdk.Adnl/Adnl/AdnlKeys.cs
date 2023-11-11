@@ -7,14 +7,14 @@ using System.Security.Cryptography;
 
 namespace TonSdk.Adnl;
 
-public class DiffieHellman
+internal class Ed25519
 {
     private static readonly BigInteger Ed25519P = BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819949");
     
     private Ed25519PrivateKeyParameters _privateKey;
     private Ed25519PublicKeyParameters _publicKey;
 
-    public DiffieHellman()
+    internal Ed25519()
     {
         var keyPairGenerator = new Ed25519KeyPairGenerator();
         keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
@@ -24,8 +24,8 @@ public class DiffieHellman
         _publicKey = (Ed25519PublicKeyParameters)keyPair.Public;
     }
 
-    public byte[] PublicKey => _publicKey.GetEncoded();
-    public byte[] PrivateKey => _privateKey.GetEncoded();
+    internal byte[] PublicKey => _publicKey.GetEncoded();
+    internal byte[] PrivateKey => _privateKey.GetEncoded();
     
     private byte[] Ed25519PrivateKeyToCurve25519(byte[] privateKey)
     {
@@ -59,7 +59,7 @@ public class DiffieHellman
         return montgomeryU.ToByteArray();
     }
     
-    public byte[] CalculateSharedSecret(byte[] otherPublicKey)
+    internal byte[] CalculateSharedSecret(byte[] otherPublicKey)
     {
         X25519PrivateKeyParameters x25519PrivateKey =
             new X25519PrivateKeyParameters(Ed25519PrivateKeyToCurve25519(_privateKey.GetEncoded()), 0);
@@ -74,24 +74,24 @@ public class DiffieHellman
     }
 }
 
-public class AdnlKeys
+internal class AdnlKeys
 {
     private byte[] _peer;
     private byte[] _public;
     private byte[] _shared;
 
-    private DiffieHellman _diffieHellman;
+    private Ed25519 _ed25519;
 
-    public AdnlKeys(byte[] peerPublicKey)
+    internal AdnlKeys(byte[] peerPublicKey)
     {
         _peer = peerPublicKey;
-        _diffieHellman = new DiffieHellman();
+        _ed25519 = new Ed25519();
     }
 
-    public byte[] Public => _diffieHellman.PublicKey;
+    internal byte[] Public => _ed25519.PublicKey;
     
-    public byte[] Private => _diffieHellman.PrivateKey;
-    public byte[] Shared => _diffieHellman.CalculateSharedSecret(_peer);
+    internal byte[] Private => _ed25519.PrivateKey;
+    internal byte[] Shared => _ed25519.CalculateSharedSecret(_peer);
     
     internal static byte[] GenerateRandomBytes(int byteSize)
     {

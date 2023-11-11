@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl;
@@ -60,7 +61,7 @@ public class AdnlClientTcp
         byte[] payload = cipher.Update(_params.Bytes).ToArray();
         byte[] packet = _address.Hash.Concat(_keys.Public).Concat(_params.Hash).Concat(payload).ToArray();
         
-        await _networkStream.WriteAsync(packet, 0, packet.Length);
+        await _networkStream.WriteAsync(packet, 0, packet.Length).ConfigureAwait(false);
     }
 
     private void OnBeforeConnect()
@@ -84,7 +85,7 @@ public class AdnlClientTcp
             
             while (_socket.Connected)
             {
-                int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
+                int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                 if (bytesRead > 0)
                 {
                     byte[] receivedData = new byte[bytesRead];
@@ -126,7 +127,7 @@ public class AdnlClientTcp
             if (packet == null) break;
             
             _buffer = _buffer.Skip(packet.Length).ToArray();
-
+            
             if (_state == AdnlClientState.Connecting)
             {
                 if (packet.Payload.Length != 0)
@@ -150,11 +151,11 @@ public class AdnlClientTcp
         OnBeforeConnect();
         try
         {
-            await _socket.ConnectAsync(_host, _port);
+            await _socket.ConnectAsync(_host, _port).ConfigureAwait(false);
             _networkStream = _socket.GetStream();
-            Task.Run(async () => await ReadDataAsync());
+            Task.Run(async () => await ReadDataAsync().ConfigureAwait(false));
             Connected?.Invoke();
-            await Handshake();
+            await Handshake().ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -175,7 +176,7 @@ public class AdnlClientTcp
     {
         AdnlPacket packet = new AdnlPacket(data);
         byte[] encrypted = Encrypt(packet.Data);
-        await _networkStream.WriteAsync(encrypted, 0, encrypted.Length);
+        await _networkStream.WriteAsync(encrypted, 0, encrypted.Length).ConfigureAwait(false);
     }
     
     private byte[] Encrypt(byte[] data) => _cipher.Update(data);

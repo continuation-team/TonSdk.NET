@@ -4,17 +4,17 @@ using Utils = TonSdk.Core.Crypto.Utils;
 
 namespace TonSdk.Adnl;
 
-public partial class AdnlAddress
+internal partial class AdnlAddress
 {
     private byte[] _publicKey;
 
-    public AdnlAddress(byte[] publicKey)
+    internal AdnlAddress(byte[] publicKey)
     {
         _publicKey = publicKey;
         if (_publicKey.Length != 32) throw new Exception("ADNLAddress: Bad peer public key. Must contain 32 bytes.");
     }
 
-    public AdnlAddress(string publicKey)
+    internal AdnlAddress(string publicKey)
     {
         publicKey = publicKey.Trim();
 
@@ -24,9 +24,9 @@ public partial class AdnlAddress
         if (_publicKey.Length != 32) throw new Exception("ADNLAddress: Bad peer public key. Must contain 32 bytes.");
     }
 
-    public byte[] PublicKey => _publicKey;
+    internal byte[] PublicKey => _publicKey;
     
-    public byte[] Hash => SHA256.HashData(new byte[] { 0xc6, 0xb4, 0x13, 0x48 }.Concat(_publicKey).ToArray());
+    internal byte[] Hash => SHA256.HashData(new byte[] { 0xc6, 0xb4, 0x13, 0x48 }.Concat(_publicKey).ToArray());
     
     private static bool IsHex(string? data)
     {

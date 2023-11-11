@@ -1,30 +1,28 @@
 ﻿using System.Security.Cryptography;
-using Org.BouncyCastle.Tls;
 using TonSdk.Core.Boc;
-using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl;
 
-public class AdnlPacket
+internal class AdnlPacket
 {
-    public const byte PacketMinSize = 68; // 4 (size) + 32 (nonce) + 32 (hash)
+    internal const byte PacketMinSize = 68; // 4 (size) + 32 (nonce) + 32 (hash)
 
     private byte[] _payload;
     private byte[] _nonce;
 
-    public AdnlPacket(byte[] payload, byte[]? nonce = null)
+    internal AdnlPacket(byte[] payload, byte[]? nonce = null)
     {
         _nonce = nonce ?? AdnlKeys.GenerateRandomBytes(32);
         _payload = payload;
     }
 
-    public byte[] Payload => _payload;
+    internal byte[] Payload => _payload;
     
-    public byte[] Nonce => _nonce;
+    private byte[] Nonce => _nonce;
     
-    public byte[] Hash => SHA256.HashData(_nonce.Concat(_payload).ToArray());
+    private byte[] Hash => SHA256.HashData(_nonce.Concat(_payload).ToArray());
     
-    public byte[] Size {
+    private byte[] Size {
         get
         {
             uint size = (uint)(32 + 32 + _payload.Length);
@@ -33,11 +31,11 @@ public class AdnlPacket
         }
     }
     
-    public byte[] Data => Size.Concat(Nonce).Concat(Payload).Concat(Hash).ToArray();
+    internal byte[] Data => Size.Concat(Nonce).Concat(Payload).Concat(Hash).ToArray();
 
-    public int Length => PacketMinSize + _payload.Length;
+    internal int Length => PacketMinSize + _payload.Length;
 
-    public static AdnlPacket? Parse(byte[] data)
+    internal static AdnlPacket? Parse(byte[] data)
     {
         if (data.Length < 4) return null;
         int cursor = 0;
@@ -47,8 +45,6 @@ public class AdnlPacket
         uint size = (uint)slice.LoadUInt32LE();
         cursor += 4;
         
-         Console.WriteLine(data.Length - 4);
-         Console.WriteLine(size);
         if (data.Length - 4 < size) return null;
         
         byte[] nonce = new byte[32];

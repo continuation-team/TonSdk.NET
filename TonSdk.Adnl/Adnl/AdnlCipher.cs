@@ -3,12 +3,15 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
+using TonSdk.Adnl;
 
-public class Cipher
+namespace TonSdk.Adnl;
+
+internal class Cipher
 {
-    private readonly IBufferedCipher _cipher;
+    private readonly AesCtrMode _cipher;
     
-    public Cipher(byte[] key, byte[] iv)
+    internal Cipher(byte[] key, byte[] iv)
     {
         if (key.Length != 32)
             throw new ArgumentException("Invalid key length. Key must be 256 bits.");
@@ -16,46 +19,32 @@ public class Cipher
         if (iv.Length != 16)
             throw new ArgumentException("Invalid IV length. IV must be 128 bits.");
 
-        _cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
-        _cipher.Init(true, new ParametersWithIV(new KeyParameter(key), iv));
+        _cipher = new AesCtrMode(key, new AesCounter(iv));
     }
 
-    public byte[] Update(byte[] data)
-    {
-        byte[] output = new byte[_cipher.GetOutputSize(data.Length)];
-        int length = _cipher.ProcessBytes(data, 0, data.Length, output, 0);
-        _cipher.DoFinal(output, length);
-        return output;
-    }
+    internal byte[] Update(byte[] data) => _cipher.Encrypt(data);
 }
 
-public class Decipher
+internal class Decipher
 { 
-    private readonly IBufferedCipher _cipher;
-    public Decipher(byte[] key, byte[] iv)
+    private readonly AesCtrMode _cipher;
+    internal Decipher(byte[] key, byte[] iv)
     {
-        if (key.Length != 16 && key.Length != 24 && key.Length != 32)
-            throw new ArgumentException("Invalid key length. Key must be 128, 192, or 256 bits.");
+        if (key.Length != 32)
+            throw new ArgumentException("Invalid key length. Key must be 256 bits.");
 
         if (iv.Length != 16)
             throw new ArgumentException("Invalid IV length. IV must be 128 bits.");
 
-        _cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
-        _cipher.Init(false, new ParametersWithIV(new KeyParameter(key), iv));
+        _cipher = new AesCtrMode(key, new AesCounter(iv));
     }
 
-    public byte[] Update(byte[] data)
-    {
-        byte[] output = new byte[_cipher.GetOutputSize(data.Length)];
-        int length = _cipher.ProcessBytes(data, 0, data.Length, output, 0);
-        _cipher.DoFinal(output, length);
-        return output;
-    }
+    internal byte[] Update(byte[] data) => _cipher.Decrypt(data);
 }
 
-public static class CipherFactory
+internal static class CipherFactory
 {
-    public static Cipher CreateCipheriv(byte[] key, byte[] iv) => new Cipher(key, iv);
+    internal static Cipher CreateCipheriv(byte[] key, byte[] iv) => new Cipher(key, iv);
 
-    public static Decipher CreateDecipheriv(byte[] key, byte[] iv) => new Decipher(key, iv);
+    internal static Decipher CreateDecipheriv(byte[] key, byte[] iv) => new Decipher(key, iv);
 }
