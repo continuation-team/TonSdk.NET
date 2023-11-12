@@ -558,13 +558,18 @@ namespace TonSdk.Client
                         if (valueStr == null)
                             throw new Exception("Expected a string value for 'num' type.");
 
+#if NETSTANDARD2_0
+                        bool isNegative = valueStr[0] == '-';
+                        string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
+                        BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
+#else
                         ReadOnlySpan<char> slice = new ReadOnlySpan<char>(
-                            valueStr.ToCharArray());
+                             valueStr.ToCharArray());
 
                         bool isNegative = slice[0] == '-';
-
                         slice = isNegative ? slice.Slice(3) : slice.Slice(2);
                         BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
+#endif
 
                         return isNegative ? 0 - x : x;
                     }
