@@ -23,7 +23,7 @@
   <PropertyGroup>
         <PackageReadmeFile>README.MD</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    </PropertyGroup>
+  </PropertyGroup>
 
     <ItemGroup>
         <None Include="README.MD" Pack="true" PackagePath="" />
