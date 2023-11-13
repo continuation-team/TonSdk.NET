@@ -1,101 +1,70 @@
-﻿## TonSdk.Connect
+﻿## TonSdk.Adnl
 
 
 ### Overview example
 
 ```csharp
-// Create a TonConnectOptions object with the manifest URL
-TonConnectOptions options = new TonConnectOptions()
+// Define constants for the ADNL client configuration
+private static readonly int AdnlHost = 84478511; // Host ID for ADNL client
+private static readonly int AdnlPort = 19949; // Port number for ADNL client
+private static readonly string AdnlPubKey = "n4VDnSCUuSpjnCyUk9e3QOOd6o0ItSWYbTnW3Wnn8wk="; // Public key for ADNL client
+
+// Initialize the ADNL client with the predefined settings
+AdnlClientTcp client = new AdnlClientTcp(AdnlHost, AdnlPort, AdnlPubKey);
+
+// Subscribe to various client events
+client.Connected += OnClientConnected; // Event when client connected, but not ready
+client.Ready += OnClientReady; // Event when client is ready
+client.Closed += OnClientClosed; // Event when client connection closes
+client.DataReceived += OnDataReceived; // Event when data is received
+client.ErrorOccurred += OnErrorOccured; // Event when an error occurs
+
+// Connect the client and wait for input before closing
+await client.Connect();
+
+// Event handlers for the ADNL client
+private static void OnClientConnected()
 {
-    ManifestUrl = "https://dedust.io/tonconnect-manifest.json"
-};
-
-// Initialize TonConnect with the specified options
-TonConnect tonConnect = new(options);
-
-// Get wallet configurations
-WalletConfig[] walletsConfig = tonConnect.GetWallets();
-
-// Set event handlers for status changes and errors
-tonConnect.OnStatusChange(OnStatusChange, OnErrorChange);
-
-// Method called when the wallet status changes
-void OnStatusChange(Wallet wallet)
-{
-    Console.WriteLine("Wallet connected. Address: " + wallet.Account.Address + ". Platform: " + wallet.Device.Platform + "," + wallet.Device.AppName + "," + wallet.Device.AppVersion);
+    Console.WriteLine("Connected");
 }
 
-// Method called when errors occur
-void OnErrorChange(string wallet)
+private static void OnClientClosed()
 {
-    Console.WriteLine(wallet);
+    Console.WriteLine("Closed");
 }
 
-// Connect to a wallet and await the result
-string result = await tonConnect.Connect(walletsConfig[1]);
-
-// Print the connection result
-Console.WriteLine("Connect link: " + result);
-
-```
-
-#### Disconnect wallet method
-```csharp
-// Call this method to disconnect from the current wallet
-await tonConnect.Disconnect();
-```
-
-#### Use custom remote storage
-```csharp
-// Create a `RemoteStorage` object with custom storage methods provided by the user (for example Player Prefs in Unity)
-RemoteStorage remoteStorage = new(new(PlayerPrefs.GetString), new(PlayerPrefs.SetString), new(PlayerPrefs.DeleteKey), new(PlayerPrefs.HasKey));
-
-// Initialize TonConnect with the specified options and the custom storage methods
-TonConnect tonConnect = new(options, remoteStorage);
-```
-
-#### Use additional connect options
-```csharp
-// This delegates uses, if platform as the Unity, needs reimplementation of httpClient logic, with using Coroutines.
-// Dont use in usual C# projects.
-
-// Create a custom SSE listen method with implementation of event stream subsctiptions.
-// Example, https://github.com/continuation-team/unity-ton-connect/blob/main/Assets/TonConnect/Scripts/TonConnect/TonConnectHandler.cs#L147C5-L192C6
-private void YourListenEventsMethod() {}
-
-// Create a custom send post message method
-// Example, https://github.com/continuation-team/unity-ton-connect/blob/main/Assets/TonConnect/Scripts/TonConnect/TonConnectHandler.cs#L119C5-L145C6
-private void YourSendPostMethod() {}
-
-// Create a `AdditionalConnectOptions` object with custom methods provided by the user (only in Unity)
-AdditionalConnectOptions additionalOptions = new AdditionalConnectOptions()
+private static void OnDataReceived(byte[] data)
 {
-    listenEventsFunction = new ListenEventsFunction(YourListenEventsMethod),
-    sendGatewayMessage = new SendGatewayMessage(YourSendPostMethod)
+    Console.WriteLine("Data Received");
+    Console.WriteLine(Utils.BytesToHex(data));
+}
+
+private static async void OnClientReady()
+{
+    Console.WriteLine("Ready");
+    
+    // Send a predefined byte array (TL) to the client
+    byte[] tlGettime = Utils.HexToBytes("7af98bb435263e6c95d6fecb497dfd0aa5f031e7d412986b5ce720496db512052e8f2d100cdf068c7904345aad16000000000000");
+    await client.Write(tlGettime);
+}
+
+private static void OnErrorOccured(Exception ex)
+{
+    throw ex;
 }
 ```
 
-#### Send transaction example
+#### Write byte data method
 ```csharp
-// Create a receiver address and the amount to send
-Address receiver = new("receiver address");
-Coins amount = new("send amount");
+// Write byte array via NetworkStream. Should be predefined by using TL Schemes 
+// TL docs: https://core.telegram.org/mtproto/TL or https://docs.ton.org/develop/data-formats/tl
+await client.Write(byte[] data);
+```
 
-// Create an array of messages to send
-Message[] sendTons = 
-{
-    new Message(receiver, amount),
-    // Additional messages if needed
-};
-
-// Set the valid until timestamp for the transaction (expiration time in seconds from the current moment)
-long validUntil = DateTimeOffset.Now.ToUnixTimeSeconds() + 600;
-
-// Create a SendTransactionRequest object
-SendTransactionRequest transactionRequest = new SendTransactionRequest(sendTons, validUntil);
-
-// Print the result of sending the transaction
-Console.WriteLine(await tonConnect.SendTransaction(transactionRequest));
+#### End connection method
+```csharp
+// Close and Dispose connection to Liteserver
+client.End();
 ```
 
 ## Donation
