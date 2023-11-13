@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Connect", "TonSDK.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Adnl", "TonSdk.Adnl\src\TonSdk.Adnl.csproj", "{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Adnl.Tests", "TonSdk.Adnl\test\TonSdk.Adnl.Tests\TonSdk.Adnl.Tests.csproj", "{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Adnl.Tests", "TonSdk.Adnl\test\TonSdk.Adnl.Tests.csproj", "{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
