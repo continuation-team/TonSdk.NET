@@ -47,7 +47,6 @@ namespace TonSdk.Adnl
         public AdnlClientTcp(int host, int port, string peerPublicKey)
         {
             _host = ConvertToIPAddress(host);
-            Console.WriteLine(_host);
             _port = port;
             _address = new AdnlAddress(peerPublicKey);
             _socket = new TcpClient();
