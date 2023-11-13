@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using TonSdk.Core;
@@ -338,25 +339,25 @@ namespace TonSdk.Client
             switch (outAddressInformationResult.State)
             {
                 case "active":
-                {
-                    State = AccountState.Active;
-                    break;
-                }
+                    {
+                        State = AccountState.Active;
+                        break;
+                    }
                 case "frozen":
-                {
-                    State = AccountState.Frozen;
-                    break;
-                }
+                    {
+                        State = AccountState.Frozen;
+                        break;
+                    }
                 case "uninitialized":
-                {
-                    State = AccountState.Uninit;
-                    break;
-                }
+                    {
+                        State = AccountState.Uninit;
+                        break;
+                    }
                 default:
-                {
-                    State = AccountState.NonExist;
-                    break;
-                }
+                    {
+                        State = AccountState.NonExist;
+                        break;
+                    }
             }
 
             Balance = new Coins(outAddressInformationResult.Balance, new CoinsOptions(true, 9));
@@ -392,7 +393,7 @@ namespace TonSdk.Client
             Shards = outShardsInformationResult.Shards;
         }
     }
-    
+
     public struct BlockTransactionsResult
     {
         public BlockIdExternal Id;
@@ -552,46 +553,44 @@ namespace TonSdk.Client
             switch (type)
             {
                 case "num":
-                {
-                    string valueStr = value as string;
-                    if (valueStr == null)
-                        throw new Exception("Expected a string value for 'num' type.");
+                    {
+                        string valueStr = value as string;
+                        if (valueStr == null)
+                            throw new Exception("Expected a string value for 'num' type.");
 
-                    bool isNegative = valueStr.StartsWith("-");
+                        bool isNegative = valueStr[0] == '-';
+                        string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
+                        BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
 
-                    string valueStrSlice = valueStr.Substring(3);
-                    string valueStrSlice2 = valueStr.Substring(2);
-                    Bits bits = new Bits(isNegative ? valueStrSlice : valueStrSlice2);
-                    BigInteger x = bits.Parse().LoadUInt(bits.Length);
-                    return isNegative ? 0 - x : x;
-                }
+                        return isNegative ? 0 - x : x;
+                    }
                 case "cell":
-                {
-                    if (value is JObject jObject && jObject["bytes"] is JValue jValue)
                     {
-                        return Cell.From((string)jValue.Value);
+                        if (value is JObject jObject && jObject["bytes"] is JValue jValue)
+                        {
+                            return Cell.From((string)jValue.Value);
+                        }
+                        else
+                        {
+                            throw new Exception("Expected a JObject value for 'cell' type.");
+                        }
                     }
-                    else
-                    {
-                        throw new Exception("Expected a JObject value for 'cell' type.");
-                    }
-                }
                 case "list":
                 case "tuple":
-                {
-                    if (value is JObject jObject)
                     {
-                        return ParseObject(jObject);
+                        if (value is JObject jObject)
+                        {
+                            return ParseObject(jObject);
+                        }
+                        else
+                        {
+                            throw new Exception("Expected a JObject value for 'list' or 'tuple' type.");
+                        }
                     }
-                    else
-                    {
-                        throw new Exception("Expected a JObject value for 'list' or 'tuple' type.");
-                    }
-                }
                 default:
-                {
-                    throw new Exception("Unknown type " + type);
-                }
+                    {
+                        throw new Exception("Unknown type " + type);
+                    }
             }
         }
     }
