@@ -24,6 +24,11 @@ Abstractions for work with smart contracts in TON Blockchain
 [![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Connect.svg)](https://www.nuget.org/packages/TonSdk.Connect) \
 Library to work with Ton Connect 2.0
 
+### [TonSdk.Adnl](https://www.nuget.org/packages/TonSdk.Adnl/)
+[![NuGet](https://img.shields.io/nuget/dt/TonSdk.Adnl.svg)](https://www.nuget.org/packages/TonSdk.Adnl)
+[![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Adnl.svg)](https://www.nuget.org/packages/TonSdk.Adnl) \
+Library to work with Ton ADNL
+
 ## Features and status
 
 - [x] Builder, Cell, Slice

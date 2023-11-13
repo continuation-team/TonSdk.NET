@@ -35,7 +35,7 @@ namespace TonSdk.Connect
             rng.GetBytes(nonce);
 
             byte[] cipherText = new byte[message.Length + XSalsa20Poly1305.TagLength];
-
+            
             box.Encrypt(cipherText, messageBytes, nonce);
 
             byte[] result = new byte[NONCE_SIZE + cipherText.Length];
