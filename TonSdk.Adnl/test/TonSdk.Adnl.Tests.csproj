@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\TonSdk.Adnl.csproj" />
+      <ProjectReference Include="..\src\TonSdk.Adnl.csproj" />
     </ItemGroup>
 
 </Project>
