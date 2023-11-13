@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -35,6 +36,23 @@ namespace TonSdk.Adnl
         public event Action<byte[]> DataReceived;
         public event Action<Exception> ErrorOccurred;
 
+        public AdnlClientTcp(int host, int port, byte[] peerPublicKey)
+        {
+            _host = ConvertToIPAddress(host);
+            _port = port;
+            _address = new AdnlAddress(peerPublicKey);
+            _socket = new TcpClient();
+        }
+
+        public AdnlClientTcp(int host, int port, string peerPublicKey)
+        {
+            _host = ConvertToIPAddress(host);
+            Console.WriteLine(_host);
+            _port = port;
+            _address = new AdnlAddress(peerPublicKey);
+            _socket = new TcpClient();
+        }
+        
         public AdnlClientTcp(string host, int port, byte[] peerPublicKey)
         {
             _host = host;
@@ -182,5 +200,18 @@ namespace TonSdk.Adnl
 
         private byte[] Encrypt(byte[] data) => _cipher.Update(data);
         private byte[] Decrypt(byte[] data) => _decipher.Update(data);
+        
+        private static string ConvertToIPAddress(int number)
+        {
+            uint unsignedNumber = (uint)number;
+            byte[] bytes = new byte[4];
+
+            bytes[0] = (byte)((unsignedNumber >> 24) & 0xFF);
+            bytes[1] = (byte)((unsignedNumber >> 16) & 0xFF);
+            bytes[2] = (byte)((unsignedNumber >> 8) & 0xFF);
+            bytes[3] = (byte)(unsignedNumber & 0xFF);
+
+            return $"{bytes[0]}.{bytes[1]}.{bytes[2]}.{bytes[3]}";
+        }
     }
 }

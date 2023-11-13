@@ -25,7 +25,7 @@ public class AdnlTest
         
         while (client.State != AdnlClientState.Open)
         {
-            // wait
+            // waiting
             continue;
         }
         
