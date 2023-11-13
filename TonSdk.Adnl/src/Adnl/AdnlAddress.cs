@@ -6,7 +6,6 @@ using Utils = TonSdk.Core.Crypto.Utils;
 
 namespace TonSdk.Adnl
 {
-
     internal partial class AdnlAddress
     {
         private byte[] _publicKey;
