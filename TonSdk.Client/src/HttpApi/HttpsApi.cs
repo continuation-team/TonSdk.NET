@@ -18,7 +18,6 @@ namespace TonSdk.Client
 
     public abstract class HttpApi : IDisposable
     {
-        // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
 
         /// <summary>
@@ -52,8 +51,7 @@ namespace TonSdk.Client
         public async Task<AddressInformationResult> GetAddressInformation(Address address)
         {
             InAdressInformationBody requestBody =
-                new InAdressInformationBody(address.ToString(AddressType.Base64,
-                    new AddressStringifyOptions(true, false, false)));
+                new InAdressInformationBody(address.ToString());
             var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody), _httpClient)
                 .Call();
             RootAddressInformation resultAddressInformation =
@@ -61,6 +59,25 @@ namespace TonSdk.Client
             AddressInformationResult addressInformationResult =
                 new AddressInformationResult(resultAddressInformation.Result);
             return addressInformationResult;
+        }
+        
+        /// <summary>
+        /// Retrieves the wallet information for the specified address.
+        /// </summary>
+        /// <param name="address">The address object to retrieve information for.</param>
+        /// <returns>An object containing the wallet information.</returns>
+        public async Task<WalletInformationResult> GetWalletInformation(Address address)
+        {
+            InAdressInformationBody requestBody =
+                new InAdressInformationBody(address.ToString());
+            var result = await new TonRequest(new RequestParameters("getWalletInformation", requestBody), _httpClient)
+                .Call();
+            RootWalletInformation resultWalletInformation =
+                JsonConvert.DeserializeObject<RootWalletInformation>(result);
+            if (!resultWalletInformation.Ok) throw new Exception("An error occured when requesting a method.");
+            WalletInformationResult walletInformationResult =
+                new WalletInformationResult(resultWalletInformation.Result);
+            return walletInformationResult;
         }
 
         /// <summary>
