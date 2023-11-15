@@ -18,7 +18,6 @@ namespace TonSdk.Client
 
     public abstract class HttpApi : IDisposable
     {
-        // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
 
         /// <summary>
@@ -52,8 +51,7 @@ namespace TonSdk.Client
         public async Task<AddressInformationResult> GetAddressInformation(Address address)
         {
             InAdressInformationBody requestBody =
-                new InAdressInformationBody(address.ToString(AddressType.Base64,
-                    new AddressStringifyOptions(true, false, false)));
+                new InAdressInformationBody(address.ToString());
             var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody), _httpClient)
                 .Call();
             RootAddressInformation resultAddressInformation =
