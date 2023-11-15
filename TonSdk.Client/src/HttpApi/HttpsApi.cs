@@ -60,6 +60,25 @@ namespace TonSdk.Client
                 new AddressInformationResult(resultAddressInformation.Result);
             return addressInformationResult;
         }
+        
+        /// <summary>
+        /// Retrieves the wallet information for the specified address.
+        /// </summary>
+        /// <param name="address">The address object to retrieve information for.</param>
+        /// <returns>An object containing the wallet information.</returns>
+        public async Task<WalletInformationResult> GetWalletInformation(Address address)
+        {
+            InAdressInformationBody requestBody =
+                new InAdressInformationBody(address.ToString());
+            var result = await new TonRequest(new RequestParameters("getWalletInformation", requestBody), _httpClient)
+                .Call();
+            RootWalletInformation resultWalletInformation =
+                JsonConvert.DeserializeObject<RootWalletInformation>(result);
+            if (!resultWalletInformation.Ok) throw new Exception("An error occured when requesting a method.");
+            WalletInformationResult walletInformationResult =
+                new WalletInformationResult(resultWalletInformation.Result);
+            return walletInformationResult;
+        }
 
         /// <summary>
         /// Get up-to-date masterchain state.
