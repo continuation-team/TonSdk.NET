@@ -6,17 +6,17 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Core</RootNamespace>
         <PackageId>TonSdk.Core</PackageId>
-        <Version>0.2.4</Version>
+        <Version>0.2.6</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Core library with types and structures for TON Blockchain</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="JustCRC32C" Version="1.1.0" />
-	    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JustCRC32C" Version="1.1.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+  </ItemGroup>
 
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>

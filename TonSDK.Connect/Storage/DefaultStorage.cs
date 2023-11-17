@@ -21,7 +21,7 @@ namespace TonSdk.Connect
             using IsolatedStorageFile isolatedStorage = GetIsolatedStorage();
             string storageKey = GetStorageKey(key);
             using StreamWriter writer = new StreamWriter(new IsolatedStorageFileStream(storageKey, FileMode.Create, isolatedStorage));
-            await writer.WriteAsync(value);
+            await writer.WriteAsync(value).ConfigureAwait(false);
         }
 
         public static async Task<string?> GetItem(string key, string? defaultValue = null)
@@ -31,7 +31,7 @@ namespace TonSdk.Connect
             if (isolatedStorage.FileExists(storageKey))
             {
                 using StreamReader reader = new StreamReader(new IsolatedStorageFileStream(storageKey, FileMode.Open, isolatedStorage));
-                return await reader.ReadToEndAsync();
+                return await reader.ReadToEndAsync().ConfigureAwait(false);
             }
             return defaultValue;
         }

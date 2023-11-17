@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TonSdk.Client.Tests", "TonS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Connect", "TonSDK.Connect\TonSdk.Connect.csproj", "{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Adnl", "TonSdk.Adnl\src\TonSdk.Adnl.csproj", "{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TonSdk.Adnl.Tests", "TonSdk.Adnl\test\TonSdk.Adnl.Tests.csproj", "{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5710B6BD-2C3F-4091-AD51-F6D3D3261EAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98E0A2B9-4E4E-48D2-9FFE-DD9F1CC2AA08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69DD2D24-5D2E-4B03-B3B3-D661AD4B335C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

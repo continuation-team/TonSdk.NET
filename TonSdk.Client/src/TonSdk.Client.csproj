@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Client</RootNamespace>
         <PackageId>TonSdk.Client</PackageId>
-        <Version>0.2.3</Version>
+        <Version>0.2.5</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>RPC Client for work with TonCenter API</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>

@@ -1,29 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net7.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
         <ImplicitUsings>disable</ImplicitUsings>
         <LangVersion>8.0</LangVersion>
-        <RootNamespace>TonSdk.Contracts</RootNamespace>
-        <PackageId>TonSdk.Contracts</PackageId>
-        <Version>0.2.4</Version>
+        <RootNamespace>TonSdk.Adnl</RootNamespace>
+        <PackageId>TonSdk.Adnl</PackageId>
+        <Version>0.1.1</Version>
         <Authors>Continuation Team</Authors>
-        <PackageDescription>Abstractions for work with smart contracts in TON Blockchain</PackageDescription>
+        <PackageDescription>Library that allows to interact with Ton ADNL</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="TonSdk.Core" Version="0.2.0" />
+      <PackageReference Include="TonSdk.Core" Version="0.2.5" />
     </ItemGroup>
 
     <PropertyGroup>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="" />
+        <None Include="README.MD" Pack="true" PackagePath="" />
         <None Include="../../LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
 

@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using TonSdk.Core;
+using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using static TonSdk.Client.Transformers;
 
@@ -17,7 +18,6 @@ namespace TonSdk.Client
 
     public abstract class HttpApi : IDisposable
     {
-        // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
         private readonly HttpClient _httpClient;
 
         /// <summary>
@@ -51,8 +51,7 @@ namespace TonSdk.Client
         public async Task<AddressInformationResult> GetAddressInformation(Address address)
         {
             InAdressInformationBody requestBody =
-                new InAdressInformationBody(address.ToString(AddressType.Base64,
-                    new AddressStringifyOptions(true, false, false)));
+                new InAdressInformationBody(address.ToString());
             var result = await new TonRequest(new RequestParameters("getAddressInformation", requestBody), _httpClient)
                 .Call();
             RootAddressInformation resultAddressInformation =
@@ -60,6 +59,25 @@ namespace TonSdk.Client
             AddressInformationResult addressInformationResult =
                 new AddressInformationResult(resultAddressInformation.Result);
             return addressInformationResult;
+        }
+        
+        /// <summary>
+        /// Retrieves the wallet information for the specified address.
+        /// </summary>
+        /// <param name="address">The address object to retrieve information for.</param>
+        /// <returns>An object containing the wallet information.</returns>
+        public async Task<WalletInformationResult> GetWalletInformation(Address address)
+        {
+            InAdressInformationBody requestBody =
+                new InAdressInformationBody(address.ToString());
+            var result = await new TonRequest(new RequestParameters("getWalletInformation", requestBody), _httpClient)
+                .Call();
+            RootWalletInformation resultWalletInformation =
+                JsonConvert.DeserializeObject<RootWalletInformation>(result);
+            if (!resultWalletInformation.Ok) throw new Exception("An error occured when requesting a method.");
+            WalletInformationResult walletInformationResult =
+                new WalletInformationResult(resultWalletInformation.Result);
+            return walletInformationResult;
         }
 
         /// <summary>
@@ -195,6 +213,37 @@ namespace TonSdk.Client
             RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
             SendBocResult outSendBoc = resultRoot.Result;
             return outSendBoc;
+        }
+
+        /// <summary>
+        /// Estimates fee for the message
+        /// </summary>
+        /// <param name="transfer">The message for which you need to calculate the fees</param>
+        /// <returns>The result of estimation fees.</returns>
+        public async Task<EstimateFeeResult> EstimateFee(MessageX message, bool ignoreChksig = true)
+        {
+            var dataMsg = message.Data;
+
+            Address address = (message.Data.Info.Data is IntMsgInfoOptions info) ? info.Dest :
+                      (message.Data.Info.Data is ExtInMsgInfoOptions info2) ? info2.Dest : null;
+
+            Cell body = dataMsg.Body;
+            Cell init_code = dataMsg.StateInit?.Data.Code;
+            Cell init_data = dataMsg.StateInit?.Data.Data;
+
+            InEstimateFeeBody requestBody = new InEstimateFeeBody()
+            {
+                address = address.ToString(),
+                body = body?.ToString("base64") ?? string.Empty,
+                init_code = init_code?.ToString("base64") ?? string.Empty,
+                init_data = init_data?.ToString("base64") ?? string.Empty,
+                ignore_chksig = ignoreChksig,
+            };
+
+            var result = await new TonRequest(new RequestParameters("estimateFee", requestBody), _httpClient).Call();
+            RootEstimateFee resultRoot = JsonConvert.DeserializeObject<RootEstimateFee>(result);
+            EstimateFeeResult outEstimateFee = resultRoot.Result;
+            return outEstimateFee;
         }
 
         /// <summary>
