@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TonSdk.Adnl.TL;
@@ -8,6 +9,7 @@ namespace TonSdk.Adnl.LiteClient
 {
     public class LiteClient
     {
+        private Dictionary<string, TaskCompletionSource<byte[]>> _pendingRequests;
         private AdnlClientTcp _adnlClient;
         
         public LiteClient(int host, int port, byte[] peerPublicKey)
@@ -53,8 +55,6 @@ namespace TonSdk.Adnl.LiteClient
         private async void AdnlClientOnReady()
         {
             Console.WriteLine("ready");
-            byte[] tlGettime = Utils.HexToBytes("7af98bb435263e6c95d6fecb497dfd0aa5f031e7d412986b5ce720496db512052e8f2d100cdf068c7904345aad16000000000000");
-            await _adnlClient.Write(tlGettime);
         }
 
         private void AdnlClientOnConnected()
@@ -69,6 +69,7 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task Connect(CancellationToken cancellationToken = default)
         {
+            _pendingRequests = new Dictionary<string, TaskCompletionSource<byte[]>>();
             await _adnlClient.Connect();
             while (_adnlClient.State != AdnlClientState.Open)
             {
@@ -88,11 +89,34 @@ namespace TonSdk.Adnl.LiteClient
             byte[] data;
 
             (id, data) = LiteClientMethods.EncodeGetMasterchainInfo();
+
+            var tcs = new TaskCompletionSource<byte[]>();
+            _pendingRequests.Add(Utils.BytesToHex(id), tcs);
+            
+            await _adnlClient.Write(data);
+            byte[] payload = await tcs.Task;
+            
+            LiteClientMethods.DecodeGetMasterchainInfo(payload);
         }
         
         private async void OnDataReceived(byte[] data)
         {
-            Console.WriteLine("data");
+            Console.WriteLine("data " + Utils.BytesToHex(data).ToLower());
+            Console.WriteLine();
+            
+            var readBuffer = new TLReadBuffer(data);
+            
+            readBuffer.ReadUInt32Le(); // adnlAnswer
+            string queryId = Utils.BytesToHex(readBuffer.ReadInt256Le().ToByteArray()); // queryId
+
+            if (!_pendingRequests.ContainsKey(queryId))
+            {
+                await Console.Out.WriteLineAsync("Response id doesn't match any request's id");
+                return;
+            }
+            
+            _pendingRequests[queryId].SetResult(readBuffer.Remainder);
+            _pendingRequests.Remove(queryId);
         }
     }
 }
