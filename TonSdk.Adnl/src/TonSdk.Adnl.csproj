@@ -10,7 +10,7 @@
         <Authors>Continuation Team</Authors>
         <PackageDescription>Library that allows to interact with Ton ADNL</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
