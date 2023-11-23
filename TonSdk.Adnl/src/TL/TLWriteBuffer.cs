@@ -36,28 +36,10 @@ namespace TonSdk.Adnl.TL
             _used += 4;
         }
 
-        public void WriteInt64(string val)
+        public void WriteInt64(long val)
         {
-            BigInteger src = BigInteger.Parse(val);
-            bool neg = src < 0;
-            if (neg)
-            {
-                src += BigInteger.Parse("8000000000000000", System.Globalization.NumberStyles.HexNumber);
-            }
-
-            byte[] buf = src.ToByteArray();
-            if (buf.Length > 8)
-            {
-                throw new Exception("Invalid value");
-            }
-
-            if (neg)
-            {
-                buf[buf.Length - 1] |= 128;
-            }
-
             EnsureSize(8);
-            buf.CopyTo(_buf, _used);
+            BitConverter.GetBytes(val).CopyTo(_buf, _used);
             _used += 8;
         }
 
@@ -68,12 +50,21 @@ namespace TonSdk.Adnl.TL
             _used++;
         }
 
-        public void WriteInt256(byte[] val)
+        public void WriteBytes(byte[] val)
+        {
+            EnsureSize(val.Length);
+            foreach (var byteVal in val)
+            {
+                WriteUInt8(byteVal);
+            }
+        }
+        
+        public void WriteInt256(BigInteger val)
         {
             EnsureSize(32);
-            if (val.Length != 32) throw new Exception("Invalid int256 length");
-
-            foreach (var byteVal in val)
+            byte[] array = val.ToByteArray();
+            if (!BitConverter.IsLittleEndian) Array.Reverse(array);
+            foreach (var byteVal in array)
             {
                 WriteUInt8(byteVal);
             }
@@ -133,5 +124,7 @@ namespace TonSdk.Adnl.TL
         {
             return _buf.Take(_used).ToArray();
         }
+
+        public byte[] GetBytes() => _buf;
     }
 }
