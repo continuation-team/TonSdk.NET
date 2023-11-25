@@ -2,7 +2,7 @@
 
 namespace TonSdk.Adnl.LiteClient
 {
-    internal class Crc32
+    public class Crc32
     {
         private static readonly uint[] Table;
 
@@ -29,7 +29,7 @@ namespace TonSdk.Adnl.LiteClient
             }
         }
 
-        internal static uint ComputeChecksumUint(byte[] bytes)
+        public static uint ComputeChecksumUint(byte[] bytes)
         {
             uint crc = 0xffffffff;
             foreach (byte t in bytes)
@@ -40,11 +40,35 @@ namespace TonSdk.Adnl.LiteClient
             return ~crc;
         }
 
-        internal static byte[] ComputeChecksum(byte[] bytes)
+        public static byte[] ComputeChecksum(byte[] bytes)
         {
             byte[] result = BitConverter.GetBytes(ComputeChecksumUint(bytes));
             if(!BitConverter.IsLittleEndian) Array.Reverse(result);
             return result;
+        }
+        
+        internal static ushort CalculateCrc16Xmodem(byte[] data)
+        {
+            const ushort polynom = 0x1021;
+            ushort crc = 0x0000;
+
+            foreach (byte b in data)
+            {
+                crc ^= (ushort)(b << 8);
+                for (int i = 0; i < 8; i++)
+                {
+                    if ((crc & 0x8000) != 0)
+                    {
+                        crc = (ushort)((crc << 1) ^ polynom);
+                    }
+                    else
+                    {
+                        crc <<= 1;
+                    }
+                }
+            }
+
+            return crc;
         }
     }
 }
