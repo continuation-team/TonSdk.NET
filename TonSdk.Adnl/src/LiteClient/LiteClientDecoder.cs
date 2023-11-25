@@ -239,6 +239,23 @@ namespace TonSdk.Adnl.LiteClient
 
             return buffer.ReadBuffer();
         }
+        
+        internal static ListBlockTransactionsExternalResult DecodeListBlockTransactionsExternal(TLReadBuffer buffer)
+        {
+            // id:tonNode.blockIdExt
+            buffer.ReadInt32();
+            buffer.ReadInt64();
+            buffer.ReadInt32();
+            buffer.ReadInt256();
+            buffer.ReadInt256();
+
+            buffer.ReadUInt32();
+            bool inComplete = buffer.ReadBool();
+            byte[] transactions = buffer.ReadBuffer();
+            byte[] proof = buffer.ReadBuffer();
+
+            return new ListBlockTransactionsExternalResult(inComplete, transactions, proof);
+        }
 
         internal static ListBlockTransactionsResult DecodeListBlockTransactions(TLReadBuffer buffer)
         {
@@ -258,6 +275,7 @@ namespace TonSdk.Adnl.LiteClient
             for (int i = 0; i < count; i++)
             {
                 TransactionId id = new TransactionId();
+                
                 uint mode = buffer.ReadUInt32();
                 if ((mode & (1 << 0)) != 0)
                     id.Account = new BigInteger(buffer.ReadInt256());

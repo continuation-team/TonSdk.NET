@@ -93,6 +93,7 @@ namespace TonSdk.Adnl.LiteClient
                 Encoding.UTF8.GetBytes("liteServer.getBlockHeader id:tonNode.blockIdExt mode:# = liteServer.BlockHeader")),0));
             
             writer.WriteInt32(block.Workchain);
+            
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
             writer.WriteInt256(block.RootHash);
@@ -184,7 +185,7 @@ namespace TonSdk.Adnl.LiteClient
             
             return EncodeBase(writer);
         }
-
+        
         internal static (byte[], byte[]) EncodeGetOneTransaction(BlockIdExternal block, Address account, long lt)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
@@ -209,9 +210,11 @@ namespace TonSdk.Adnl.LiteClient
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
                 Encoding.UTF8.GetBytes("liteServer.getTransactions count:# account:liteServer.accountId lt:long hash:int256 = liteServer.TransactionList")),0));
-            writer.WriteUInt32(count);
+            writer.WriteInt32((int)count);
+            
             writer.WriteInt32(account.GetWorkchain());
             writer.WriteInt256(account.GetHash());
+            
             writer.WriteInt64(lt);
             writer.WriteInt256(hash);
             
@@ -240,11 +243,11 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExternal block, uint count, TransactionId3 after, bool? reverseOrder, bool? wantProof)
+        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExternal block, uint count, TransactionId3 after, bool? reverseOrder, bool? wantProof, string query)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
-                Encoding.UTF8.GetBytes("liteServer.listBlockTransactions id:tonNode.blockIdExt mode:# count:# after:mode.7?liteServer.transactionId3 reverse_order:mode.6?true want_proof:mode.5?true = liteServer.BlockTransactions")),0));
+                Encoding.UTF8.GetBytes(query)),0));
             
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);

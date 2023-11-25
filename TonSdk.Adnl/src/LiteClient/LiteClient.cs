@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Numerics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TonSdk.Adnl.TL;
 using TonSdk.Core;
-using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl.LiteClient
@@ -20,60 +19,24 @@ namespace TonSdk.Adnl.LiteClient
         {
             _adnlClient = new AdnlClientTcp(host, port, peerPublicKey);
             _adnlClient.DataReceived += OnDataReceived;
-            _adnlClient.ErrorOccurred += AdnlClientOnErrorOccurred;
-            _adnlClient.Closed += AdnlClientOnClosed;
-            _adnlClient.Connected += AdnlClientOnConnected;
-            _adnlClient.Ready += AdnlClientOnReady;
         }
 
         public LiteClient(int host, int port, string peerPublicKey)
         {
             _adnlClient = new AdnlClientTcp(host, port, peerPublicKey);
             _adnlClient.DataReceived += OnDataReceived;
-            _adnlClient.ErrorOccurred += AdnlClientOnErrorOccurred;
-            _adnlClient.Closed += AdnlClientOnClosed;
-            _adnlClient.Connected += AdnlClientOnConnected;
-            _adnlClient.Ready += AdnlClientOnReady;
         }
         
         public LiteClient(string host, int port, byte[] peerPublicKey)
         {
             _adnlClient = new AdnlClientTcp(host, port, peerPublicKey);
             _adnlClient.DataReceived += OnDataReceived;
-            _adnlClient.ErrorOccurred += AdnlClientOnErrorOccurred;
-            _adnlClient.Closed += AdnlClientOnClosed;
-            _adnlClient.Connected += AdnlClientOnConnected;
-            _adnlClient.Ready += AdnlClientOnReady;
         }
 
         public LiteClient(string host, int port, string peerPublicKey)
         {
             _adnlClient = new AdnlClientTcp(host, port, peerPublicKey);
             _adnlClient.DataReceived += OnDataReceived;
-            _adnlClient.ErrorOccurred += AdnlClientOnErrorOccurred;
-            _adnlClient.Closed += AdnlClientOnClosed;
-            _adnlClient.Connected += AdnlClientOnConnected;
-            _adnlClient.Ready += AdnlClientOnReady;
-        }
-
-        private async void AdnlClientOnReady()
-        {
-            Console.WriteLine("ready");
-        }
-
-        private void AdnlClientOnConnected()
-        {
-            Console.WriteLine("connected");
-        }
-
-        private void AdnlClientOnErrorOccurred(Exception obj)
-        {
-            Console.WriteLine("error");
-        }
-        
-        private void AdnlClientOnClosed()
-        {
-            Console.WriteLine("closed");
         }
         
         public async Task Connect(CancellationToken cancellationToken = default)
@@ -99,7 +62,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetMasterchainInfo(payload);
         }
         
@@ -115,7 +78,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetMasterchainInfoExternal(payload);
         }
 
@@ -131,7 +94,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return -1;
             return LiteClientDecoder.DecodeGetTime(payload);
         }
 
@@ -146,7 +109,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetVersion(payload);
         }
 
@@ -162,26 +125,9 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetBlock(payload);
         }
-        
-        // public async Task GetBlockState(BlockIdExternal block)
-        // {
-        //     byte[] id;
-        //     byte[] data;
-        //     
-        //     (id, data) = LiteClientEncoder.EncodeGetBlock(block, "liteServer.getState id:tonNode.blockIdExt = liteServer.BlockState");
-        //     Console.WriteLine("sending payload " + Utils.BytesToHex(data).ToLower());
-        //     
-        //     var tcs = new TaskCompletionSource<TLReadBuffer>();
-        //     _pendingRequests.Add(Utils.BytesToHex(id), tcs);
-        //     
-        //     await _adnlClient.Write(data);
-        //     TLReadBuffer payload = await tcs.Task;
-        //
-        //     LiteClientDecoder.DecodeGetBlockState(payload);
-        // }
 
         public async Task<byte[]> GetBlockHeader(BlockIdExternal block)
         {
@@ -195,7 +141,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeBlockHeader(payload);
         }
 
@@ -211,7 +157,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-
+            if (payload == null) return -1;
             return LiteClientDecoder.DecodeSendMessage(payload);
         }
 
@@ -223,25 +169,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<RunSmcMethodResult> RunSmcMethod(Address address, string methodName, byte[] stack, RunSmcOptions options)
         {
-            ushort crc = Crc32.CalculateCrc16Xmodem(System.Text.Encoding.UTF8.GetBytes(methodName));
-            ulong crcExtended = (ulong)crc | 0x10000;
-
-            long methodId;
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                await using (BinaryWriter writer = new BinaryWriter(ms))
-                {
-                    writer.Write(crcExtended);
-                }
-                
-                ms.Position = 0;
-                
-                using (BinaryReader reader = new BinaryReader(ms))
-                {
-                    methodId = reader.ReadInt64();
-                }
-            }
+            ushort crc = Crc32.CalculateCrc16Xmodem(Encoding.UTF8.GetBytes(methodName));
+            ulong crcExtended = ((ulong)(crc & 0xffff)) | 0x10000;
             
             uint mode = 0;
             if (options.ShardProof || options.Proof)
@@ -260,14 +189,14 @@ namespace TonSdk.Adnl.LiteClient
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeRunSmcMethod(blockId, address, methodId, stack, mode);
+            (id, data) = LiteClientEncoder.EncodeRunSmcMethod(blockId, address, (long)crcExtended, stack, mode);
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeRunSmcMethod(payload);
         }
 
@@ -285,7 +214,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetShardInfo(payload);
         }
         
@@ -303,10 +232,16 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
-            
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetAllShardsInfo(payload);
         }
-
+        
+        /// <summary>
+        /// Get account transaction only in masterchain account.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="lt"></param>
+        /// <returns></returns>
         public async Task<byte[]> GetOneTransaction(Address account, long lt)
         {
             BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
@@ -321,6 +256,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetOneTransaction(payload);
         }
         
@@ -336,6 +272,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetTransactions(payload);
         }
         
@@ -351,30 +288,46 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeBlockHeader(payload);
         }
 
-        public async Task<ListBlockTransactionsResult> ListBLockTransactions(uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
+        public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExternal blockIdExternal, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
-            
             byte[] id;
             byte[] data;
 
-            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockId, count, after, reverseOrder, wantProof);
+            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExternal, count, after, reverseOrder, wantProof, 
+                "liteServer.listBlockTransactions id:tonNode.blockIdExt mode:# count:# after:mode.7?liteServer.transactionId3 reverse_order:mode.6?true want_proof:mode.5?true = liteServer.BlockTransactions");
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeListBlockTransactions(payload);
         }
-
-        public async Task<PartialBlockProof> GetBlockProof(BlockIdExternal knownBlock = null, BlockIdExternal targetBlock = null)
+        
+        public async Task<ListBlockTransactionsExternalResult> ListBlockTransactionsExternal(BlockIdExternal blockIdExternal, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
-            knownBlock ??= (await GetMasterChainInfo()).LastBlockId;
+            byte[] id;
+            byte[] data;
+
+            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExternal, count, after, reverseOrder, wantProof,
+                "liteServer.listBlockTransactionsExt id:tonNode.blockIdExt mode:# count:# after:mode.7?liteServer.transactionId3 reverse_order:mode.6?true want_proof:mode.5?true = liteServer.BlockTransactionsExt");
             
+            var tcs = new TaskCompletionSource<TLReadBuffer>();
+            _pendingRequests.Add(Utils.BytesToHex(id), tcs);
+            
+            await _adnlClient.Write(data);
+            TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
+            return LiteClientDecoder.DecodeListBlockTransactionsExternal(payload);
+        }
+
+        public async Task<PartialBlockProof> GetBlockProof(BlockIdExternal knownBlock, BlockIdExternal targetBlock = null)
+        {
             byte[] id;
             byte[] data;
 
@@ -385,6 +338,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetBlockProof(payload);
         }
 
@@ -401,6 +355,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetConfigAll(payload);
         }
         
@@ -417,13 +372,12 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetConfigAll(payload);
         }
         
-        public async Task<ValidatorStats> GetValidatorStats(BigInteger? startAfter = null, int? modifiedAfter = null)
+        public async Task<ValidatorStats> GetValidatorStats(BlockIdExternal blockId, BigInteger? startAfter = null, int? modifiedAfter = null)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
-            
             byte[] id;
             byte[] data;
 
@@ -433,6 +387,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetValidatorStats(payload);
         }
         
@@ -447,13 +402,12 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetLibraries(payload);
         }
 
-        public async Task<ShardBlockProof> GetShardBlockProof(BlockIdExternal blockIdExternal = null)
+        public async Task<ShardBlockProof> GetShardBlockProof(BlockIdExternal blockIdExternal)
         {
-            blockIdExternal ??= (await GetMasterChainInfo()).LastBlockId;
-            
             byte[] id;
             byte[] data;
             
@@ -463,9 +417,9 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
             return LiteClientDecoder.DecodeGetShardBlockProof(payload);
         }
-        
         
         private async Task<byte[]> FetchAccountState(Address address, string query)
         {
@@ -479,6 +433,7 @@ namespace TonSdk.Adnl.LiteClient
             
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
+            if (payload == null) return null;
 
             byte[] stateBytes = LiteClientDecoder.DecodeGetAccountState(payload);
             return stateBytes;
@@ -486,9 +441,6 @@ namespace TonSdk.Adnl.LiteClient
         
         private async void OnDataReceived(byte[] data)
         {
-            Console.WriteLine("data " + Utils.BytesToHex(data).ToLower());
-            Console.WriteLine();
-            
             var readBuffer = new TLReadBuffer(data);
             
             readBuffer.ReadUInt32(); // adnlAnswer
@@ -496,8 +448,22 @@ namespace TonSdk.Adnl.LiteClient
             byte[] liteQuery = readBuffer.ReadBuffer();
             
             var liteQueryBuffer = new TLReadBuffer(liteQuery);
-            liteQueryBuffer.ReadUInt32(); // liteQuery
+            uint responseCode = liteQueryBuffer.ReadUInt32(); // liteQuery
 
+            if (responseCode == BitConverter.ToUInt32(Crc32.ComputeChecksum(
+                        Encoding.UTF8.GetBytes(
+                            "liteServer.error code:int message:string = liteServer.Error")),
+                    0))
+            {
+                int code = liteQueryBuffer.ReadInt32();
+                string message = liteQueryBuffer.ReadString();
+                Console.WriteLine("Error: " + message + ". Code: " + code);
+                _pendingRequests[queryId].SetResult(null);
+                _pendingRequests.Remove(queryId);
+                return;
+            }
+            
+            
             if (!_pendingRequests.ContainsKey(queryId))
             {
                 await Console.Out.WriteLineAsync("Response id doesn't match any request's id"); 

@@ -119,6 +119,20 @@ namespace TonSdk.Adnl.LiteClient
             Lt = lt;
         }
     }
+    
+    public class ListBlockTransactionsExternalResult
+    {
+        public bool InComplete { get; set; }
+        public byte[] Transactions { get; set; }
+        public byte[] Proof { get; set; }
+
+        public ListBlockTransactionsExternalResult(bool inComplete, byte[] transactions, byte[] proof)
+        {
+            InComplete = inComplete;
+            Transactions = transactions;
+            Proof = proof;
+        }
+    }
 
     public class ListBlockTransactionsResult
     {
