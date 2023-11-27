@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Core {
     public interface IAddressRewriteOptions {
@@ -228,7 +229,7 @@ namespace TonSdk.Core {
 
             byte tag = (byte)slice.LoadUInt(8);
             sbyte workchain = (sbyte)slice.LoadInt(8);
-            BigInteger hash = slice.LoadUInt(256);
+            BigInteger hash = new BigInteger(slice.LoadBytes(32));
             byte[] checksum = slice.LoadBits(16).ToBytes();
             byte[] crc = Crypto.Utils.Crc16BytesBigEndian(crcBytes);
 
