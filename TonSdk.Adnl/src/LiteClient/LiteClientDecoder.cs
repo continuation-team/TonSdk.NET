@@ -110,7 +110,6 @@ namespace TonSdk.Adnl.LiteClient
             buffer.ReadInt32();
             buffer.ReadInt256();
             buffer.ReadInt256();
-            
             // mode:#
             buffer.ReadUInt32();
             

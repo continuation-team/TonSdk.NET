@@ -226,10 +226,12 @@ namespace TonSdk.Adnl.LiteClient
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
                 Encoding.UTF8.GetBytes("liteServer.lookupBlock mode:# id:tonNode.blockId lt:mode.1?long utime:mode.2?int = liteServer.BlockHeader")),0));
-
+            
             uint mode = 0;
             if (lt != null) mode |= 1u << 1;
             if (uTime != null) mode |= 1u << 2;
+
+            if (mode == 0) mode = 1;
             
             writer.WriteUInt32(mode);
             
