@@ -74,7 +74,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetBlock(BlockIdExternal block, string functionName)
+        internal static (byte[], byte[]) EncodeGetBlock(BlockIdExtended block, string functionName)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(Encoding.UTF8.GetBytes(functionName)),0));
@@ -86,7 +86,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetBlockHeader(BlockIdExternal block)
+        internal static (byte[], byte[]) EncodeGetBlockHeader(BlockIdExtended block)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -112,7 +112,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetAccountState(BlockIdExternal block, Address account, string query)
+        internal static (byte[], byte[]) EncodeGetAccountState(BlockIdExtended block, Address account, string query)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -129,7 +129,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeRunSmcMethod(BlockIdExternal block, Address account, long methodId,
+        internal static (byte[], byte[]) EncodeRunSmcMethod(BlockIdExtended block, Address account, long methodId,
             byte[] stack, uint mode)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
@@ -152,7 +152,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetShardInfo(BlockIdExternal block, int workchain, long shard,
+        internal static (byte[], byte[]) EncodeGetShardInfo(BlockIdExtended block, int workchain, long shard,
             bool exact = false)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
@@ -171,7 +171,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetAllShardsInfo(BlockIdExternal block)
+        internal static (byte[], byte[]) EncodeGetAllShardsInfo(BlockIdExtended block)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -186,7 +186,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
         
-        internal static (byte[], byte[]) EncodeGetOneTransaction(BlockIdExternal block, Address account, long lt)
+        internal static (byte[], byte[]) EncodeGetOneTransaction(BlockIdExtended block, Address account, long lt)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -243,7 +243,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExternal block, uint count, TransactionId3 after, bool? reverseOrder, bool? wantProof, string query)
+        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExtended block, uint count, TransactionId3 after, bool? reverseOrder, bool? wantProof, string query)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -274,7 +274,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
         
-        internal static (byte[], byte[]) EncodeGetBlockProof(BlockIdExternal knownBlock, BlockIdExternal targetBlock)
+        internal static (byte[], byte[]) EncodeGetBlockProof(BlockIdExtended knownBlock, BlockIdExtended targetBlock)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -300,7 +300,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetConfigAll(BlockIdExternal block)
+        internal static (byte[], byte[]) EncodeGetConfigAll(BlockIdExtended block)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -315,7 +315,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetConfigParams(BlockIdExternal block, int[] ids)
+        internal static (byte[], byte[]) EncodeGetConfigParams(BlockIdExtended block, int[] ids)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -338,7 +338,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetValidatorStats(BlockIdExternal block, BigInteger? startAfter, int? modifiedAfter)
+        internal static (byte[], byte[]) EncodeGetValidatorStats(BlockIdExtended block, BigInteger? startAfter, int? modifiedAfter)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -375,7 +375,7 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetShardBlockProof(BlockIdExternal block)
+        internal static (byte[], byte[]) EncodeGetShardBlockProof(BlockIdExtended block)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(

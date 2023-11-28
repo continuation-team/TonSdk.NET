@@ -66,7 +66,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetMasterchainInfo(payload);
         }
         
-        public async Task<MasterChainInfoExternal> GetMasterChainInfoExternal()
+        public async Task<MasterChainInfoExtended> GetMasterChainInfoExtended()
         {
             byte[] id;
             byte[] data;
@@ -79,7 +79,7 @@ namespace TonSdk.Adnl.LiteClient
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
             if (payload == null) return null;
-            return LiteClientDecoder.DecodeGetMasterchainInfoExternal(payload);
+            return LiteClientDecoder.DecodeGetMasterchainInfoExtended(payload);
         }
 
         public async Task<int> GetTime()
@@ -113,7 +113,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetVersion(payload);
         }
 
-        public async Task<byte[]> GetBlock(BlockIdExternal block)
+        public async Task<byte[]> GetBlock(BlockIdExtended block)
         {
             byte[] id;
             byte[] data;
@@ -129,7 +129,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetBlock(payload);
         }
 
-        public async Task<byte[]> GetBlockHeader(BlockIdExternal block)
+        public async Task<byte[]> GetBlockHeader(BlockIdExtended block)
         {
             byte[] id;
             byte[] data;
@@ -184,7 +184,7 @@ namespace TonSdk.Adnl.LiteClient
             if (options.LibExtras)
                 mode |= 1u << 4;
             
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -202,7 +202,7 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ShardInfo> GetShardInfo(int workchain, long shard, bool exact = false)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -220,7 +220,7 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<byte[]> GetAllShardsInfo()
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -244,7 +244,7 @@ namespace TonSdk.Adnl.LiteClient
         /// <returns></returns>
         public async Task<byte[]> GetOneTransaction(Address account, long lt)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -292,12 +292,12 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeBlockHeader(payload);
         }
 
-        public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExternal blockIdExternal, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
+        public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
             byte[] id;
             byte[] data;
 
-            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExternal, count, after, reverseOrder, wantProof, 
+            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExtended, count, after, reverseOrder, wantProof, 
                 "liteServer.listBlockTransactions id:tonNode.blockIdExt mode:# count:# after:mode.7?liteServer.transactionId3 reverse_order:mode.6?true want_proof:mode.5?true = liteServer.BlockTransactions");
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
@@ -309,12 +309,12 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeListBlockTransactions(payload);
         }
         
-        public async Task<ListBlockTransactionsExternalResult> ListBlockTransactionsExternal(BlockIdExternal blockIdExternal, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
+        public async Task<ListBlockTransactionsExtendedResult> ListBlockTransactionsExtended(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
             byte[] id;
             byte[] data;
 
-            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExternal, count, after, reverseOrder, wantProof,
+            (id, data) = LiteClientEncoder.EncodeListBlockTransactions(blockIdExtended, count, after, reverseOrder, wantProof,
                 "liteServer.listBlockTransactionsExt id:tonNode.blockIdExt mode:# count:# after:mode.7?liteServer.transactionId3 reverse_order:mode.6?true want_proof:mode.5?true = liteServer.BlockTransactionsExt");
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
@@ -323,10 +323,10 @@ namespace TonSdk.Adnl.LiteClient
             await _adnlClient.Write(data);
             TLReadBuffer payload = await tcs.Task;
             if (payload == null) return null;
-            return LiteClientDecoder.DecodeListBlockTransactionsExternal(payload);
+            return LiteClientDecoder.DecodeListBlockTransactionsExtended(payload);
         }
 
-        public async Task<PartialBlockProof> GetBlockProof(BlockIdExternal knownBlock, BlockIdExternal targetBlock = null)
+        public async Task<PartialBlockProof> GetBlockProof(BlockIdExtended knownBlock, BlockIdExtended targetBlock = null)
         {
             byte[] id;
             byte[] data;
@@ -344,7 +344,7 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ConfigInfo> GetConfigAll()
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -361,7 +361,7 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<ConfigInfo> GetConfigParams(int[] paramIds)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -376,7 +376,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetConfigAll(payload);
         }
         
-        public async Task<ValidatorStats> GetValidatorStats(BlockIdExternal blockId, BigInteger? startAfter = null, int? modifiedAfter = null)
+        public async Task<ValidatorStats> GetValidatorStats(BlockIdExtended blockId, BigInteger? startAfter = null, int? modifiedAfter = null)
         {
             byte[] id;
             byte[] data;
@@ -406,12 +406,12 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetLibraries(payload);
         }
 
-        public async Task<ShardBlockProof> GetShardBlockProof(BlockIdExternal blockIdExternal)
+        public async Task<ShardBlockProof> GetShardBlockProof(BlockIdExtended blockIdExtended)
         {
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeGetShardBlockProof(blockIdExternal);
+            (id, data) = LiteClientEncoder.EncodeGetShardBlockProof(blockIdExtended);
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
             
@@ -423,7 +423,7 @@ namespace TonSdk.Adnl.LiteClient
         
         private async Task<byte[]> FetchAccountState(Address address, string query)
         {
-            BlockIdExternal blockId = (await GetMasterChainInfo()).LastBlockId;
+            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             byte[] id;
             byte[] data;
             

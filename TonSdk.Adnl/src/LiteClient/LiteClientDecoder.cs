@@ -25,13 +25,13 @@ namespace TonSdk.Adnl.LiteClient
             BigInteger rootHashI = new BigInteger(buffer.ReadInt256());
             BigInteger fileHashI = new BigInteger(buffer.ReadInt256());
             
-            BlockIdExternal lastBlock = new BlockIdExternal(workchain, rootHash, fileHash, shard, seqno);
-            BlockIdExternal initBlock = new BlockIdExternal(workchainI, rootHashI, fileHashI, 0,0);
+            BlockIdExtended lastBlock = new BlockIdExtended(workchain, rootHash, fileHash, shard, seqno);
+            BlockIdExtended initBlock = new BlockIdExtended(workchainI, rootHashI, fileHashI, 0,0);
             
             return new MasterChainInfo(lastBlock, initBlock, stateRootHash);
         }
         
-        internal static MasterChainInfoExternal DecodeGetMasterchainInfoExternal(TLReadBuffer buffer)
+        internal static MasterChainInfoExtended DecodeGetMasterchainInfoExtended(TLReadBuffer buffer)
         {
             // mode:#
             buffer.ReadUInt32();
@@ -61,10 +61,10 @@ namespace TonSdk.Adnl.LiteClient
             BigInteger rootHashI = new BigInteger(buffer.ReadInt256());
             BigInteger fileHashI = new BigInteger(buffer.ReadInt256());
             
-            BlockIdExternal lastBlock = new BlockIdExternal(workchain, rootHash, fileHash, shard, seqno);
-            BlockIdExternal initBlock = new BlockIdExternal(workchainI, rootHashI, fileHashI, 0,0);
+            BlockIdExtended lastBlock = new BlockIdExtended(workchain, rootHash, fileHash, shard, seqno);
+            BlockIdExtended initBlock = new BlockIdExtended(workchainI, rootHashI, fileHashI, 0,0);
 
-            return new MasterChainInfoExternal(version, capabilities, lastUTime, time, lastBlock, initBlock,
+            return new MasterChainInfoExtended(version, capabilities, lastUTime, time, lastBlock, initBlock,
                 stateRootHash);
         }
         
@@ -240,7 +240,7 @@ namespace TonSdk.Adnl.LiteClient
             return buffer.ReadBuffer();
         }
         
-        internal static ListBlockTransactionsExternalResult DecodeListBlockTransactionsExternal(TLReadBuffer buffer)
+        internal static ListBlockTransactionsExtendedResult DecodeListBlockTransactionsExtended(TLReadBuffer buffer)
         {
             // id:tonNode.blockIdExt
             buffer.ReadInt32();
@@ -254,7 +254,7 @@ namespace TonSdk.Adnl.LiteClient
             byte[] transactions = buffer.ReadBuffer();
             byte[] proof = buffer.ReadBuffer();
 
-            return new ListBlockTransactionsExternalResult(inComplete, transactions, proof);
+            return new ListBlockTransactionsExtendedResult(inComplete, transactions, proof);
         }
 
         internal static ListBlockTransactionsResult DecodeListBlockTransactions(TLReadBuffer buffer)
@@ -365,7 +365,7 @@ namespace TonSdk.Adnl.LiteClient
             int seqno = buffer.ReadInt32();
             BigInteger rootHash = new BigInteger(buffer.ReadInt256());
             BigInteger fileHash = new BigInteger(buffer.ReadInt256());
-            BlockIdExternal masterChainId = new BlockIdExternal(w, rootHash, fileHash, shard, seqno);
+            BlockIdExtended masterChainId = new BlockIdExtended(w, rootHash, fileHash, shard, seqno);
             
             uint count = buffer.ReadUInt32();
 
@@ -378,12 +378,12 @@ namespace TonSdk.Adnl.LiteClient
                 int linkFromSeqno = buffer.ReadInt32();
                 BigInteger linkFromRootHash = new BigInteger(buffer.ReadInt256());
                 BigInteger linkFromFileHash = new BigInteger(buffer.ReadInt256());
-                BlockIdExternal linkFrom = new BlockIdExternal(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
+                BlockIdExtended linkFrom = new BlockIdExtended(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
                 
                 byte[] proof = buffer.ReadBuffer();
                 links.Add(new ShardBlockLink()
                 {
-                    BlockIdExternal = linkFrom,
+                    BlockIdExtended = linkFrom,
                     Proof = proof
                 });
             }
@@ -405,7 +405,7 @@ namespace TonSdk.Adnl.LiteClient
             int fromSeqno = buffer.ReadInt32();
             BigInteger fromRootHash = new BigInteger(buffer.ReadInt256());
             BigInteger fromFileHash = new BigInteger(buffer.ReadInt256());
-            BlockIdExternal from = new BlockIdExternal(fromW, fromRootHash, fromFileHash, fromShard, fromSeqno);
+            BlockIdExtended from = new BlockIdExtended(fromW, fromRootHash, fromFileHash, fromShard, fromSeqno);
             
             // to:tonNode.blockIdExt
             int toW = buffer.ReadInt32();
@@ -413,7 +413,7 @@ namespace TonSdk.Adnl.LiteClient
             int toSeqno = buffer.ReadInt32();
             BigInteger toRootHash = new BigInteger(buffer.ReadInt256());
             BigInteger toFileHash = new BigInteger(buffer.ReadInt256());
-            BlockIdExternal to = new BlockIdExternal(toW, toRootHash, toFileHash, toShard, toSeqno);
+            BlockIdExtended to = new BlockIdExtended(toW, toRootHash, toFileHash, toShard, toSeqno);
 
             List<IBlockLink> blockLinks = new List<IBlockLink>();
             uint count = buffer.ReadUInt32();
@@ -431,7 +431,7 @@ namespace TonSdk.Adnl.LiteClient
                     int linkFromSeqno = buffer.ReadInt32();
                     BigInteger linkFromRootHash = new BigInteger(buffer.ReadInt256());
                     BigInteger linkFromFileHash = new BigInteger(buffer.ReadInt256());
-                    BlockIdExternal linkFrom = new BlockIdExternal(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
+                    BlockIdExtended linkFrom = new BlockIdExtended(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
             
                     // to:tonNode.blockIdExt
                     int linkToW = buffer.ReadInt32();
@@ -439,7 +439,7 @@ namespace TonSdk.Adnl.LiteClient
                     int linkToSeqno = buffer.ReadInt32();
                     BigInteger linkToRootHash = new BigInteger(buffer.ReadInt256());
                     BigInteger linkToFileHash = new BigInteger(buffer.ReadInt256());
-                    BlockIdExternal linkTo = new BlockIdExternal(linkToW, linkToRootHash, linkToFileHash, linkToShard, linkToSeqno);
+                    BlockIdExtended linkTo = new BlockIdExtended(linkToW, linkToRootHash, linkToFileHash, linkToShard, linkToSeqno);
 
                     byte[] destProof = buffer.ReadBuffer();
                     byte[] proof = buffer.ReadBuffer();
@@ -466,7 +466,7 @@ namespace TonSdk.Adnl.LiteClient
                     int linkFromSeqno = buffer.ReadInt32();
                     BigInteger linkFromRootHash = new BigInteger(buffer.ReadInt256());
                     BigInteger linkFromFileHash = new BigInteger(buffer.ReadInt256());
-                    BlockIdExternal linkFrom = new BlockIdExternal(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
+                    BlockIdExtended linkFrom = new BlockIdExtended(linkFromW, linkFromRootHash, linkFromFileHash, linkFromShard, linkFromSeqno);
             
                     // to:tonNode.blockIdExt
                     int linkToW = buffer.ReadInt32();
@@ -474,7 +474,7 @@ namespace TonSdk.Adnl.LiteClient
                     int linkToSeqno = buffer.ReadInt32();
                     BigInteger linkToRootHash = new BigInteger(buffer.ReadInt256());
                     BigInteger linkToFileHash = new BigInteger(buffer.ReadInt256());
-                    BlockIdExternal linkTo = new BlockIdExternal(linkToW, linkToRootHash, linkToFileHash, linkToShard, linkToSeqno);
+                    BlockIdExtended linkTo = new BlockIdExtended(linkToW, linkToRootHash, linkToFileHash, linkToShard, linkToSeqno);
 
                     byte[] destProof = buffer.ReadBuffer();
                     byte[] configProof = buffer.ReadBuffer();
