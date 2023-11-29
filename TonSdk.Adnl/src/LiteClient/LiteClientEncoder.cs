@@ -81,8 +81,8 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain);
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             return EncodeBase(writer);
         }
 
@@ -96,8 +96,8 @@ namespace TonSdk.Adnl.LiteClient
             
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
             writer.WriteUInt32(1);
             return EncodeBase(writer);
@@ -121,11 +121,11 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
             writer.WriteInt32(account.GetWorkchain());
-            writer.WriteInt256(account.GetHash());
+            writer.WriteBytes(account.GetHash(), 32);
             return EncodeBase(writer);
         }
 
@@ -140,11 +140,11 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
             writer.WriteInt32(account.GetWorkchain());
-            writer.WriteInt256(account.GetHash());
+            writer.WriteBytes(account.GetHash(), 32);
             
             writer.WriteInt64(methodId);
             writer.WriteBuffer(stack);
@@ -162,8 +162,8 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
             writer.WriteInt32(workchain);
             writer.WriteInt64(shard);
@@ -180,32 +180,13 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
-            return EncodeBase(writer);
-        }
-        
-        internal static (byte[], byte[]) EncodeGetOneTransaction(BlockIdExtended block, Address account, long lt)
-        {
-            TLWriteBuffer writer = new TLWriteBuffer();
-            writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
-                Encoding.UTF8.GetBytes("liteServer.getOneTransaction id:tonNode.blockIdExt account:liteServer.accountId lt:long = liteServer.TransactionInfo")),0));
-            
-            writer.WriteInt32(block.Workchain); 
-            writer.WriteInt64(block.Shard);
-            writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
-            
-            writer.WriteInt32(account.GetWorkchain());
-            writer.WriteInt256(account.GetHash());
-            
-            writer.WriteInt64(lt);
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeGetTransactions(uint count, Address account, long lt, BigInteger hash)
+        internal static (byte[], byte[]) EncodeGetTransactions(uint count, Address account, long lt, byte[] hash)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -213,10 +194,10 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32((int)count);
             
             writer.WriteInt32(account.GetWorkchain());
-            writer.WriteInt256(account.GetHash());
+            writer.WriteBytes(account.GetHash(), 32);
             
             writer.WriteInt64(lt);
-            writer.WriteInt256(hash);
+            writer.WriteBytes(hash, 32);
             
             return EncodeBase(writer);
         }
@@ -254,24 +235,11 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
-            uint mode = 0;
-            if (after != null) mode |= 1u << 7;
-            if (reverseOrder != null) mode |= 1u << 6;
-            if (wantProof != null) mode |= 1u << 5;
-            
-            writer.WriteUInt32(mode);
+            writer.WriteUInt32(7);
             writer.WriteUInt32(count);
-
-            if ((mode & (1 << 7)) != 0)
-            {
-                writer.WriteInt256(after.Account.GetHash());
-                writer.WriteInt64(after.Lt);
-            }
-            if ((mode & (1 << 6)) != 0) writer.WriteBool(reverseOrder!.Value);
-            if ((mode & (1 << 5)) != 0) writer.WriteBool(wantProof!.Value);
 
             return EncodeBase(writer);
         }
@@ -289,16 +257,16 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(knownBlock.Workchain); 
             writer.WriteInt64(knownBlock.Shard);
             writer.WriteInt32(knownBlock.Seqno);
-            writer.WriteInt256(knownBlock.RootHash);
-            writer.WriteInt256(knownBlock.FileHash);
+            writer.WriteBytes(knownBlock.RootHash, 32);
+            writer.WriteBytes(knownBlock.FileHash, 32);
 
             if ((mode & (1 << 0)) == 0) return EncodeBase(writer);
             
             writer.WriteInt32(targetBlock!.Workchain); 
             writer.WriteInt64(targetBlock.Shard);
             writer.WriteInt32(targetBlock.Seqno);
-            writer.WriteInt256(targetBlock.RootHash);
-            writer.WriteInt256(targetBlock.FileHash);
+            writer.WriteBytes(targetBlock.RootHash, 32);
+            writer.WriteBytes(targetBlock.FileHash, 32);
             return EncodeBase(writer);
         }
 
@@ -312,8 +280,8 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             return EncodeBase(writer);
         }
 
@@ -328,37 +296,14 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             
             writer.WriteUInt32((uint)ids.Length);
             for (int i = 0; i < ids.Length; i++)
             {
                 writer.WriteInt32(ids[i]);
             }
-
-            return EncodeBase(writer);
-        }
-
-        internal static (byte[], byte[]) EncodeGetValidatorStats(BlockIdExtended block, BigInteger? startAfter, int? modifiedAfter)
-        {
-            TLWriteBuffer writer = new TLWriteBuffer();
-            writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
-                Encoding.UTF8.GetBytes("liteServer.getValidatorStats#091a58bc mode:# id:tonNode.blockIdExt limit:int start_after:mode.0?int256 modified_after:mode.2?int = liteServer.ValidatorStats")),0));
-            
-            uint mode = 0;
-            if (startAfter != null) mode |= 1u << 0;
-            if (modifiedAfter != null) mode |= 1u << 2;
-            writer.WriteUInt32(mode);
-            
-            writer.WriteInt32(block.Workchain); 
-            writer.WriteInt64(block.Shard);
-            writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
-            
-            if ((mode & (1 << 0)) != 0) writer.WriteInt256(startAfter!.Value);
-            if ((mode & (1 << 2)) != 0) writer.WriteInt32(modifiedAfter!.Value);
 
             return EncodeBase(writer);
         }
@@ -386,8 +331,8 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteInt32(block.Workchain); 
             writer.WriteInt64(block.Shard);
             writer.WriteInt32(block.Seqno);
-            writer.WriteInt256(block.RootHash);
-            writer.WriteInt256(block.FileHash);
+            writer.WriteBytes(block.RootHash, 32);
+            writer.WriteBytes(block.FileHash, 32);
             return EncodeBase(writer);
         }
     }

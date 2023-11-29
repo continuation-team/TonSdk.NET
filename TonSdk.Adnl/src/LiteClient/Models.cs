@@ -9,10 +9,10 @@ namespace TonSdk.Adnl.LiteClient
         public int Workchain { get; set; }
         public long Shard { get; set; }
         public int Seqno { get; set; }
-        public BigInteger RootHash { get; set; }
-        public BigInteger FileHash { get; set; }
+        public byte[] RootHash { get; set; }
+        public byte[] FileHash { get; set; }
 
-        public BlockIdExtended(int workchain, BigInteger rootHash, BigInteger fileHash, long shard, int seqno)
+        public BlockIdExtended(int workchain, byte[] rootHash, byte[] fileHash, long shard, int seqno)
         {
             Workchain = workchain;
             RootHash = rootHash;
@@ -174,9 +174,12 @@ namespace TonSdk.Adnl.LiteClient
     {
         public byte[] ShardProof { get; set; }
         public byte[] ShardDescr { get; set; }
+        
+        public BlockIdExtended ShardBlock { get; set; }
 
-        public ShardInfo(byte[] shardProof, byte[] shardDescr)
+        public ShardInfo(byte[] shardProof, byte[] shardDescr, BlockIdExtended shardBlock)
         {
+            ShardBlock = shardBlock;
             ShardProof = shardProof;
             ShardDescr = shardDescr;
         }

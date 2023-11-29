@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using TonSdk.Adnl.TL;
 using TonSdk.Core;
+using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl.LiteClient
@@ -41,6 +43,7 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task Connect(CancellationToken cancellationToken = default)
         {
+            if(_adnlClient.State == AdnlClientState.Open) return;
             _pendingRequests = new Dictionary<string, TaskCompletionSource<TLReadBuffer>>();
             await _adnlClient.Connect();
             while (_adnlClient.State != AdnlClientState.Open)
@@ -49,9 +52,18 @@ namespace TonSdk.Adnl.LiteClient
                 await Task.Delay(150, cancellationToken);
             }
         }
+
+        public void Disconnect()
+        {
+            if(_adnlClient.State != AdnlClientState.Open) return;
+            _pendingRequests = new Dictionary<string, TaskCompletionSource<TLReadBuffer>>();
+            _adnlClient.End();
+        }
         
         public async Task<MasterChainInfo> GetMasterChainInfo()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -68,6 +80,8 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<MasterChainInfoExtended> GetMasterChainInfoExtended()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -84,6 +98,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<int> GetTime()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -100,6 +116,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ChainVersion> GetVersion()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -115,6 +133,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<byte[]> GetBlock(BlockIdExtended block)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -131,6 +151,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<byte[]> GetBlockHeader(BlockIdExtended block)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -147,6 +169,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<int> SendMessage(byte[] body)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -169,6 +193,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<RunSmcMethodResult> RunSmcMethod(Address address, string methodName, byte[] stack, RunSmcOptions options)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             ushort crc = Crc32.CalculateCrc16Xmodem(Encoding.UTF8.GetBytes(methodName));
             ulong crcExtended = ((ulong)(crc & 0xffff)) | 0x10000;
             
@@ -202,6 +228,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ShardInfo> GetShardInfo(int workchain, long shard, bool exact = false)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
@@ -220,6 +248,8 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<byte[]> GetAllShardsInfo()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
@@ -236,36 +266,20 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetAllShardsInfo(payload);
         }
         
-        /// <summary>
-        /// Get account transaction only in masterchain account.
-        /// </summary>
-        /// <param name="account"></param>
-        /// <param name="lt"></param>
-        /// <returns></returns>
-        public async Task<byte[]> GetOneTransaction(Address account, long lt)
+        public async Task<byte[]> GetTransactions(uint count, Address account, long lt, string hash)
         {
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
+            
+            byte[] hashBytes;
+            if (hash.isHexString()) hashBytes = Utils.HexToBytes(hash);
+            else if (hash.isBase64()) hashBytes = Convert.FromBase64String(hash);
+            else throw new Exception("Not valid hash string. Set only in hex or non-url base64.");
             
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeGetOneTransaction(blockId, account, lt);
-            
-            var tcs = new TaskCompletionSource<TLReadBuffer>();
-            _pendingRequests.Add(Utils.BytesToHex(id), tcs);
-            
-            await _adnlClient.Write(data);
-            TLReadBuffer payload = await tcs.Task;
-            if (payload == null) return null;
-            return LiteClientDecoder.DecodeGetOneTransaction(payload);
-        }
-        
-        public async Task<byte[]> GetTransactions(uint count, Address account, long lt, BigInteger hash)
-        {
-            byte[] id;
-            byte[] data;
-            
-            (id, data) = LiteClientEncoder.EncodeGetTransactions(count, account, lt, hash);
+            (id, data) = LiteClientEncoder.EncodeGetTransactions(count, account, lt, hashBytes);
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
@@ -278,6 +292,8 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<byte[]> LookUpBlock(BlockId blockId, long? lt = null, int? uTime = null)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -294,6 +310,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -311,6 +329,8 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<ListBlockTransactionsExtendedResult> ListBlockTransactionsExtended(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -326,8 +346,11 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeListBlockTransactionsExtended(payload);
         }
 
+        [Obsolete]
         public async Task<PartialBlockProof> GetBlockProof(BlockIdExtended knownBlock, BlockIdExtended targetBlock = null)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
 
@@ -344,6 +367,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ConfigInfo> GetConfigAll()
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
@@ -361,6 +386,8 @@ namespace TonSdk.Adnl.LiteClient
         
         public async Task<ConfigInfo> GetConfigParams(int[] paramIds)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
@@ -376,23 +403,10 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetConfigAll(payload);
         }
         
-        public async Task<ValidatorStats> GetValidatorStats(BlockIdExtended blockId, BigInteger? startAfter = null, int? modifiedAfter = null)
-        {
-            byte[] id;
-            byte[] data;
-
-            (id, data) = LiteClientEncoder.EncodeGetValidatorStats(blockId, startAfter, modifiedAfter);
-            var tcs = new TaskCompletionSource<TLReadBuffer>();
-            _pendingRequests.Add(Utils.BytesToHex(id), tcs);
-            
-            await _adnlClient.Write(data);
-            TLReadBuffer payload = await tcs.Task;
-            if (payload == null) return null;
-            return LiteClientDecoder.DecodeGetValidatorStats(payload);
-        }
-        
         public async Task<LibraryEntry[]> GetLibraries(BigInteger[] libraryList)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -408,6 +422,8 @@ namespace TonSdk.Adnl.LiteClient
 
         public async Task<ShardBlockProof> GetShardBlockProof(BlockIdExtended blockIdExtended)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
@@ -423,6 +439,8 @@ namespace TonSdk.Adnl.LiteClient
         
         private async Task<byte[]> FetchAccountState(Address address, string query)
         {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
             byte[] id;
             byte[] data;
@@ -446,7 +464,6 @@ namespace TonSdk.Adnl.LiteClient
             readBuffer.ReadUInt32(); // adnlAnswer
             string queryId = Utils.BytesToHex(readBuffer.ReadInt256()); // queryId
             byte[] liteQuery = readBuffer.ReadBuffer();
-            
             var liteQueryBuffer = new TLReadBuffer(liteQuery);
             uint responseCode = liteQueryBuffer.ReadUInt32(); // liteQuery
 
@@ -463,7 +480,6 @@ namespace TonSdk.Adnl.LiteClient
                 return;
             }
             
-            
             if (!_pendingRequests.ContainsKey(queryId))
             {
                 await Console.Out.WriteLineAsync("Response id doesn't match any request's id"); 
@@ -473,5 +489,6 @@ namespace TonSdk.Adnl.LiteClient
             _pendingRequests[queryId].SetResult(liteQueryBuffer);
             _pendingRequests.Remove(queryId);
         }
+        
     }
 }

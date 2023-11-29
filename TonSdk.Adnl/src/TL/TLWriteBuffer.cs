@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Adnl.TL
 {
@@ -64,6 +65,14 @@ namespace TonSdk.Adnl.TL
                 throw new Exception("Invalid int256 length");
             }
             _writer.Write(bytes);
+        }
+
+        public void WriteBytes(byte[] data, int size)
+        {
+            Console.WriteLine(data.Length);
+            if (data.Length != size) throw new Exception($"Input array size not equals to {size}.");
+            EnsureSize(size);
+            _writer.Write(data);
         }
 
         public void WriteBuffer(byte[] buf)
