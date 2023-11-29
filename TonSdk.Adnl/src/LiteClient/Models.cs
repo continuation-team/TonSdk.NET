@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Numerics;
 using TonSdk.Core;
 
 namespace TonSdk.Adnl.LiteClient
 {
-    public class BlockIdExternal
+    public class BlockIdExtended
     {
         public int Workchain { get; set; }
         public long Shard { get; set; }
         public int Seqno { get; set; }
-        public BigInteger RootHash { get; set; }
-        public BigInteger FileHash { get; set; }
+        public byte[] RootHash { get; set; }
+        public byte[] FileHash { get; set; }
 
-        public BlockIdExternal(int workchain, BigInteger rootHash, BigInteger fileHash, long shard, int seqno)
+        public BlockIdExtended(int workchain, byte[] rootHash, byte[] fileHash, long shard, int seqno)
         {
             Workchain = workchain;
             RootHash = rootHash;
@@ -24,11 +24,11 @@ namespace TonSdk.Adnl.LiteClient
 
     public class MasterChainInfo
     {
-        public BlockIdExternal LastBlockId { get; set; }
-        public BlockIdExternal InitBlockId { get; set; }
+        public BlockIdExtended LastBlockId { get; set; }
+        public BlockIdExtended InitBlockId { get; set; }
         public BigInteger StateRootHash { get; set; }
 
-        public MasterChainInfo(BlockIdExternal lastBlockId, BlockIdExternal initBlockId, BigInteger stateRootHash)
+        public MasterChainInfo(BlockIdExtended lastBlockId, BlockIdExtended initBlockId, BigInteger stateRootHash)
         {
             LastBlockId = lastBlockId;
             InitBlockId = initBlockId;
@@ -50,17 +50,17 @@ namespace TonSdk.Adnl.LiteClient
         }
     }
     
-    public class MasterChainInfoExternal
+    public class MasterChainInfoExtended
     {
         public int Version { get; set; }
         public long Capabilities { get; set; }
         public int LastUTime { get; set; }
         public int Now { get; set; }
-        public BlockIdExternal LastBlockId { get; set; }
-        public BlockIdExternal InitBlockId { get; set; }
+        public BlockIdExtended LastBlockId { get; set; }
+        public BlockIdExtended InitBlockId { get; set; }
         public BigInteger StateRootHash { get; set; }
 
-        public MasterChainInfoExternal(int version, long capabilities, int lastUTime, int now, BlockIdExternal lastBlockId, BlockIdExternal initBlockId, BigInteger stateRootHash)
+        public MasterChainInfoExtended(int version, long capabilities, int lastUTime, int now, BlockIdExtended lastBlockId, BlockIdExtended initBlockId, BigInteger stateRootHash)
         {
             Version = version;
             Capabilities = capabilities;
@@ -120,13 +120,13 @@ namespace TonSdk.Adnl.LiteClient
         }
     }
     
-    public class ListBlockTransactionsExternalResult
+    public class ListBlockTransactionsExtendedResult
     {
         public bool InComplete { get; set; }
         public byte[] Transactions { get; set; }
         public byte[] Proof { get; set; }
 
-        public ListBlockTransactionsExternalResult(bool inComplete, byte[] transactions, byte[] proof)
+        public ListBlockTransactionsExtendedResult(bool inComplete, byte[] transactions, byte[] proof)
         {
             InComplete = inComplete;
             Transactions = transactions;
@@ -174,9 +174,12 @@ namespace TonSdk.Adnl.LiteClient
     {
         public byte[] ShardProof { get; set; }
         public byte[] ShardDescr { get; set; }
+        
+        public BlockIdExtended ShardBlock { get; set; }
 
-        public ShardInfo(byte[] shardProof, byte[] shardDescr)
+        public ShardInfo(byte[] shardProof, byte[] shardDescr, BlockIdExtended shardBlock)
         {
+            ShardBlock = shardBlock;
             ShardProof = shardProof;
             ShardDescr = shardDescr;
         }
@@ -217,8 +220,8 @@ namespace TonSdk.Adnl.LiteClient
     public class BlockLinkBack : IBlockLink
     {
         public bool ToKeyBlock { get; set; }
-        public BlockIdExternal From { get; set; }
-        public BlockIdExternal To { get; set; }
+        public BlockIdExtended From { get; set; }
+        public BlockIdExtended To { get; set; }
         public byte[] DestProof { get; set; }
         public byte[] Proof { get; set; }
         public byte[] StateProof { get; set; }
@@ -227,8 +230,8 @@ namespace TonSdk.Adnl.LiteClient
     public class BlockLinkForward : IBlockLink
     {
         public bool ToKeyBlock { get; set; }
-        public BlockIdExternal From { get; set; }
-        public BlockIdExternal To { get; set; }
+        public BlockIdExtended From { get; set; }
+        public BlockIdExtended To { get; set; }
         public byte[] DestProof { get; set; }
         public byte[] ConfigProof { get; set; }
         public int ValidatorSetHash { get; set; }
@@ -239,8 +242,8 @@ namespace TonSdk.Adnl.LiteClient
     public class PartialBlockProof
     {
         public bool Complete { get; set; }
-        public BlockIdExternal From { get; set; }
-        public BlockIdExternal To { get; set; }
+        public BlockIdExtended From { get; set; }
+        public BlockIdExtended To { get; set; }
         public IBlockLink[] BlockLinks { get; set; }
     }
 
@@ -258,13 +261,13 @@ namespace TonSdk.Adnl.LiteClient
 
     public class ShardBlockLink
     {
-        public BlockIdExternal BlockIdExternal { get; set; }
+        public BlockIdExtended BlockIdExtended { get; set; }
         public byte[] Proof { get; set; }
     }
 
     public class ShardBlockProof
     {
-        public BlockIdExternal MasterChainId { get; set; }
+        public BlockIdExtended MasterChainId { get; set; }
         public ShardBlockLink[] Links { get; set; }
     }
 

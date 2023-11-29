@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -55,12 +55,21 @@ namespace TonSdk.Adnl.TL
         return _reader.ReadBytes(32);
     }
 
+    public byte[] ReadBytes(int size)
+    {
+        EnsureSize(size);
+        return _reader.ReadBytes(size);
+    }
+    
+
     public byte[] ReadBuffer()
     {
         int len = ReadUInt8();
+        
         if (len == 254)
         {
-            len = _reader.ReadBytes(3)[0] | _reader.ReadBytes(3)[1] << 8 | _reader.ReadBytes(3)[2] << 16;
+            byte[] readed = _reader.ReadBytes(3);
+            len = readed[0] | readed[1] << 8 | readed[2] << 16;
         }
 
         byte[] buffer = _reader.ReadBytes(len);
@@ -79,15 +88,29 @@ namespace TonSdk.Adnl.TL
         return Encoding.UTF8.GetString(buffer);
     }
 
+    private bool CompareBytes(byte[] array, byte[] compareWith)
+    {
+        if (array.Length != compareWith.Length) return false;
+        
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (array[i] != compareWith[i]) return false;
+        }
+
+        return true;
+    }
+
     public bool ReadBool()
     {
-        uint value = ReadUInt32();
-        return value switch
-        {
-            0xbc799737 => false,
-            0x997275b5 => true,
-            _ => throw new Exception("Unknown boolean value"),
-        };
+        byte[] value = ReadBytes(4);
+        
+        byte[] falseBytes = { 0x37, 0x97, 0x79, 0xbc };
+        byte[] trueBytes = { 0xb5, 0x75, 0x72, 0x99 };
+
+        if (CompareBytes(value, falseBytes)) return false;
+        if (CompareBytes(value, trueBytes)) return true;
+        
+        throw new Exception("Unknown boolean value");
     }
 
     public T[] ReadVector<T>(Func<TLReadBuffer, T> codec)

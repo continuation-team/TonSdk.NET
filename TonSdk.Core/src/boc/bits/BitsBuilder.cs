@@ -179,7 +179,7 @@ namespace TonSdk.Core.Boc {
             CheckBitsOverflow(267);
             StoreUInt(0b100, 3);
             StoreInt(address.GetWorkchain(), 8);
-            StoreUInt(address.GetHash(), 256);
+            StoreBytes(address.GetHash());
             return (T)this;
         }
 
