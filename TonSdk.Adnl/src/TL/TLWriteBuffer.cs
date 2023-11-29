@@ -69,7 +69,6 @@ namespace TonSdk.Adnl.TL
 
         public void WriteBytes(byte[] data, int size)
         {
-            Console.WriteLine(data.Length);
             if (data.Length != size) throw new Exception($"Input array size not equals to {size}.");
             EnsureSize(size);
             _writer.Write(data);
