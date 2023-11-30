@@ -87,6 +87,29 @@ namespace TonSdk.Client
             }
         }
 
+        internal struct InBlockHeader : IRequestBody
+        {
+            public int workchain { get; set; }
+            public long shard { get; set; }
+            public long seqno { get; set; }
+            public string root_hash { get; set; }
+            public string file_hash { get; set; }
+
+            public InBlockHeader(
+                int workchain,
+                long shard,
+                long seqno,
+                string root_hash = null,
+                string file_hash = null)
+            {
+                this.workchain = workchain;
+                this.shard = shard;
+                this.seqno = seqno;
+                this.root_hash = root_hash;
+                this.file_hash = file_hash;
+            }
+        }
+
         internal struct InAdressInformationBody : IRequestBody
         {
             public string address { get; set; }
@@ -142,7 +165,7 @@ namespace TonSdk.Client
             public int config_id;
             public int seqno;
         }
-        
+
         internal interface OutResult
         {
         }
@@ -183,6 +206,14 @@ namespace TonSdk.Client
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
             [JsonProperty("result")] public OutBlockTransactionsResult Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
+
+        internal struct RootBlockHeader
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public OutBlockHeaderResult Result { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
@@ -248,7 +279,7 @@ namespace TonSdk.Client
             [JsonProperty("frozen_hash")] public string FrozenHash;
             [JsonProperty("sync_utime")] public long SyncUtime;
         }
-        
+
         internal struct OutWalletInformationResult
         {
             [JsonProperty("wallet")] public string IsWallet;
@@ -279,9 +310,29 @@ namespace TonSdk.Client
             [JsonProperty("incomplete")] public bool Incomplete;
             [JsonProperty("transactions")] public ShortTransactionsResult[] Transactions;
         }
-
         
-
+        internal struct OutBlockHeaderResult
+        {
+            [JsonProperty("id")] public BlockIdExternal Id;
+            [JsonProperty("global_id")] public long GlobalId;
+            [JsonProperty("version")] public int Version;
+            [JsonProperty("flags")] public int Flags;
+            [JsonProperty("after_merge")] public bool AfterMerge;
+            [JsonProperty("after_split")] public bool AfterSplit;
+            [JsonProperty("before_split")] public bool BeforeSplit;
+            [JsonProperty("want_merge")] public bool WantMerge;
+            [JsonProperty("want_split")] public bool WantSplit;
+            [JsonProperty("validator_list_hash_short")] public long ValidatorListHashShort;
+            [JsonProperty("catchain_seqno")] public long CatchainSeqno;
+            [JsonProperty("min_ref_mc_seqno")] public long MinRefMcSeqno;
+            [JsonProperty("is_key_block")] public bool IsKeyBlock;
+            [JsonProperty("prev_key_block_seqno")] public long PrevKeyBlockSeqno;
+            [JsonProperty("start_lt")] public ulong StartLt;
+            [JsonProperty("end_lt")] public ulong EndLt;
+            [JsonProperty("gen_utime")] public long RgenUtime;
+            [JsonProperty("prev_blocks")] public BlockIdExternal[] PrevBlocks;
+        }
+        
         internal struct OutTransactionsResult
         {
             [JsonProperty("utime")] public long Utime;
@@ -314,7 +365,7 @@ namespace TonSdk.Client
             [JsonProperty("init_state")] public string InitState;
         }
     }
-    
+
     public struct TransactionId
     {
         [JsonProperty("lt")] public ulong Lt;
@@ -330,13 +381,57 @@ namespace TonSdk.Client
         [JsonProperty("root_hash")] public string RootHash;
         [JsonProperty("file_hash")] public string FileHash;
     }
-    
+
     public struct ShortTransactionsResult
     {
         [JsonProperty("mode")] public int Mode;
         [JsonProperty("account")] public string Account;
         [JsonProperty("lt")] public ulong Lt;
         [JsonProperty("hash")] public string Hash;
+    }
+    
+    public struct BlockHeaderResult
+    {
+        public BlockIdExternal Id;
+        public long GlobalId;
+        public int Version;
+        public int Flags;
+        public bool AfterMerge;
+        public bool AfterSplit;
+        public bool BeforeSplit;
+        public bool WantMerge;
+        public bool WantSplit;
+        public long ValidatorListHashShort;
+        public long CatchainSeqno;
+        public long MinRefMcSeqno;
+        public bool IsKeyBlock;
+        public long PrevKeyBlockSeqno;
+        public ulong StartLt;
+        public ulong EndLt;
+        public long RgenUtime;
+        public BlockIdExternal[] PrevBlocks;
+        
+        internal BlockHeaderResult(OutBlockHeaderResult outBlockHeaderResult)
+        {
+            Id = outBlockHeaderResult.Id;
+            GlobalId = outBlockHeaderResult.GlobalId;
+            Version = outBlockHeaderResult.Version;
+            Flags = outBlockHeaderResult.Flags;
+            AfterMerge = outBlockHeaderResult.AfterMerge;
+            AfterSplit = outBlockHeaderResult.AfterSplit;
+            BeforeSplit = outBlockHeaderResult.BeforeSplit;
+            WantMerge = outBlockHeaderResult.WantMerge;
+            WantSplit = outBlockHeaderResult.WantSplit;
+            ValidatorListHashShort = outBlockHeaderResult.ValidatorListHashShort;
+            CatchainSeqno = outBlockHeaderResult.CatchainSeqno;
+            MinRefMcSeqno = outBlockHeaderResult.MinRefMcSeqno;
+            IsKeyBlock = outBlockHeaderResult.IsKeyBlock;
+            PrevKeyBlockSeqno = outBlockHeaderResult.PrevKeyBlockSeqno;
+            StartLt = outBlockHeaderResult.StartLt;
+            EndLt = outBlockHeaderResult.EndLt;
+            RgenUtime = outBlockHeaderResult.RgenUtime;
+            PrevBlocks = outBlockHeaderResult.PrevBlocks;
+        }
     }
 
     public struct AddressInformationResult
@@ -636,6 +731,7 @@ namespace TonSdk.Client
                 Seqno = null;
                 WalletId = null;
             }
+
             Balance = new Coins(walletInformationResult.Balance, new CoinsOptions(true, 9));
             LastTransactionId = walletInformationResult.LastTransactionId;
             switch (walletInformationResult.State)
