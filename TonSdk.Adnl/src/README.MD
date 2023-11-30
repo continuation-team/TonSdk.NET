@@ -67,6 +67,28 @@ await client.Write(byte[] data);
 client.End();
 ```
 
+### LiteClient overview example
+
+```csharp
+// Initialize the Lite client with the predefined settings
+LiteClient liteClient = new LiteClient(AdnlHost, AdnlPort, AdnlPubKey);
+
+// Connect the client
+await liteClient.Connect();
+
+// RunSmcMethod example
+Address destination = new Address("xxx");
+RunSmcMethodResult result = await liteClient.RunSmcMethod(destination, "seqno", Array.Empty<byte>(), new RunSmcOptions() 
+{ Result = true });
+
+// GetMasterChainInfo example
+MasterChainInfo mcInfo = await liteClient.GetMasterChainInfo();
+BlockIdExtended blockId = mcInfo.LastBlockId;
+
+// Disconnect the client
+liteClient.Disconnect();
+```
+
 ## Donation
 
 `continuation.ton`
