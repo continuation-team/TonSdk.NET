@@ -76,8 +76,11 @@ namespace TonSdk.Client
 
             if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve DNS resolve data.");
             if (runGetMethodResult.Stack.Length != 2) throw new Exception("Invalid dnsresolve response.");
-
-            uint resultLen = (uint)(BigInteger)runGetMethodResult.Stack[0];
+            
+            BigInteger lenBig = (BigInteger)runGetMethodResult.Stack[0];
+            if (lenBig < 0) lenBig *= -1;
+            uint resultLen = (uint)lenBig;
+            
             Cell cell = (Cell)runGetMethodResult.Stack[1];
 
             if (cell == null || cell.Bits == null) throw new Exception("Invalid dnsresolve response.");
