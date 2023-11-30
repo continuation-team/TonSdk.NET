@@ -110,6 +110,26 @@ namespace TonSdk.Client
         }
 
         /// <summary>
+        /// Get metadata of a given block.
+        /// </summary>
+        /// <returns>An object containing the block header information.</returns>
+        public async Task<BlockHeaderResult> GetBlockHeader(
+            int workchain,
+            long shard,
+            long seqno,
+            string rootHash = null,
+            string fileHash = null)
+        {
+            var requestBody = new InBlockHeader(workchain, shard, seqno, rootHash, fileHash);
+            var result = await new TonRequest(new RequestParameters("getBlockHeader", requestBody), _httpClient)
+                .Call();
+
+            RootBlockHeader rootBlockHeader = JsonConvert.DeserializeObject<RootBlockHeader>(result);
+            BlockHeaderResult blockHeaderResult = new BlockHeaderResult(rootBlockHeader.Result);
+            return blockHeaderResult;
+        }
+
+        /// <summary>
         /// Get transactions of the given block.
         /// </summary>
         /// <param name="workchain"></param>

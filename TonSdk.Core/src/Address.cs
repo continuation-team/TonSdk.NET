@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Core {
     public interface IAddressRewriteOptions {
@@ -37,7 +38,7 @@ namespace TonSdk.Core {
 
     public class AddressData : AddressTag {
         public int Workchain { get; set; }
-        public BigInteger Hash { get; set; }
+        public byte[] Hash { get; set; }
     }
 
     public enum AddressType {
@@ -51,13 +52,13 @@ namespace TonSdk.Core {
         private const byte FLAG_TEST_ONLY_BOUNCEABLE = 0x91;
         private const byte FLAG_TEST_ONLY_NON_BOUNCEABLE = 0xd1;
 
-        private readonly BigInteger _hash;
+        private readonly byte[] _hash;
         private int _workchain;
         private bool _bounceable;
         private bool _testOnly;
 
         public Address(int workchain, StateInit stateInit, IAddressRewriteOptions? options = null) {
-            _hash = stateInit.Cell.Hash.Parse().LoadUInt(256);
+            _hash = stateInit.Cell.Hash.Parse().LoadBytes(32);
             _workchain = options?.Workchain ?? workchain;
             _bounceable = options?.Bounceable ?? true;
             _testOnly = options?.TestOnly ?? false;
@@ -70,7 +71,7 @@ namespace TonSdk.Core {
         /// <param name="hash">The hash value of the address.</param>
         /// <param name="options">An optional IAddressRewriteOptions object specifying custom options.</param>
         public Address(int workchain, BigInteger hash, IAddressRewriteOptions? options = null) {
-            _hash = hash;
+            _hash = hash.ToByteArray();
             _workchain = options?.Workchain ?? workchain;
             _bounceable = options?.Bounceable ?? true;
             _testOnly = options?.TestOnly ?? false;
@@ -129,7 +130,7 @@ namespace TonSdk.Core {
         /// Return the hash value of the address.
         /// </summary>
         /// <returns>The hash value of the address.</returns>
-        public BigInteger GetHash() => _hash;
+        public byte[] GetHash() => _hash;
 
         /// <summary>
         /// Return the workchain of the address.
@@ -211,7 +212,7 @@ namespace TonSdk.Core {
             int workchain = value._workchain;
             bool bounceable = value._bounceable;
             bool testOnly = value._testOnly;
-            BigInteger hash = value._hash;
+            byte[] hash = value._hash;
 
             return new AddressData {
                 Workchain = workchain,
@@ -228,7 +229,7 @@ namespace TonSdk.Core {
 
             byte tag = (byte)slice.LoadUInt(8);
             sbyte workchain = (sbyte)slice.LoadInt(8);
-            BigInteger hash = slice.LoadUInt(256);
+            byte[] hash = slice.LoadBytes(32);
             byte[] checksum = slice.LoadBits(16).ToBytes();
             byte[] crc = Crypto.Utils.Crc16BytesBigEndian(crcBytes);
 
@@ -261,7 +262,7 @@ namespace TonSdk.Core {
         private static AddressData ParseRaw(string value) {
             var data = value.Split(':');
             var workchain = int.Parse(data[0]);
-            var hash = new Bits(data[1]).Parse().LoadUInt(256);
+            var hash = new Bits(data[1]).Parse().LoadBytes(32);
             var bounceable = true;
             var testOnly = false;
 
@@ -272,6 +273,18 @@ namespace TonSdk.Core {
                 Hash = hash
             };
         }
+        
+        private bool CompareBytes(byte[] array, byte[] compareWith)
+        {
+            if (array.Length != compareWith.Length) return false;
+        
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] != compareWith[i]) return false;
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Determines whether the specified Address object is equal to the current Address.
@@ -280,7 +293,7 @@ namespace TonSdk.Core {
         /// <returns>True if the specified Address is equal to the current Address; otherwise, false.</returns>
         public bool Equals(Address address) {
             return (address == this) || (
-                Equals(_hash, address._hash) &&
+                CompareBytes(_hash, address._hash) &&
                 _workchain == address._workchain
             );
         }
@@ -346,14 +359,14 @@ namespace TonSdk.Core {
             // }
 
             if (type == AddressType.Raw) {
-                return $"{workchain}:{_hash.ToString("x65").Substring(1)}";
+                return $"{workchain}:{Utils.BytesToHex(_hash).ToLower()}";
             }
 
             byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly });
 
 
             BitsBuilder addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8)
-                .StoreUInt(_hash, 256);
+                .StoreBytes(_hash);
 
             var checksum = Crypto.Utils.Crc16(addressBits.Data.ToBytes());
             addressBits.StoreUInt(checksum, 16);

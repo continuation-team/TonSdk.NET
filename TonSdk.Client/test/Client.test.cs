@@ -54,7 +54,7 @@ public class ClientTest
     [Test]
     public async Task Test_DnsGetWalletAddress()
     {
-        Assert.That((await client.Dns.GetWalletAddress("collection.ton"))!.ToString(), Is.EqualTo("EQCpfwmPKWkNZ7fpzKrLpJjHzzgo97ABM1kzLN6nHdP2Dcnu"));
+        Assert.That((await client.Dns.GetWalletAddress("foundation.ton")).Equals(new Address("UQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqEBI")), Is.EqualTo(true));
     }
 
     [Test]
