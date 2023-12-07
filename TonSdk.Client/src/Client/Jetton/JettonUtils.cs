@@ -10,7 +10,6 @@ using TonSdk.Core.Crypto;
 
 namespace TonSdk.Client
 {
-
     public class JettonContent
     {
         [JsonProperty("uri")] public string Uri;
@@ -67,13 +66,13 @@ namespace TonSdk.Client
 
             return contentLayout switch
             {
-                ContentLayout.ONCHAIN => ParseOnChain(ds),
+                ContentLayout.ONCHAIN => await ParseOnChain(ds),
                 ContentLayout.OFFCHAIN => await ParseOffChain(ds),
                 _ => throw new Exception("Invalid metadata prefix"),
             };
         }
 
-        private static JettonContent ParseOnChain(CellSlice content)
+        private static async Task<JettonContent> ParseOnChain(CellSlice content)
         {
             Dictionary<string, byte[]> metadataDict = new Dictionary<string, byte[]>()
         {
@@ -110,12 +109,34 @@ namespace TonSdk.Client
             }
 
             JettonContent jettonContent = new JettonContent(dataDict);
+            if (jettonContent.Uri != null) jettonContent = await ParseOffChainUri(jettonContent);
             return jettonContent;
+        }
+
+        private static async Task<JettonContent> ParseOffChainUri(JettonContent jettonContent)
+        {
+            string url = jettonContent.Uri;
+            if (url.StartsWith("ipfs://")) url = "https://ipfs.io/ipfs/" + url.Substring(7);
+            HttpClient httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode) throw new Exception($"Received error: {await response.Content.ReadAsStringAsync()}");
+            string result = await response.Content.ReadAsStringAsync();
+
+            OutJettonOffContent offJettonContent = JsonConvert.DeserializeObject<OutJettonOffContent>(result);
+            jettonContent.Description ??= offJettonContent.Description;
+            jettonContent.Name ??= offJettonContent.Name;
+            jettonContent.ImageData ??= offJettonContent.ImageData;
+            jettonContent.Image ??= offJettonContent.Image;
+            jettonContent.Symbol ??= offJettonContent.Symbol;
+            return jettonContent ?? throw new Exception("Parse metadata error.");
         }
 
         private static async Task<JettonContent> ParseOffChain(CellSlice content)
         {
             string jsonUrl = content.LoadString();
+            if (jsonUrl.StartsWith("ipfs://")) 
+                jsonUrl = "https://ipfs.io/ipfs/" + jsonUrl.Substring(7);
             HttpClient httpClient = new HttpClient();
             HttpResponseMessage response = await httpClient.GetAsync(jsonUrl);
 
