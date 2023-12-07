@@ -80,7 +80,7 @@ namespace TonSdk.Core.Crypto {
             while(true)
             {
                 words = new List<string>();
-                byte[] entropy = GenerateRandomBytes(24);
+                ushort[] entropy = GenerateRandomUInt16(24);
 
                 for (int i = 0; i < 24; i++)
                 {
@@ -163,6 +163,16 @@ namespace TonSdk.Core.Crypto {
             byte[] randomBytes = new byte[byteSize];
             randomNumberGenerator.GetBytes(randomBytes);
             return randomBytes;
+        }
+        
+        public static ushort[] GenerateRandomUInt16(int length) {
+            var random = new Random();
+            var randomValues = new ushort[length];
+            for (int i = 0; i < length; i++)
+            {
+                randomValues[i] = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
+            }
+            return randomValues;
         }
 
         private static BitArray DeriveChecksumBits(byte[] entropy) {

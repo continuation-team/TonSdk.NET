@@ -70,8 +70,8 @@ namespace TonSdk.Core {
         /// <param name="workchain">The workchain of the address.</param>
         /// <param name="hash">The hash value of the address.</param>
         /// <param name="options">An optional IAddressRewriteOptions object specifying custom options.</param>
-        public Address(int workchain, BigInteger hash, IAddressRewriteOptions? options = null) {
-            _hash = hash.ToByteArray();
+        public Address(int workchain, byte[] hash, IAddressRewriteOptions? options = null) {
+            _hash = hash;
             _workchain = options?.Workchain ?? workchain;
             _bounceable = options?.Bounceable ?? true;
             _testOnly = options?.TestOnly ?? false;
@@ -367,6 +367,7 @@ namespace TonSdk.Core {
 
             BitsBuilder addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8)
                 .StoreBytes(_hash);
+            Console.WriteLine(_hash.Length);
 
             var checksum = Crypto.Utils.Crc16(addressBits.Data.ToBytes());
             addressBits.StoreUInt(checksum, 16);

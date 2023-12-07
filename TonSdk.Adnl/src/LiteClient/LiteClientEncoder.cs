@@ -31,6 +31,22 @@ namespace TonSdk.Adnl.LiteClient
 
             return (queryId, writer.Build());
         }
+
+        internal static byte[] EncodePingPong()
+        {
+            TLWriteBuffer writer = new TLWriteBuffer();
+            writer.WriteUInt32(
+                BitConverter.ToUInt32(
+                    Crc32.ComputeChecksum(
+                        Encoding.UTF8.GetBytes("tcp.ping random_id:long = tcp.Pong")),0));
+            
+            var random = new Random();
+            int firstPart = random.Next();
+            int secondPart = random.Next();
+            long randomInt64 = ((long)firstPart << 32) | (uint)secondPart;
+            writer.WriteInt64(randomInt64);
+            return writer.Build();
+        }
         
         internal static (byte[], byte[]) EncodeGetMasterchainInfo()
         {
