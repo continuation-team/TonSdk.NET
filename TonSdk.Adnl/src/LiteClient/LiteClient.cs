@@ -59,6 +59,15 @@ namespace TonSdk.Adnl.LiteClient
             _pendingRequests = new Dictionary<string, TaskCompletionSource<TLReadBuffer>>();
             _adnlClient.End();
         }
+
+        public async Task PingPong()
+        {
+            if (_adnlClient.State != AdnlClientState.Open) 
+                throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
+            
+            byte[] data = LiteClientEncoder.EncodePingPong();
+            await _adnlClient.Write(data);
+        }
         
         public async Task<MasterChainInfo> GetMasterChainInfo()
         {
@@ -461,7 +470,12 @@ namespace TonSdk.Adnl.LiteClient
         {
             var readBuffer = new TLReadBuffer(data);
             
-            readBuffer.ReadUInt32(); // adnlAnswer
+            uint answer = readBuffer.ReadUInt32();
+            
+            if(answer == BitConverter.ToUInt32(
+                   Crc32.ComputeChecksum(
+                       Encoding.UTF8.GetBytes("tcp.pong random_id:long = tcp.Pong")), 0)) return;
+            
             string queryId = Utils.BytesToHex(readBuffer.ReadInt256()); // queryId
             byte[] liteQuery = readBuffer.ReadBuffer();
             var liteQueryBuffer = new TLReadBuffer(liteQuery);
@@ -479,6 +493,7 @@ namespace TonSdk.Adnl.LiteClient
                 _pendingRequests.Remove(queryId);
                 return;
             }
+            
             
             if (!_pendingRequests.ContainsKey(queryId))
             {

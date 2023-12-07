@@ -76,6 +76,11 @@ LiteClient liteClient = new LiteClient(AdnlHost, AdnlPort, AdnlPubKey);
 // Connect the client
 await liteClient.Connect();
 
+// It is optimal to send a ping packet once every 5 seconds.
+// This is necessary to maintain the connection while no data is being transmitted,
+// otherwise the server may terminate the connection.
+await client.PingPong();
+
 // RunSmcMethod example
 Address destination = new Address("xxx");
 RunSmcMethodResult result = await liteClient.RunSmcMethod(destination, "seqno", Array.Empty<byte>(), new RunSmcOptions() 

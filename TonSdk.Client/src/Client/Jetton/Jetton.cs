@@ -130,7 +130,5 @@ namespace TonSdk.Client
             Address resultAddress = ((Cell)runGetMethodResult.Stack[0]).Parse().LoadAddress()!;
             return resultAddress;
         }
-
-
     }
 }
