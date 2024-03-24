@@ -177,7 +177,7 @@ namespace TonSdk.Client
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
-        
+
         internal struct RootWalletInformation
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
@@ -310,7 +310,7 @@ namespace TonSdk.Client
             [JsonProperty("incomplete")] public bool Incomplete;
             [JsonProperty("transactions")] public ShortTransactionsResult[] Transactions;
         }
-        
+
         internal struct OutBlockHeaderResult
         {
             [JsonProperty("id")] public BlockIdExternal Id;
@@ -332,7 +332,7 @@ namespace TonSdk.Client
             [JsonProperty("gen_utime")] public long RgenUtime;
             [JsonProperty("prev_blocks")] public BlockIdExternal[] PrevBlocks;
         }
-        
+
         internal struct OutTransactionsResult
         {
             [JsonProperty("utime")] public long Utime;
@@ -389,7 +389,7 @@ namespace TonSdk.Client
         [JsonProperty("lt")] public ulong Lt;
         [JsonProperty("hash")] public string Hash;
     }
-    
+
     public struct BlockHeaderResult
     {
         public BlockIdExternal Id;
@@ -410,7 +410,7 @@ namespace TonSdk.Client
         public ulong EndLt;
         public long RgenUtime;
         public BlockIdExternal[] PrevBlocks;
-        
+
         internal BlockHeaderResult(OutBlockHeaderResult outBlockHeaderResult)
         {
             Id = outBlockHeaderResult.Id;
@@ -671,8 +671,8 @@ namespace TonSdk.Client
 
                         bool isNegative = valueStr[0] == '-';
                         string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
-                        BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
-
+                        BitsSlice bitsSlice = new Bits(slice).Parse();
+                        BigInteger x = bitsSlice.LoadUInt(bitsSlice.RemainderBits);
                         return isNegative ? 0 - x : x;
                     }
                 case "cell":
@@ -705,7 +705,7 @@ namespace TonSdk.Client
             }
         }
     }
-    
+
     public struct WalletInformationResult
     {
         public bool IsWallet;
