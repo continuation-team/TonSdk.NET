@@ -43,14 +43,14 @@ namespace TonSdk.Contracts.Wallet {
                     Serializers = new HashmapSerializers<Address, bool> {
                         Key = k => new BitsBuilder(8 + 256)
                             .StoreInt(k.GetWorkchain(), 8)
-                            .StoreUInt(k.GetHash(), 256)
+                            .StoreBytes(k.GetHash())
                             .Build(),
                         Value = v => new CellBuilder().Build()
                     },
                     Deserializers = new HashmapDeserializers<Address, bool> {
                         Key = kb => {
                             var ks = kb.Parse();
-                            return new Address((int)ks.LoadInt(8), ks.LoadUInt(256));
+                            return new Address((int)ks.LoadInt(8), ks.LoadBytes(32));
                         },
                         Value = _ => true
                     }

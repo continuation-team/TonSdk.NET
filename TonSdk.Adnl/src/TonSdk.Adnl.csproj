@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Adnl</RootNamespace>
         <PackageId>TonSdk.Adnl</PackageId>
-        <Version>0.1.4</Version>
+        <Version>0.1.5</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Library that allows to interact with Ton ADNL</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="TonSdk.Core" Version="0.2.7" />
+      <PackageReference Include="TonSdk.Core" Version="0.2.10" />
     </ItemGroup>
 
 </Project>
