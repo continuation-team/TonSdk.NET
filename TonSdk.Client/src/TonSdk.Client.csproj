@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Client</RootNamespace>
         <PackageId>TonSdk.Client</PackageId>
-        <Version>0.2.9</Version>
+        <Version>0.2.10</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>RPC Client for work with TonCenter API</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
@@ -14,7 +14,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="TonSdk.Core" Version="0.2.7" />
+        <PackageReference Include="TonSdk.Adnl" Version="0.1.5" />
+        <PackageReference Include="TonSdk.Core" Version="0.2.10" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
@@ -27,10 +28,4 @@
         <None Include="../../README.md" Pack="true" PackagePath="" />
         <None Include="../../LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\TonSdk.Adnl\src\TonSdk.Adnl.csproj" />
-      <ProjectReference Include="..\..\TonSdk.Core\src\TonSdk.Core.csproj" />
-    </ItemGroup>
-
 </Project>
