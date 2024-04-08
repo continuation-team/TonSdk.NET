@@ -37,9 +37,11 @@ namespace TonSdk.Client
         /// <returns>The root DNS address.</returns>
         public async Task<Address> GetRootDnsAddress()
         {
-            ConfigParamResult configParamResult = await client.GetConfigParam(4);
-            if (configParamResult.Bytes.BitsCount != 256) throw new Exception($"Invalid ConfigParam 4 length {configParamResult.Bytes.BitsCount}");
-            return new Address(-1, configParamResult.Bytes.Parse().LoadUInt(256));
+            if (client.GetClientType() == TonClientType.LITECLIENT)
+                return new Address("Ef_lZ1T4NCb2mwkme9h2rJfESCE0W34ma9lWp7-_uY3zXDvq");
+            ConfigParamResult? configParamResult = await client.GetConfigParam(4);
+            if (configParamResult.Value.Bytes.BitsCount != 256) throw new Exception($"Invalid ConfigParam 4 length {configParamResult.Value.Bytes.BitsCount}");
+            return new Address(-1, configParamResult.Value.Bytes.Parse().LoadBytes(32));
         }
     }
 }
