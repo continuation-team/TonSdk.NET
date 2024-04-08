@@ -3,6 +3,8 @@ using TonSdk.Core;
 using System.Numerics;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
+using TonSdk.Client.Stack;
 
 namespace TonSdk.Client
 {
@@ -46,11 +48,28 @@ namespace TonSdk.Client
         /// <returns>The address of the item.</returns>
         public async Task<Address> GetItemAddress(Address collection, uint index)
         {
-            string[][] stack = new string[1][] { Transformers.PackRequestStack(index) };
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(collection, "get_nft_address_by_index", stack);
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve nft address.");
-            Address resultAddress = ((Cell)runGetMethodResult.Stack[0]).Parse().LoadAddress()!;
-            return resultAddress;
+            RunGetMethodResult? result;
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            {
+                string[][] stack = new string[1][] { Transformers.PackRequestStack(index) };
+                result = await client.RunGetMethod(collection, "get_nft_address_by_index", stack);
+            }
+            else
+            {
+                var stackItems = new List<IStackItem>()
+                {
+                    new VmStackInt()
+                    {
+                        Value = index
+                    }
+                };
+                result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray());
+            }
+            
+            if ( result == null || result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft address.");
+            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
+                ? ((Cell)result.Value.Stack[0]).Parse().LoadAddress()! 
+                : ((VmStackSlice)result.Value.StackItems[0]).Value.LoadAddress();
         }
 
         /// <summary>
@@ -60,13 +79,48 @@ namespace TonSdk.Client
         /// <returns>The royalty parameters of the collection.</returns>
         public async Task<NftRoyaltyParams> GetRoyaltyParams(Address collection)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(collection, "royalty_params");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve nft collection royalty params.");
-            Address royaltyAddress = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!;
-            NftRoyaltyParams nftRoyaltyParams = new NftRoyaltyParams()
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(collection, "royalty_params", stack: null);
+            else
+                result = await client.RunGetMethod(collection, "royalty_params", Array.Empty<IStackItem>());
+            
+            if(result == null) throw new Exception("Cannot retrieve nft collection royalty params.");
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection royalty params.");
+            
+            Address royaltyAddress;
+            BigInteger numerator = BigInteger.Zero, denominator = BigInteger.Zero;
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
             {
-                Numerator = (BigInteger)runGetMethodResult.Stack[0],
-                Denominator = (BigInteger)runGetMethodResult.Stack[1],
+                royaltyAddress = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
+                numerator = (BigInteger)result.Value.Stack[0];
+                denominator = (BigInteger)result.Value.Stack[1];
+            }
+            else
+            {
+                if (result.Value.StackItems[0] is VmStackInt)
+                    numerator = ((VmStackInt)result.Value.StackItems[0]).Value;
+                else if (result.Value.StackItems[0] is VmStackTinyInt)
+                    numerator = ((VmStackTinyInt)result.Value.StackItems[0]).Value;
+                
+                if (result.Value.StackItems[1] is VmStackInt)
+                    denominator = ((VmStackInt)result.Value.StackItems[1]).Value;
+                else if (result.Value.StackItems[1] is VmStackTinyInt)
+                    denominator = ((VmStackTinyInt)result.Value.StackItems[1]).Value;
+                try
+                {
+                    royaltyAddress = ((VmStackSlice)result.Value.StackItems[2]).Value.LoadAddress();
+                }
+                catch
+                {
+                    royaltyAddress = null;
+                }
+            }
+            
+            NftRoyaltyParams nftRoyaltyParams = new NftRoyaltyParams
+            {
+                Numerator = numerator,
+                Denominator = denominator,
                 RoyaltyAddress = royaltyAddress
             };
             return nftRoyaltyParams;
@@ -79,13 +133,46 @@ namespace TonSdk.Client
         /// <returns>The data of the collection.</returns>
         public async Task<NftCollectionData> GetCollectionData(Address collection)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(collection, "get_collection_data");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve nft collection data.");
-            Address ownerAddress = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!;
-            NftCollectionData nftCollectionData = new NftCollectionData()
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(collection, "get_collection_data", stack: null);
+            else
+                result = await client.RunGetMethod(collection, "get_collection_data", Array.Empty<IStackItem>());
+            
+            if(result == null) throw new Exception("Cannot retrieve nft collection data.");
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection data.");
+            
+            Address ownerAddress;
+            uint nextItemIndex = 0;
+            Cell data;
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
             {
-                NextItemIndex = (uint)(BigInteger)runGetMethodResult.Stack[0],
-                Data = (Cell)runGetMethodResult.Stack[1],
+                ownerAddress = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
+                nextItemIndex = (uint)(BigInteger)result.Value.Stack[0];
+                data = (Cell)result.Value.Stack[1];
+            }
+            else
+            {
+                if (result.Value.StackItems[0] is VmStackInt)
+                    nextItemIndex = (uint)((VmStackInt)result.Value.StackItems[0]).Value;
+                else if (result.Value.StackItems[0] is VmStackTinyInt)
+                    nextItemIndex = (uint)((VmStackTinyInt)result.Value.StackItems[0]).Value;
+
+                data = ((VmStackCell)result.Value.StackItems[1]).Value;
+                try
+                {
+                    ownerAddress = ((VmStackSlice)result.Value.StackItems[2]).Value.LoadAddress();
+                }
+                catch
+                {
+                    ownerAddress = null;
+                }
+            }
+            
+            var nftCollectionData = new NftCollectionData()
+            {
+                NextItemIndex = nextItemIndex,
+                Data = data,
                 OwnerAddress = ownerAddress
             };
             return nftCollectionData;
@@ -98,17 +185,68 @@ namespace TonSdk.Client
         /// <returns>The data of the NFT item.</returns>
         public async Task<NftItemData> GetNftItemData(Address itemAddress)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(itemAddress, "get_nft_data");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) throw new Exception("Cannot retrieve nft item data.");
-            Address collection = ((Cell)runGetMethodResult.Stack[2]).Parse().LoadAddress()!;
-            Address owner = ((Cell)runGetMethodResult.Stack[3]).Parse().LoadAddress()!;
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(itemAddress, "get_nft_data", stack: null);
+            else
+                result = await client.RunGetMethod(itemAddress, "get_nft_data", Array.Empty<IStackItem>());
+            
+            if(result == null) throw new Exception("Cannot retrieve nft item data.");
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft item data.");
+
+            Address collection;
+            Address owner;
+            bool init = false;
+            BigInteger index = BigInteger.Zero;
+            Cell content; 
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            {
+                collection = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
+                owner = ((Cell)result.Value.Stack[3]).Parse().LoadAddress()!;
+                init = (int)(BigInteger)result.Value.Stack[0] == -1;
+                index = (BigInteger)result.Value.Stack[1];
+                content = (Cell)result.Value.Stack[4];
+            }
+            else
+            {
+                if (result.Value.StackItems[0] is VmStackInt)
+                    init = (int)((VmStackInt)result.Value.StackItems[0]).Value == -1;
+                else if (result.Value.StackItems[0] is VmStackTinyInt)
+                    init = (int)((VmStackTinyInt)result.Value.StackItems[0]).Value == -1;
+                
+                if (result.Value.StackItems[1] is VmStackInt)
+                    index = ((VmStackInt)result.Value.StackItems[1]).Value;
+                else if (result.Value.StackItems[1] is VmStackTinyInt)
+                    index = ((VmStackTinyInt)result.Value.StackItems[1]).Value;
+                
+                content = ((VmStackCell)result.Value.StackItems[4]).Value;
+                
+                try
+                {
+                    collection = ((VmStackSlice)result.Value.StackItems[2]).Value.LoadAddress();
+                }
+                catch
+                {
+                    collection = null;
+                }
+                
+                try
+                {
+                    owner = ((VmStackSlice)result.Value.StackItems[3]).Value.LoadAddress();
+                }
+                catch
+                {
+                    owner = null;
+                }
+            }
+            
             NftItemData nftItemData = new NftItemData()
             {
-                Init = (int)(BigInteger)runGetMethodResult.Stack[0] == -1,
-                Index = (BigInteger)runGetMethodResult.Stack[1],
+                Init = init,
+                Index = index,
                 CollectionAddress = collection,
                 OwnerAddress = owner,
-                Content = (Cell)runGetMethodResult.Stack[4]
+                Content = content
             };
             return nftItemData;
         }

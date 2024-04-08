@@ -1,7 +1,9 @@
 ﻿
+using System;
 using Newtonsoft.Json;
 using System.Numerics;
 using System.Threading.Tasks;
+using TonSdk.Client.Stack;
 using TonSdk.Core;
 
 namespace TonSdk.Client
@@ -23,9 +25,26 @@ namespace TonSdk.Client
         /// <returns>The sequence number of the address, or null if the retrieval failed or the sequence number is not available.</returns>
         public async Task<uint?> GetSeqno(Address address)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(address, "seqno");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) return null;
-            return (uint)(BigInteger)runGetMethodResult.Stack[0];
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(address, "seqno", stack: null);
+            else
+                result = await client.RunGetMethod(address, "seqno", Array.Empty<IStackItem>());
+            
+            if(result == null) return null;
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
+
+            uint seqno = 0;
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+                seqno = (uint)(BigInteger)result.Value.Stack[0];
+            else
+            {
+                if (result.Value.StackItems[0] is VmStackInt)
+                    seqno = (uint)((VmStackInt)result.Value.StackItems[0]).Value;
+                else if (result.Value.StackItems[0] is VmStackTinyInt)
+                    seqno = (uint)((VmStackTinyInt)result.Value.StackItems[0]).Value;
+            }
+            return seqno;
         }
 
         /// <summary>
@@ -35,9 +54,26 @@ namespace TonSdk.Client
         /// <returns>The subwallet ID of the address, or null if the retrieval failed or the subwallet ID is not available.</returns>
         public async Task<uint?> GetSubwalletId(Address address)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(address, "get_subwallet_id");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) return null;
-            return (uint)(BigInteger)runGetMethodResult.Stack[0];
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(address, "get_subwallet_id", stack: null);
+            else
+                result = await client.RunGetMethod(address, "get_subwallet_id", Array.Empty<IStackItem>());
+            
+            if(result == null) return null;
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
+            
+            uint id = 0;
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+                id = (uint)(BigInteger)result.Value.Stack[0];
+            else
+            {
+                if (result.Value.StackItems[0] is VmStackInt)
+                    id = (uint)((VmStackInt)result.Value.StackItems[0]).Value;
+                else if (result.Value.StackItems[0] is VmStackTinyInt)
+                    id = (uint)((VmStackTinyInt)result.Value.StackItems[0]).Value;
+            }
+            return id;
         }
 
         /// <summary>
@@ -49,9 +85,14 @@ namespace TonSdk.Client
         /// </returns>
         public async Task<object[]> GetPluginList(Address address)
         {
-            RunGetMethodResult runGetMethodResult = await client.RunGetMethod(address, "get_plugin_list");
-            if (runGetMethodResult.ExitCode != 0 && runGetMethodResult.ExitCode != 1) return null;
-            return runGetMethodResult.Stack;
+            RunGetMethodResult? result;
+            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
+                result = await client.RunGetMethod(address, "get_plugin_list", stack: null);
+            else
+                result = await client.RunGetMethod(address, "get_plugin_list", Array.Empty<IStackItem>());
+            if(result == null) return null;
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
+            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ? result.Value.Stack : result.Value.StackItems;
         }
     }
 }

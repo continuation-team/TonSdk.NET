@@ -22,7 +22,6 @@ namespace TonSdk.Client
 
     public class TonRequest
     {
-
         private readonly RequestParameters _params;
         private readonly HttpClient _httpClient;
 
@@ -34,7 +33,6 @@ namespace TonSdk.Client
 
         public async Task<string> Call()
         {
-
             string data = JsonConvert.SerializeObject(new
             {
                 id = "1",

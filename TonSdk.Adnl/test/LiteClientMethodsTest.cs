@@ -2,7 +2,7 @@
 using TonSdk.Adnl.LiteClient;
 using NUnit.Framework;
 
-public class LiteClientMethods
+public class LiteClientMethodsTest
 {
     private const string AdnlHost = "84478511";
     private const int AdnlPort = 19949;
@@ -32,8 +32,10 @@ public class LiteClientMethods
     public async Task Test_LookUpBlock()
     {
         await _client.Connect();
-        byte[] lookUpBlock = await _client.LookUpBlock(new BlockId(0, 8000000000000000, 40314741));
-        Assert.That(lookUpBlock.Length > 0, Is.EqualTo(true));
+        BlockHeader lookUpBlock = await _client.LookUpBlock(
+            -1, 8000000000000000, 
+            35248560);
+        Assert.That(lookUpBlock.HeaderProof.Length > 0, Is.EqualTo(true));
     }
     
     [Test]
@@ -56,4 +58,5 @@ public class LiteClientMethods
         byte[] transaction = await _client.GetTransactions(20, destination, 42365579000038, "1d128ba7348de8be8103c1cff2bfb14ea9a507f97df460de08fa9873bd572a9b");
         Assert.That(transaction.Length != 0, Is.EqualTo(true));
     }
+    
 }

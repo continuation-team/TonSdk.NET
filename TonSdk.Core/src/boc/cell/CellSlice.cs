@@ -20,7 +20,7 @@ namespace TonSdk.Core.Boc {
             _refs_en = cell.RefsCount;
         }
 
-        private CellSlice(Cell cell, int bits_st, int bits_en, int refs_st, int refs_en) : base(cell.Bits, bits_st,
+        public CellSlice(Cell cell, int bits_st, int bits_en, int refs_st, int refs_en) : base(cell.Bits, bits_st,
             bits_en) {
             _cell = cell;
             _refs_st = refs_st;

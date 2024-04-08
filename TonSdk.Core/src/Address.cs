@@ -367,7 +367,6 @@ namespace TonSdk.Core {
 
             BitsBuilder addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8)
                 .StoreBytes(_hash);
-            Console.WriteLine(_hash.Length);
 
             var checksum = Crypto.Utils.Crc16(addressBits.Data.ToBytes());
             addressBits.StoreUInt(checksum, 16);

@@ -158,7 +158,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetBlock(payload);
         }
 
-        public async Task<byte[]> GetBlockHeader(BlockIdExtended block)
+        public async Task<BlockHeader> GetBlockHeader(BlockIdExtended block)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
@@ -255,16 +255,17 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetShardInfo(payload);
         }
         
-        public async Task<byte[]> GetAllShardsInfo()
+        public async Task<byte[]> GetAllShardsInfo(BlockIdExtended blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            if(blockIdExtended == null)
+                blockIdExtended = (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeGetAllShardsInfo(blockId);
+            (id, data) = LiteClientEncoder.EncodeGetAllShardsInfo(blockIdExtended);
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
@@ -299,14 +300,14 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetTransactions(payload);
         }
         
-        public async Task<byte[]> LookUpBlock(BlockId blockId, long? lt = null, int? uTime = null)
+        public async Task<BlockHeader> LookUpBlock(int workchain, long shard, long? seqno = null, ulong? lt = null, ulong? uTime = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeLookUpBlock(blockId, lt, uTime);
+            (id, data) = LiteClientEncoder.EncodeLookUpBlock(workchain, shard, seqno, lt, uTime);
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
@@ -317,7 +318,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeBlockHeader(payload);
         }
 
-        public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
+        public async Task<ListBlockTransactionsResult> ListBlockTransactions(BlockIdExtended blockIdExtended, uint count, ITransactionId after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
@@ -336,7 +337,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeListBlockTransactions(payload);
         }
         
-        public async Task<ListBlockTransactionsExtendedResult> ListBlockTransactionsExtended(BlockIdExtended blockIdExtended, uint count, TransactionId3 after = null, bool? reverseOrder = null, bool? wantProof = null)
+        public async Task<ListBlockTransactionsExtendedResult> ListBlockTransactionsExtended(BlockIdExtended blockIdExtended, uint count, ITransactionId after = null, bool? reverseOrder = null, bool? wantProof = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
