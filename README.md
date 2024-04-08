@@ -48,8 +48,11 @@ Library to work with Ton ADNL
 ### Overview example
 
 ```csharp
-// Create a new instance of the TonClient using the specified endpoint and API key
-TonClient tonclient = new TonClient(new TonClientParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
+// Create a new instance of the TonClient using the specified endpoint and API key for Http based client
+TonClient client = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, new HttpParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
+
+// Create a new instance of the TonClient using the specified ip, port and key for LiteClient based client
+TonClient clientLite = new TonClient(TonClientType.LITECLIENT, , new LiteClientParameters(ip, port, key));
 
 // Generate a new mnemonic phrase
 Mnemonic mnemonic = new Mnemonic();
@@ -130,7 +133,7 @@ ExternalInMessage message = wallet.CreateTransferMessage(new[]
 EstimateFeeResult fees = await _client.EstimateFee(message);
 
 // Send the serialized message
-await tonclient.SendBoc(message.Cell!);
+await client.SendBoc(message.Cell!);
 ```
 
 ## Donation

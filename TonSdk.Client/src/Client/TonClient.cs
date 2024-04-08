@@ -281,14 +281,14 @@ namespace TonSdk.Client
         /// <summary>
         /// Estimates fee for the message
         /// </summary>
-        /// <param name="transfer">The message for which you need to calculate the fees</param>
+        /// <param name="message">The message for which you need to calculate the fees</param>
         /// <returns>The result of estimation fees.</returns>
         public async Task<EstimateFeeResult?> EstimateFee(MessageX message, bool ignoreChksig = true)
         {
             return _type switch
             {
                 TonClientType.HTTP_TONCENTERAPIV2 => await _httpApi.EstimateFee(message, ignoreChksig),
-                TonClientType.LITECLIENT => await _liteClientApi.EstimateFee(message, ignoreChksig),
+                TonClientType.LITECLIENT => throw new Exception("Method cannot be called with LiteClient. Use other client type instead."),
                 _ => null
             };
         }

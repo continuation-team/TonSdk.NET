@@ -8,7 +8,6 @@ using TonSdk.Core;
 
 namespace TonSdk.Client
 {
-
     public class Wallet
     {
         private readonly TonClient client;
