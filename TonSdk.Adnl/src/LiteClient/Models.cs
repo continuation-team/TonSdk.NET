@@ -20,6 +20,15 @@ namespace TonSdk.Adnl.LiteClient
             Shard = shard;
             Seqno = seqno;
         }
+
+        public BlockIdExtended(int workchain, long shard, int seqno)
+        {
+            Workchain = workchain;
+            Shard = shard;
+            Seqno = seqno;
+            RootHash = Array.Empty<byte>();
+            FileHash = Array.Empty<byte>();
+        }
     }
 
     public class MasterChainInfo
@@ -36,6 +45,12 @@ namespace TonSdk.Adnl.LiteClient
         }
     }
 
+    public class BlockHeader
+    {
+        public BlockIdExtended BlockId { get; set; }
+        public byte[] HeaderProof { get; set; }
+    }
+    
     public class ChainVersion
     {
         public int Version { get; set; }
@@ -98,17 +113,20 @@ namespace TonSdk.Adnl.LiteClient
             Result = result;
         }
     }
+    
+    public interface ITransactionId {}
 
-    public class TransactionId
+    public class TransactionId : ITransactionId
     {
-        public BigInteger Account { get; set; }
+        public byte[] Account { get; set; }
         public long Lt { get; set; }
         
-        public BigInteger Hash { get; set; }
+        public byte[] Hash { get; set; }
         
     }
     
-    public class TransactionId3
+    
+    public class TransactionId3 : ITransactionId
     {
         public Address Account { get; set; }
         public long Lt { get; set; }
@@ -199,9 +217,9 @@ namespace TonSdk.Adnl.LiteClient
     {
         public int Workchain { get; set; }
         public long Shard { get; set; }
-        public int Seqno { get; set; }
+        public long Seqno { get; set; }
 
-        public BlockId(int workchain, long shard, int seqno)
+        public BlockId(int workchain, long shard, long seqno)
         {
             Workchain = workchain;
             Shard = shard;

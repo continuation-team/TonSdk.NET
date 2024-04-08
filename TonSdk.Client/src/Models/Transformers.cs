@@ -4,6 +4,8 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using TonSdk.Adnl.LiteClient;
+using TonSdk.Client.Stack;
 using TonSdk.Core;
 using TonSdk.Core.Boc;
 using static TonSdk.Client.Transformers;
@@ -64,7 +66,7 @@ namespace TonSdk.Client
             public string file_hash { get; set; }
             public ulong? after_lt { get; set; }
             public string after_hash { get; set; }
-            public int? count { get; set; }
+            public uint? count { get; set; }
 
             internal InBlockTransactions(
                 int workchain,
@@ -74,7 +76,7 @@ namespace TonSdk.Client
                 string file_hash = null,
                 ulong? after_lt = null,
                 string after_hash = null,
-                int? count = null)
+                uint? count = null)
             {
                 this.workchain = workchain;
                 this.shard = shard;
@@ -84,6 +86,29 @@ namespace TonSdk.Client
                 this.after_lt = after_lt;
                 this.after_hash = after_hash;
                 this.count = count;
+            }
+        }
+        
+        internal struct InLookUpBlock : IRequestBody
+        {
+            public int workchain { get; set; }
+            public long shard { get; set; }
+            public long? seqno { get; set; }
+            public ulong? lt { get; set; }
+            public ulong? unixTime { get; set; }
+
+            public InLookUpBlock(
+                int workchain,
+                long shard,
+                long? seqno = null,
+                ulong? lt = null,
+                ulong? unixTime = null)
+            {
+                this.workchain = workchain;
+                this.shard = shard;
+                this.seqno = seqno;
+                this.lt = lt;
+                this.unixTime = unixTime;
             }
         }
 
@@ -121,7 +146,7 @@ namespace TonSdk.Client
         {
             public string address;
 
-            public int limit;
+            public uint limit;
 
             public ulong lt;
 
@@ -217,6 +242,14 @@ namespace TonSdk.Client
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
+        
+        internal struct RootLookUpBlock
+        {
+            [JsonProperty("ok")] public bool Ok { get; set; }
+            [JsonProperty("result")] public BlockIdExtended Result { get; set; }
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+        }
 
         internal struct RootTransactions
         {
@@ -275,7 +308,7 @@ namespace TonSdk.Client
             [JsonProperty("code")] public string Code;
             [JsonProperty("data")] public string Data;
             [JsonProperty("last_transaction_id")] public TransactionId LastTransactionId;
-            [JsonProperty("block_id")] public BlockIdExternal BlockId;
+            [JsonProperty("block_id")] public BlockIdExtended BlockId;
             [JsonProperty("frozen_hash")] public string FrozenHash;
             [JsonProperty("sync_utime")] public long SyncUtime;
         }
@@ -293,19 +326,19 @@ namespace TonSdk.Client
 
         internal struct OutMasterchanInformationResult
         {
-            [JsonProperty("last")] public BlockIdExternal LastBlock;
-            [JsonProperty("init")] public BlockIdExternal InitBlock;
+            [JsonProperty("last")] public BlockIdExtended LastBlock;
+            [JsonProperty("init")] public BlockIdExtended InitBlock;
             [JsonProperty("state_root_hash")] public string StateRootHash;
         }
 
         internal struct OutShardsInformationResult
         {
-            [JsonProperty("shards")] public BlockIdExternal[] Shards;
+            [JsonProperty("shards")] public BlockIdExtended[] Shards;
         }
 
         internal struct OutBlockTransactionsResult
         {
-            [JsonProperty("id")] public BlockIdExternal Id;
+            [JsonProperty("id")] public BlockIdExtended Id;
             [JsonProperty("req_count")] public int ReqCount;
             [JsonProperty("incomplete")] public bool Incomplete;
             [JsonProperty("transactions")] public ShortTransactionsResult[] Transactions;
@@ -313,9 +346,9 @@ namespace TonSdk.Client
         
         internal struct OutBlockHeaderResult
         {
-            [JsonProperty("id")] public BlockIdExternal Id;
+            [JsonProperty("id")] public BlockIdExtended Id;
             [JsonProperty("global_id")] public long GlobalId;
-            [JsonProperty("version")] public int Version;
+            [JsonProperty("version")] public uint Version;
             [JsonProperty("flags")] public int Flags;
             [JsonProperty("after_merge")] public bool AfterMerge;
             [JsonProperty("after_split")] public bool AfterSplit;
@@ -330,7 +363,7 @@ namespace TonSdk.Client
             [JsonProperty("start_lt")] public ulong StartLt;
             [JsonProperty("end_lt")] public ulong EndLt;
             [JsonProperty("gen_utime")] public long RgenUtime;
-            [JsonProperty("prev_blocks")] public BlockIdExternal[] PrevBlocks;
+            [JsonProperty("prev_blocks")] public BlockIdExtended[] PrevBlocks;
         }
         
         internal struct OutTransactionsResult
@@ -372,7 +405,7 @@ namespace TonSdk.Client
         [JsonProperty("hash")] public string Hash;
     }
 
-    public struct BlockIdExternal
+    public class BlockIdExtended
     {
         [JsonProperty("workchain")] public int Workchain;
         [JsonProperty("shard")] public long Shard;
@@ -380,6 +413,20 @@ namespace TonSdk.Client
         [JsonProperty("hash")] public string Hash;
         [JsonProperty("root_hash")] public string RootHash;
         [JsonProperty("file_hash")] public string FileHash;
+
+        public BlockIdExtended()
+        {
+            
+        }
+        
+        public BlockIdExtended(TonSdk.Adnl.LiteClient.BlockIdExtended blockIdExtended)
+        {
+            FileHash = Convert.ToBase64String(blockIdExtended.FileHash);
+            RootHash = Convert.ToBase64String(blockIdExtended.RootHash);
+            Seqno = blockIdExtended.Seqno;
+            Shard = blockIdExtended.Shard;
+            Workchain = blockIdExtended.Workchain;
+        }
     }
 
     public struct ShortTransactionsResult
@@ -390,11 +437,11 @@ namespace TonSdk.Client
         [JsonProperty("hash")] public string Hash;
     }
     
-    public struct BlockHeaderResult
+    public struct BlockDataResult
     {
-        public BlockIdExternal Id;
+        public BlockIdExtended BlockIdExtended;
         public long GlobalId;
-        public int Version;
+        public uint Version;
         public int Flags;
         public bool AfterMerge;
         public bool AfterSplit;
@@ -409,11 +456,11 @@ namespace TonSdk.Client
         public ulong StartLt;
         public ulong EndLt;
         public long RgenUtime;
-        public BlockIdExternal[] PrevBlocks;
+        public BlockIdExtended[] PrevBlocks;
         
-        internal BlockHeaderResult(OutBlockHeaderResult outBlockHeaderResult)
+        internal BlockDataResult(OutBlockHeaderResult outBlockHeaderResult)
         {
-            Id = outBlockHeaderResult.Id;
+            BlockIdExtended = outBlockHeaderResult.Id;
             GlobalId = outBlockHeaderResult.GlobalId;
             Version = outBlockHeaderResult.Version;
             Flags = outBlockHeaderResult.Flags;
@@ -441,9 +488,7 @@ namespace TonSdk.Client
         public Cell Code;
         public Cell Data;
         public TransactionId LastTransactionId;
-        public BlockIdExternal BlockId;
         public string FrozenHash;
-        public long SyncUtime;
 
         internal AddressInformationResult(OutAddressInformationResult outAddressInformationResult)
         {
@@ -475,16 +520,16 @@ namespace TonSdk.Client
             Code = outAddressInformationResult.Code == "" ? null : Cell.From(outAddressInformationResult.Code);
             Data = outAddressInformationResult.Data == "" ? null : Cell.From(outAddressInformationResult.Data);
             LastTransactionId = outAddressInformationResult.LastTransactionId;
-            BlockId = outAddressInformationResult.BlockId;
+            // BlockId = outAddressInformationResult.BlockId;
             FrozenHash = outAddressInformationResult.FrozenHash;
-            SyncUtime = outAddressInformationResult.SyncUtime;
+            // SyncUtime = outAddressInformationResult.SyncUtime;
         }
     }
 
     public struct MasterchainInformationResult
     {
-        public BlockIdExternal LastBlock;
-        public BlockIdExternal InitBlock;
+        public BlockIdExtended LastBlock;
+        public BlockIdExtended InitBlock;
         public string StateRootHash;
 
         internal MasterchainInformationResult(OutMasterchanInformationResult outAddressInformationResult)
@@ -493,11 +538,18 @@ namespace TonSdk.Client
             InitBlock = outAddressInformationResult.InitBlock;
             StateRootHash = outAddressInformationResult.StateRootHash;
         }
+        
+        internal MasterchainInformationResult(MasterChainInfo masterChainInfo)
+        {
+            LastBlock = new BlockIdExtended(masterChainInfo.LastBlockId);
+            InitBlock = new BlockIdExtended(masterChainInfo.InitBlockId);
+            StateRootHash = Convert.ToBase64String(masterChainInfo.StateRootHash.ToByteArray());
+        }
     }
 
     public struct ShardsInformationResult
     {
-        public BlockIdExternal[] Shards;
+        public BlockIdExtended[] Shards;
 
         internal ShardsInformationResult(OutShardsInformationResult outShardsInformationResult)
         {
@@ -507,7 +559,7 @@ namespace TonSdk.Client
 
     public struct BlockTransactionsResult
     {
-        public BlockIdExternal Id;
+        public BlockIdExtended Id;
         public int ReqCount;
         public bool Incomplete;
         public ShortTransactionsResult[] Transactions;
@@ -614,6 +666,7 @@ namespace TonSdk.Client
         public int GasUsed;
         public object[] Stack;
         public int ExitCode;
+        public IStackItem[] StackItems;
 
         internal RunGetMethodResult(OutRunGetMethod outRunGetMethod)
         {
@@ -624,6 +677,8 @@ namespace TonSdk.Client
             {
                 Stack[i] = ParseStackItem(outRunGetMethod.Stack[i]);
             }
+
+            StackItems = new IStackItem[] { };
         }
 
         internal static object ParseObject(JObject x)
@@ -671,7 +726,8 @@ namespace TonSdk.Client
 
                         bool isNegative = valueStr[0] == '-';
                         string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
-                        BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
+                        BitsSlice bitsSlice = new Bits(slice).Parse();
+                        BigInteger x = bitsSlice.LoadUInt(bitsSlice.RemainderBits);
 
                         return isNegative ? 0 - x : x;
                     }

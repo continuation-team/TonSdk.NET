@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
         <ImplicitUsings>disable</ImplicitUsings>
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Client</RootNamespace>
@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="TonSdk.Core" Version="0.2.0" />
+        <PackageReference Include="TonSdk.Core" Version="0.2.7" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
@@ -26,6 +26,11 @@
     <ItemGroup>
         <None Include="../../README.md" Pack="true" PackagePath="" />
         <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\TonSdk.Adnl\src\TonSdk.Adnl.csproj" />
+      <ProjectReference Include="..\..\TonSdk.Core\src\TonSdk.Core.csproj" />
     </ItemGroup>
 
 </Project>

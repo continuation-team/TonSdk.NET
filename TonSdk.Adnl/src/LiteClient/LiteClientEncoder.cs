@@ -218,31 +218,31 @@ namespace TonSdk.Adnl.LiteClient
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeLookUpBlock(BlockId block, long? lt, int? uTime)
+        internal static (byte[], byte[]) EncodeLookUpBlock(int workchain, long shard, long? seqno, ulong? lt, ulong? uTime)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
                 Encoding.UTF8.GetBytes("liteServer.lookupBlock mode:# id:tonNode.blockId lt:mode.1?long utime:mode.2?int = liteServer.BlockHeader")),0));
             
             uint mode = 0;
-            if (lt != null) mode |= 1u << 1;
-            if (uTime != null) mode |= 1u << 2;
-
-            if (mode == 0) mode = 1;
+            if(seqno != null) mode |= 1;
+            if (lt != null) mode |= 2;
+            if (uTime != null) mode |= 4;
             
             writer.WriteUInt32(mode);
             
-            writer.WriteInt32(block.Workchain); 
-            writer.WriteInt64(block.Shard);
-            writer.WriteInt32(block.Seqno);
+            writer.WriteInt32(workchain); 
+            writer.WriteInt64(shard);
             
-            if ((mode & (1 << 1)) != 0) writer.WriteInt64(lt!.Value);
-            if ((mode & (1 << 2)) != 0) writer.WriteInt32(uTime!.Value);
+            if (seqno != null) writer.WriteUInt32((uint)seqno);
+            else writer.WriteUInt32(0);
+            if (lt != null) writer.WriteInt64((long)lt!.Value);
+            if (uTime != null) writer.WriteInt32((int)uTime!.Value);
             
             return EncodeBase(writer);
         }
 
-        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExtended block, uint count, TransactionId3 after, bool? reverseOrder, bool? wantProof, string query)
+        internal static (byte[], byte[]) EncodeListBlockTransactions(BlockIdExtended block, uint count, ITransactionId? after, bool? reverseOrder, bool? wantProof, string query)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
             writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
@@ -254,9 +254,27 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteBytes(block.RootHash, 32);
             writer.WriteBytes(block.FileHash, 32);
             
-            writer.WriteUInt32(7);
-            writer.WriteUInt32(count);
-
+            if(after == null)
+            {
+                writer.WriteUInt32(7);
+                writer.WriteUInt32(count);
+            }
+            else
+            {
+                writer.WriteUInt32(7 + 128);
+                writer.WriteUInt32(count);
+                switch (after)
+                {
+                    case TransactionId id:
+                        writer.WriteBytes(id.Hash, 32);
+                        writer.WriteInt64(id.Lt);
+                        break;
+                    case TransactionId3 id3:
+                        writer.WriteBytes(id3.Account.GetHash(), 32);
+                        writer.WriteInt64(id3.Lt);
+                        break;
+                }
+            }
             return EncodeBase(writer);
         }
         
@@ -304,9 +322,7 @@ namespace TonSdk.Adnl.LiteClient
         internal static (byte[], byte[]) EncodeGetConfigParams(BlockIdExtended block, int[] ids)
         {
             TLWriteBuffer writer = new TLWriteBuffer();
-            writer.WriteUInt32(BitConverter.ToUInt32(Crc32.ComputeChecksum(
-                Encoding.UTF8.GetBytes("liteServer.getConfigParams mode:# id:tonNode.blockIdExt param_list:(vector int) = liteServer.ConfigInfo")),0));
-            
+            writer.WriteUInt32(705764377);
             writer.WriteUInt32(1);
             
             writer.WriteInt32(block.Workchain); 
@@ -315,10 +331,10 @@ namespace TonSdk.Adnl.LiteClient
             writer.WriteBytes(block.RootHash, 32);
             writer.WriteBytes(block.FileHash, 32);
             
-            writer.WriteUInt32((uint)ids.Length);
-            for (int i = 0; i < ids.Length; i++)
+            writer.WriteInt32(ids.Length);
+            foreach (var item in ids)
             {
-                writer.WriteInt32(ids[i]);
+                writer.WriteInt32(item);
             }
 
             return EncodeBase(writer);

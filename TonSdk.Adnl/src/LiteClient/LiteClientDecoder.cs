@@ -102,20 +102,25 @@ namespace TonSdk.Adnl.LiteClient
             return data;
         }
 
-        internal static byte[] DecodeBlockHeader(TLReadBuffer buffer)
+        internal static BlockHeader DecodeBlockHeader(TLReadBuffer buffer)
         {
-            // id:tonNode.blockIdExt
-            buffer.ReadInt32();
-            buffer.ReadInt64();
-            buffer.ReadInt32();
-            buffer.ReadInt256();
-            buffer.ReadInt256();
+            int workchain = buffer.ReadInt32();
+            long shard = buffer.ReadInt64();
+            int seqno = buffer.ReadInt32();
+            byte[]  rootHash = buffer.ReadBytes(32);
+            byte[]  fileHash = buffer.ReadBytes(32);
+            
+            BlockIdExtended blockIdExtended = new BlockIdExtended(workchain, rootHash, fileHash, shard, seqno);
             // mode:#
             buffer.ReadUInt32();
             
             // header_proof:bytes
             byte[] headerProof = buffer.ReadBuffer();
-            return headerProof;
+            return new BlockHeader()
+            {
+                BlockId = blockIdExtended,
+                HeaderProof = headerProof
+            };
         }
 
         internal static int DecodeSendMessage(TLReadBuffer buffer) =>  buffer.ReadInt32();
@@ -140,7 +145,7 @@ namespace TonSdk.Adnl.LiteClient
             buffer.ReadBuffer();
             // proof:bytes
             buffer.ReadBuffer();
-
+            
             return buffer.ReadBuffer();
         }
 
@@ -262,9 +267,9 @@ namespace TonSdk.Adnl.LiteClient
             {
                 TransactionId id = new TransactionId();
                 buffer.ReadUInt32();
-                id.Account = new BigInteger(buffer.ReadInt256());
+                id.Account = buffer.ReadInt256();
                 id.Lt = buffer.ReadInt64();
-                id.Hash = new BigInteger(buffer.ReadInt256());
+                id.Hash = buffer.ReadInt256();
                 ids.Add(id);
             }
 
