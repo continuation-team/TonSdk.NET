@@ -726,7 +726,8 @@ namespace TonSdk.Client
 
                         bool isNegative = valueStr[0] == '-';
                         string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
-                        BigInteger x = BigInteger.Parse(slice, NumberStyles.HexNumber);
+                        BitsSlice bitsSlice = new Bits(slice).Parse();
+                        BigInteger x = bitsSlice.LoadUInt(bitsSlice.RemainderBits);
 
                         return isNegative ? 0 - x : x;
                     }
