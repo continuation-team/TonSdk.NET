@@ -19,7 +19,6 @@ Bits bits = new Bits(/* byte array */);
 </strong>Cell cell = new Cell(bitsArray);
 // or
 <strong>Cell cell = new Cell(bits, refs);
-</strong><strong>
 </strong></code></pre>
 
 also you can use static method `Cell.From` to get `Cell` instance:
