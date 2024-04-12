@@ -41,7 +41,11 @@ For now, TonSdk.Net supports arithmetical operations through coins methods, for 
 <pre class="language-csharp"><code class="lang-csharp">Coins addCoins = new Coins("10").Add(new Coins(10)); // 20
 Coins subCoins = new Coins("10").Sub(new Coins(10)); // 0
 <strong>Coins divCoins = new Coins("10").Div(2.5); // 4
-</strong>Coins mulCoins = new Coins("10").Div(2); // 20
+</strong>Coins mulCoins = new Coins("10").Mul(2); // 20
+
+// also you can use mutation variant, like
+Coins firstCoins = new Coins(10);
+firstCoins.Add(new Coins(10); // 20
 </code></pre>
 
 {% hint style="danger" %}
