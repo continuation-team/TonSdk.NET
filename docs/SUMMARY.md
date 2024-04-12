@@ -7,6 +7,7 @@
 * [Getting Started](user-manual/getting-started.md)
 * [Core Basics](user-manual/core-basics/README.md)
   * [Address](user-manual/core-basics/address.md)
+  * [Cell](user-manual/core-basics/cell.md)
   * [Coins](user-manual/core-basics/coins.md)
   * [Crypto](user-manual/core-basics/crypto/README.md)
     * [Mnemonic](user-manual/core-basics/crypto/mnemonic.md)
