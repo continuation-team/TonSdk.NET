@@ -15,3 +15,6 @@
   * [Crypto](user-manual/core/crypto/README.md)
     * [Mnemonic](user-manual/core/crypto/mnemonic.md)
     * [KeyPair](user-manual/core/crypto/keypair.md)
+* [Contracts](user-manual/contracts/README.md)
+  * [Wallet](user-manual/contracts/wallet/README.md)
+    * [Wallet V3](user-manual/contracts/wallet/wallet-v3.md)
