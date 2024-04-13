@@ -41,7 +41,7 @@ Cell cell = new CellBuilder()
 ```
 
 {% hint style="info" %}
-In docs we will use larger code for education proposes, but its prefer to use shorten version of code, implemented in previous code block.&#x20;
+In docs we will use larger code for education purposes, but its prefer to use shorten version of code, implemented in previous code block.&#x20;
 {% endhint %}
 
 
