@@ -11,8 +11,8 @@ description: TonSdk.Core.Boc
 To serialize bag of cells, you can use `BagOfCell.SerializeBoc` method:
 
 ```csharp
-Cell boc = /* your boc cell */
-byte[] serializedData = BagOfCells.SerializeBoc(boc).ToBytes();
+Cell[] cells = /* your cells */
+byte[] data = BagOfCells.SerializeBoc(cells).ToBytes();
 string base64 = Convert.ToBase64String(serializedData);
 ```
 
