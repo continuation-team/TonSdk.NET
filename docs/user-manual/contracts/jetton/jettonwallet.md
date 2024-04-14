@@ -6,7 +6,7 @@ description: TonSdk.Contracts.Jetton
 
 `JettonWallet` is a class that contains methods to work with transferring and burning Jettons.
 
-It will build a `Cell` in output and this cell can be setted like message body in `Wallet.CreateTransferMessage` .
+Methods return `Cell` in output and this cell can be setted like message body in `Wallet.CreateTransferMessage` .
 
 {% hint style="info" %}
 You can find tutorials of message sending in one of the [wallet topics](../wallet/).
@@ -77,7 +77,7 @@ JettonBurnOptions options = new JettonBurnOptions()
     Amount = new Coins(1000), // jetton amount to burn, for ex 1000 jettons
 };
 
-// create a message body for the jetton transfer
+// create a message body for the jetton burn
 Cell jettonBurn = JettonWallet.CreateBurnRequest(options);
 
 // create a transfer message for the wallet
