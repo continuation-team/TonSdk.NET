@@ -106,5 +106,5 @@ Cell cell = message.Cell;
 ```
 
 {% hint style="info" %}
-You can find more info about `JettonTransferOptions` and `JettonBurnOptions` [here](https://github.com/continuation-team/TonSdk.NET/blob/main/TonSdk.Contracts/src/jetton/JettonWallet.cs#L14C5-L29C6).
+You can find more`JettonTransferOptions` and `JettonBurnOptions` [here](https://github.com/continuation-team/TonSdk.NET/blob/main/TonSdk.Contracts/src/jetton/JettonWallet.cs#L14C5-L29C6).
 {% endhint %}

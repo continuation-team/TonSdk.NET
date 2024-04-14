@@ -59,5 +59,5 @@ Cell cell = message.Cell;
 ```
 
 {% hint style="info" %}
-You can find more info about `NftTransferOptions` [here](https://github.com/continuation-team/TonSdk.NET/blob/main/TonSdk.Contracts/src/nft/NftItem.cs#L9C5-L16C6).
+You can find more `NftTransferOptions` [here](https://github.com/continuation-team/TonSdk.NET/blob/main/TonSdk.Contracts/src/nft/NftItem.cs#L9C5-L16C6).
 {% endhint %}
