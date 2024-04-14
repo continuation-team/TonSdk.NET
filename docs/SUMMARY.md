@@ -18,3 +18,4 @@
 * [Contracts](user-manual/contracts/README.md)
   * [Wallet](user-manual/contracts/wallet/README.md)
     * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
+    * [Preprocessed V2](user-manual/contracts/wallet/preprocessed-v2.md)

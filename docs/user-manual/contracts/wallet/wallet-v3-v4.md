@@ -65,7 +65,7 @@ Cell body = new CellBuilder().StoreUInt(0, 32).StoreString(comment).Build();
 uint? seqno = await tonClient.Wallet.GetSeqno(walletV4.Address);
 
 // create transfer message
-ExternalInMessage message = wallet.CreateTransferMessage(new[]
+ExternalInMessage message = walletV4.CreateTransferMessage(new[]
 {
     new WalletTransfer
     {
