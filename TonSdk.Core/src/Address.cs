@@ -342,31 +342,14 @@ namespace TonSdk.Core {
                 throw new Exception("Address: workchain must be int8.");
             }
 
-            // if (bounceable.GetType() != typeof(bool))
-            // {
-            //     throw new Exception("Address: bounceable flag must be a boolean.");
-            // }
-            //
-            // if (testOnly.GetType() != typeof(bool))
-            // {
-            //     throw new Exception("Address: testOnly flag must be a boolean.");
-            // }
-            //
-            // if (urlSafe.GetType() != typeof(bool))
-            // {
-            //     throw new Exception("Address: urlSafe flag must be a boolean.");
-            // }
-
             if (type == AddressType.Raw) {
                 return $"{workchain}:{Utils.BytesToHex(_hash).ToLower()}";
             }
 
             byte tag = EncodeTag(new AddressTag() { Bounceable = bounceable, TestOnly = testOnly });
-
-
-            BitsBuilder addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8)
+            
+            var addressBits = new BitsBuilder(8 + 8 + 256 + 16).StoreUInt(tag, 8).StoreInt(workchain, 8)
                 .StoreBytes(_hash);
-            Console.WriteLine(_hash.Length);
 
             var checksum = Crypto.Utils.Crc16(addressBits.Data.ToBytes());
             addressBits.StoreUInt(checksum, 16);
