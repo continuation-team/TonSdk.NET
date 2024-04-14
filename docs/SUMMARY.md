@@ -17,4 +17,4 @@
     * [KeyPair](user-manual/core/crypto/keypair.md)
 * [Contracts](user-manual/contracts/README.md)
   * [Wallet](user-manual/contracts/wallet/README.md)
-    * [Wallet V3](user-manual/contracts/wallet/wallet-v3.md)
+    * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
