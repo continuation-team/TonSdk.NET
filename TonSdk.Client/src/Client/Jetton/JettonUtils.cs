@@ -135,6 +135,16 @@ namespace TonSdk.Client
         private static async Task<JettonContent> ParseOffChain(CellSlice content)
         {
             string jsonUrl = content.LoadString();
+            if (string.IsNullOrEmpty(jsonUrl))
+            {
+                while (content.Refs.Length != 0)
+                {
+                    var nextRef = content.LoadRef();
+                    content = nextRef.Parse();
+                    jsonUrl = content.LoadString();
+                }
+            }
+            
             if (jsonUrl.StartsWith("ipfs://")) 
                 jsonUrl = "https://ipfs.io/ipfs/" + jsonUrl.Substring(7);
             HttpClient httpClient = new HttpClient();
