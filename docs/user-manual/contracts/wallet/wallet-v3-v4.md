@@ -14,18 +14,25 @@ To create `WalletV3` or `WalletV4` instance you can use class constructor:
 // create new mnemonic or use existing
 Mnemonic mnemonic = new Mnemonic();
 
-// create wallet options
-WalletV3Options options = new WalletV3Options()
+// create wallet v3 options
+WalletV3Options optionsV3 = new WalletV3Options()
 {
     PublicKey = mnemonic.Keys.PublicKey,
     // Workchain = 0,
     // SubwalletId = 0,
 };
 
-WalletV3 walletV3R1 = new WalletV3(options, 1);
-WalletV3 walletV3R2 = new WalletV3(options, 2); 
-WalletV4 walletV4R1 = new WalletV4(options, 1); 
-WalletV4 walletV4R2 = new WalletV4(options, 2); 
+WalletV3 walletV3R1 = new WalletV3(optionsV3, 1);
+WalletV3 walletV3R2 = new WalletV3(optionsV3, 2); 
+
+// create wallet v4 options
+WalletV4Options optionsV4 = new WalletV4Options()
+{
+    PublicKey = mnemonic.Keys.PublicKey
+};
+
+WalletV4 walletV4R1 = new WalletV4(optionsV4, 1); 
+WalletV4 walletV4R2 = new WalletV4(optionsV4, 2); 
 ```
 
 
