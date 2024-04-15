@@ -117,7 +117,7 @@ namespace TonSdk.Connect
     {
         public string? Type { get; set; }
         public SessionInfo? Session { get; set; }
-        public int? LastWalletEventId { get; set; }
+        public long? LastWalletEventId { get; set; }
         public int? NextRpcRequestId { get; set; }
         public JObject ConnectEvent { get; set; }
         public string JsBridgeKey { get; set; }

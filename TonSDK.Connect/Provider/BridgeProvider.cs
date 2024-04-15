@@ -180,7 +180,7 @@ namespace TonSdk.Connect
             ConnectionInfo connection = new ConnectionInfo();
             connection.Type = "http";
             connection.Session = _session.GetSessionInfo();
-            connection.LastWalletEventId = (int?)walletMessage["id"] ?? null;
+            connection.LastWalletEventId = (long?)walletMessage["id"] ?? null;
             connection.ConnectEvent = walletMessage;
             connection.NextRpcRequestId = 0;
 
@@ -217,11 +217,11 @@ namespace TonSdk.Connect
 
             if (data["id"] != null)
             {
-                int id = (int)data["id"];
+                long id = (long)data["id"];
                 ConnectionInfo connection = JsonConvert.DeserializeObject<ConnectionInfo>(_storage != null 
                     ? _storage.GetItem(RemoteStorage.KEY_CONNECTION, "{}") 
                     : await DefaultStorage.GetItem(DefaultStorage.KEY_CONNECTION, "{}").ConfigureAwait(false));
-                int? lastId = connection.LastWalletEventId;
+                long? lastId = connection.LastWalletEventId;
 
                 if (lastId != null && id <= lastId)
                 {

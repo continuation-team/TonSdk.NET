@@ -23,3 +23,11 @@
   * [Wallet](user-manual/contracts/wallet/README.md)
     * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
     * [Preprocessed V2](user-manual/contracts/wallet/preprocessed-v2.md)
+* [Use cases](user-manual/use-cases/README.md)
+  * [Sending TONs](user-manual/use-cases/sending-tons.md)
+  * [Sending Jettons](user-manual/use-cases/sending-jettons.md)
+
+## Other
+
+* [Links](other/links.md)
+* [Donation](other/donation.md)
