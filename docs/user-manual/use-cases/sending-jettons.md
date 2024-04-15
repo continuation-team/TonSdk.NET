@@ -1,6 +1,6 @@
 # Sending Jettons
 
-Its possible to send Jettons to any account using wallet contracts presented in `TonSdk.Contracts.Wallet` and `JettonWallet` abstractions presented in `TonSdk.Contracts.Jetton`
+Its possible to send Jettons to any account using wallet contracts presented in `TonSdk.Contracts.Wallet` and `JettonWallet` abstractions presented in `TonSdk.Contracts.Jetton`.
 
 {% hint style="info" %}
 For example, we will use `WalletV4`. You can find more examples for different contracts [here](../contracts/wallet/).
