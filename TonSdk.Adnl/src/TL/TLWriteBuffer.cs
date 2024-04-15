@@ -73,26 +73,39 @@ namespace TonSdk.Adnl.TL
             EnsureSize(size);
             _writer.Write(data);
         }
-
+        
         public void WriteBuffer(byte[] buf)
         {
             EnsureSize(buf.Length + 4);
+            int len = 0;
             if (buf.Length <= 253)
             {
                 WriteUInt8((byte)buf.Length);
+                len += 1;
             }
             else
             {
                 WriteUInt8(254);
-                EnsureSize(3);
-                _writer.Write((uint)buf.Length);
+                EnsureSize(3 + buf.Length);
+                byte[] lengthBytes = BitConverter.GetBytes(buf.Length);
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(lengthBytes);
+                }
+                _writer.Write(lengthBytes, 0, 3);
+                len += 4;
             }
 
-            _writer.Write(buf);
+            foreach (var byteVal in buf)
+            {
+                WriteUInt8(byteVal);
+                len += 1;
+            }
 
-            while ((_stream.Position % 4) != 0)
+            while (len % 4 != 0)
             {
                 WriteUInt8(0);
+                len += 1;
             }
         }
 
