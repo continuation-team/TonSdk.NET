@@ -137,7 +137,7 @@ namespace TonSdk.Client
         internal async Task<SendBocResult> SendBoc(Cell boc)
         {
             await Init();
-            var data = await _liteClient.SendMessage(boc.Bits.ToBytes());
+            var data = await _liteClient.SendMessage(BagOfCells.SerializeBoc(boc).ToBytes());
             return new SendBocResult() { Type = data.ToString() };
         }
 
