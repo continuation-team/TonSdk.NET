@@ -1,6 +1,4 @@
-## TonSdk.NET
-
-You can ask questions that may arise during the use of the SDK in our [Telegram group](https://t.me/cont_team/104).
+# TonSdk.NET
 
 ## Packages
 
@@ -39,102 +37,19 @@ Library to work with Ton ADNL
 - [x] Coins (class for TON, JETTON, e.t.c.)
 - [x] Address (class for TON address)
 - [x] Message layouts (such as MessageX e.t.c.)
-- [x] RPC client
 - [x] Popular structures from block.tlb
 - [x] Contracts (abstract TON contract class)
 - [x] Ed25519 signing of transactions
+- [x] ADNL client
+- [x] Lite client over ADNL client
+- [x] Ton Client with HTTP API and Lite client
 - [ ] ~100% tests coverage
 
-### Overview example
+## Documentation
+[TonSDK.NET Docs](https://docs.tonsdk.net/user-manual/getting-started)
 
-```csharp
-// Create a new instance of the TonClient using the specified endpoint and API key for Http based client
-TonClient client = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, new HttpParameters { Endpoint = "https://toncenter.com/api/v2/jsonRPC", ApiKey = "xxx" });
-
-// Create a new instance of the TonClient using the specified ip, port and key for LiteClient based client
-TonClient clientLite = new TonClient(TonClientType.LITECLIENT, , new LiteClientParameters(ip, port, key));
-
-// Generate a new mnemonic phrase
-Mnemonic mnemonic = new Mnemonic();
-
-// Create a new preprocessed wallet using the public key from the generated mnemonic
-PreprocessedV2 wallet = new PreprocessedV2(new PreprocessedV2Options { PublicKey = mnemonic.Keys.PublicKey! });
-
-// Get the address associated with the wallet
-Address address = wallet.Address;
-
-// Convert the address to a non-bounceable format
-string nonBounceableAddress = address.ToString(AddressType.Base64, new AddressStringifyOptions(false, false, true));
-
-// Retrieve the wallet data
-Cell? walletData = (await tonclient.GetAddressInformation(address)).Data;
-
-// Extract the sequence number from the wallet data, or set it to 0 if the data is null
-uint seqno = walletData == null ? 0 : wallet.ParseStorage(walletData.Parse()).Seqno;
-
-// Get the balance of the wallet
-Coins walletBalance = await tonclient.GetBalance(address);
-
-// Get the destination address for the transfer from the Ton DNS
-Address destination = await tonclient.Dns.GetWalletAddress("foundation.ton");
-
-// Create a transfer message for the wallet
-ExternalInMessage message = wallet.CreateTransferMessage(new[]
-{
-    new WalletTransfer
-    {
-        Message = new InternalMessage(new()
-        {
-            Info = new IntMsgInfo(new()
-            {
-                Dest = destination,
-                Value = new Coins("0.2")
-            }),
-            Body = new CellBuilder().StoreUInt(0, 32).StoreString("test").Build()
-        }),
-        Mode = 1
-    }
-}, seqno).Sign(mnemonic.Keys.PrivateKey, true);
-
-// Send the serialized message
-await tonclient.SendBoc(message.Cell!);
-```
-
-### Overview example (Jetton Transfer)
-```csharp
-// Define the address of the jetton master contract
-Address jettonMasterContract = new Address("EQBlHnYC0Uk13_WBK4PN-qjB2TiiXixYDTe7EjX17-IV-0eF");
-
-// Get the jetton wallet address
-Address jettonWallet = await tonclient.Jetton.GetWalletAddress(jettonMasterContract, address);
-
-// Create a message body for the jetton transfer
-Cell jettonTransfer = JettonWallet.CreateTransferRequest(new() { Amount = new Coins(100), Destination = destination });
-
-// Create a transfer message for the wallet
-ExternalInMessage message = wallet.CreateTransferMessage(new[]
-{
-    new WalletTransfer
-    {
-        Message = new InternalMessage(new()
-        {
-            Info = new IntMsgInfo(new()
-            {
-                Dest = jettonWallet,
-                Value = new Coins("0.1")
-            }),
-            Body = jettonTransfer
-        }),
-        Mode = 1
-    }
-}, seqno).Sign(mnemonic.Keys.PrivateKey, true);
-
-// Pre-calculate fee before sending message
-EstimateFeeResult fees = await _client.EstimateFee(message);
-
-// Send the serialized message
-await client.SendBoc(message.Cell!);
-```
+## Support
+You can ask questions that may arise during the use of the SDK in our [Telegram group](https://t.me/cont_team/104).
 
 ## Donation
 
