@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Newtonsoft.Json;
+using TonSdk.Core;
 using TonSdk.Core.Boc;
 
 namespace TonSdk.Client.Stack
@@ -33,6 +34,13 @@ namespace TonSdk.Client.Stack
     {
         [JsonProperty("key")] public const string Key = "VmStackTinyInt";
         [JsonProperty("value")] public long Value { get; set; }
+
+        public VmStackTinyInt(object value)
+        {
+            if (long.TryParse(value.ToString(), out long result))
+                Value = result;
+            else throw new ArgumentException("Wrong argument type.");
+        }
     }
 
     [Serializable]
@@ -40,6 +48,18 @@ namespace TonSdk.Client.Stack
     {
         [JsonProperty("key")] public const string Key = "VmStackInt";
         [JsonProperty("value")] public BigInteger Value { get; set; }
+        public VmStackInt(object value)
+        {
+            if (value is Coins coins)
+            {
+                Value = coins.ToBigInt();
+                return;
+            }
+            
+            if (BigInteger.TryParse(value.ToString(), out var result))
+                Value = result;
+            else throw new ArgumentException("Wrong argument type.");
+        }
     }
 
     [Serializable]
@@ -47,6 +67,11 @@ namespace TonSdk.Client.Stack
     {
         [JsonProperty("key")] public const string Key = "VmStackCell";
         [JsonProperty("cell")] public Cell Value { get; set; }
+        
+        public VmStackCell(Cell value)
+        {
+            Value = value;
+        }
     }
 
     [Serializable]
@@ -54,6 +79,16 @@ namespace TonSdk.Client.Stack
     {
         [JsonProperty("key")] public const string Key = "VmStackSlice";
         [JsonProperty("slice")] public CellSlice Value { get; set; }
+        
+        public VmStackSlice(Address value)
+        {
+            Value = new CellBuilder().StoreAddress(value).Build().Parse();
+        }
+        
+        public VmStackSlice(CellSlice value)
+        {
+            Value = value;
+        }
     }
 
     [Serializable]
@@ -61,6 +96,11 @@ namespace TonSdk.Client.Stack
     {
         [JsonProperty("key")] public const string Key = "VmStackBuilder";
         [JsonProperty("builder")] public CellBuilder Value { get; set; }
+        
+        public VmStackBuilder(CellBuilder value)
+        {
+            Value = value;
+        }
     }
 
     [Serializable]

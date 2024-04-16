@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TonSdk.Core.Boc;
 
@@ -6,6 +7,33 @@ namespace TonSdk.Client.Stack
 {
     public class StackUtils
     {
+        internal static string[][] PackInString(IStackItem[] stackItems)
+        {
+            var items = new List<string[]>();
+            foreach (var stackItem in stackItems)
+            {
+                switch (stackItem)
+                {
+                    case VmStackCell cell:
+                        items.Add(new [] { "tvm.Cell", cell.Value.ToString() });
+                        break;
+                    case VmStackInt value:
+                        items.Add(new [] { "num", value.Value.ToString() });
+                        break;
+                    case VmStackTinyInt value:
+                        items.Add(new [] { "num", value.Value.ToString() });
+                        break;
+                    case VmStackSlice slice:
+                        items.Add(new [] { "tvm.Slice", slice.Value.RestoreRemainder().ToString() });
+                        break;
+                    case VmStackBuilder builder:
+                        items.Add(new [] { "tvm.Cell", builder.Value.Build().ToString() });
+                        break;
+                }
+            }
+            return items.ToArray();
+        }
+        
         public static Cell SerializeStack(IStackItem[] values)
         {
             // vm_stack#_ depth:(## 24) stack:(VmStackList depth) = VmStack;

@@ -34,11 +34,7 @@ namespace TonSdk.Client
 
         private async Task<JettonWalletData> GetWalletData(Address jettonWallet)
         {
-            RunGetMethodResult? runGetMethodResult;
-                if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
-                    runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", stack: null);
-                else
-                    runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", Array.Empty<IStackItem>());
                 
             if(runGetMethodResult == null) throw new Exception("Cannot retrieve jetton wallet data.");
             if (runGetMethodResult.Value.ExitCode == -13) throw new Exception("Jetton wallet is not deployed");
@@ -87,11 +83,7 @@ namespace TonSdk.Client
         /// <exception cref="Exception">Throws when cannot retrieve jetton data.</exception>
         public async Task<JettonData> GetData(Address jettonMasterContract)
         {
-            RunGetMethodResult? result;
-            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
-                result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", stack: null);
-            else
-                result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", Array.Empty<IStackItem>());
             
             if(result == null) throw new Exception("Cannot retrieve jetton wallet data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve jetton data.");
@@ -176,23 +168,14 @@ namespace TonSdk.Client
         /// <returns>The wallet address.</returns>
         public async Task<Address> GetWalletAddress(Address jettonMasterContract, Address walletOwner)
         {
-            RunGetMethodResult? result;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            var stackItems = new List<IStackItem>()
             {
-                string[][] stack = new string[1][] { Transformers.PackRequestStack(walletOwner) };
-                result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stack);
-            }
-            else
-            {
-                var stackItems = new List<IStackItem>()
+                new VmStackSlice()
                 {
-                    new VmStackSlice()
-                    {
-                        Value = new CellBuilder().StoreAddress(walletOwner).Build().Parse()
-                    }
-                };
-                result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stackItems.ToArray());
-            }
+                    Value = new CellBuilder().StoreAddress(walletOwner).Build().Parse()
+                }
+            };
+            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stackItems.ToArray());
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) Console.WriteLine("error");    
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
                 ? ((Cell)result.Value.Stack[0]).Parse().LoadAddress()! 
