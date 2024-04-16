@@ -213,8 +213,8 @@ namespace TonSdk.Client
         /// <returns>The result of the executed method.</returns>
         public async Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems)
         {
-            if (_type != TonClientType.LITECLIENT)
-                throw new ArgumentException("IStackItem[] stackItems, must be defined with LiteClient type.");
+            if (_type == TonClientType.HTTP_TONCENTERAPIV2)
+                return await _httpApi.RunGetMethod(address, method, StackUtils.PackInString(stackItems));
             return await _liteClientApi.RunGetMethod(address, method, stackItems);
         }
         

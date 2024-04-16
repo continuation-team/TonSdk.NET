@@ -72,28 +72,19 @@ namespace TonSdk.Client
             }
             Cell domainCell = sliceBuilder.Build();
             BigInteger categoryBigInt = CategoryToBigInt(category);
-
-            RunGetMethodResult? runGetMethodResult;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            
+            var stackItems = new List<IStackItem>()
             {
-                string[][] stack = new string[2][] { Transformers.PackRequestStack(domainCell.Parse()), Transformers.PackRequestStack(categoryBigInt) };
-                runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stack);
-            }
-            else
-            {
-                var stackItems = new List<IStackItem>()
+                new VmStackSlice()
                 {
-                    new VmStackSlice()
-                    {
-                        Value = domainCell.Parse()
-                    },
-                    new VmStackInt()
-                    {
-                        Value = categoryBigInt
-                    }
-                };
-                runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stackItems.ToArray());
-            }
+                    Value = domainCell.Parse()
+                },
+                new VmStackInt()
+                {
+                    Value = categoryBigInt
+                }
+            };
+            var runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stackItems.ToArray());
             
             if(runGetMethodResult == null) throw new Exception("Cannot retrieve DNS resolve data.");
             if (runGetMethodResult.Value.ExitCode != 0 && runGetMethodResult.Value.ExitCode != 1) throw new Exception("Cannot retrieve DNS resolve data.");

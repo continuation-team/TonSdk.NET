@@ -48,23 +48,14 @@ namespace TonSdk.Client
         /// <returns>The address of the item.</returns>
         public async Task<Address> GetItemAddress(Address collection, uint index)
         {
-            RunGetMethodResult? result;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            var stackItems = new List<IStackItem>()
             {
-                string[][] stack = new string[1][] { Transformers.PackRequestStack(index) };
-                result = await client.RunGetMethod(collection, "get_nft_address_by_index", stack);
-            }
-            else
-            {
-                var stackItems = new List<IStackItem>()
+                new VmStackInt()
                 {
-                    new VmStackInt()
-                    {
-                        Value = index
-                    }
-                };
-                result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray());
-            }
+                    Value = index
+                }
+            };
+            var result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray());
             
             if ( result == null || result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft address.");
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
@@ -79,11 +70,7 @@ namespace TonSdk.Client
         /// <returns>The royalty parameters of the collection.</returns>
         public async Task<NftRoyaltyParams> GetRoyaltyParams(Address collection)
         {
-            RunGetMethodResult? result;
-            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
-                result = await client.RunGetMethod(collection, "royalty_params", stack: null);
-            else
-                result = await client.RunGetMethod(collection, "royalty_params", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(collection, "royalty_params", Array.Empty<IStackItem>());
             
             if(result == null) throw new Exception("Cannot retrieve nft collection royalty params.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection royalty params.");
@@ -133,11 +120,7 @@ namespace TonSdk.Client
         /// <returns>The data of the collection.</returns>
         public async Task<NftCollectionData> GetCollectionData(Address collection)
         {
-            RunGetMethodResult? result;
-            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
-                result = await client.RunGetMethod(collection, "get_collection_data", stack: null);
-            else
-                result = await client.RunGetMethod(collection, "get_collection_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(collection, "get_collection_data", Array.Empty<IStackItem>());
             
             if(result == null) throw new Exception("Cannot retrieve nft collection data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection data.");
@@ -185,11 +168,7 @@ namespace TonSdk.Client
         /// <returns>The data of the NFT item.</returns>
         public async Task<NftItemData> GetNftItemData(Address itemAddress)
         {
-            RunGetMethodResult? result;
-            if(client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2) 
-                result = await client.RunGetMethod(itemAddress, "get_nft_data", stack: null);
-            else
-                result = await client.RunGetMethod(itemAddress, "get_nft_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(itemAddress, "get_nft_data", Array.Empty<IStackItem>());
             
             if(result == null) throw new Exception("Cannot retrieve nft item data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft item data.");
