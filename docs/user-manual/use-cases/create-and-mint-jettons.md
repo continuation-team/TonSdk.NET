@@ -65,7 +65,7 @@ WalletV4Options options = new WalletV4Options()
 WalletV4 wallet = new WalletV4(optionsV4, 2); 
 
 // creating options with onchain metadata 
-JettonMinterOptions options = new JettonMinterOptions()
+JettonMinterOptions opts = new JettonMinterOptions()
 {
     AdminAddress = wallet.Address,
     JettonContent = new JettonOnChainContent()
@@ -79,7 +79,7 @@ JettonMinterOptions options = new JettonMinterOptions()
 };
 
 // creating jetton minter with options
-JettonMinter minter = new JettonMinter(options);
+JettonMinter minter = new JettonMinter(opts);
 
 // getting seqno using tonClient
 uint? seqno = await tonClient.Wallet.GetSeqno(wallet.Address);
