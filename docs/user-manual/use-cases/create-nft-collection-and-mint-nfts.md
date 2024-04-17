@@ -80,7 +80,7 @@ Console.WriteLine(collection.Address);
 After that collection created, you can create nft mint message using `CreateMintRequest` method:
 
 ```csharp
-// we will use same wallet and minter like in prev code block
+// we will use same wallet and collection instance like in prev code block
 
 // create nft mint options
 NftMintOptions mintOptions = new NftMintOptions()
