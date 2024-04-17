@@ -15,8 +15,7 @@ namespace TonSdk.Contracts.Wallet {
         public uint SubwalletId;
         public byte[] PublicKey;
     }
-
-
+    
     public class WalletV3 : WalletBase {
         private uint _subwalletId;
 

@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="TonSdk.Core" Version="0.2.10" />
+        <PackageReference Include="TonSdk.Core" Version="0.3.1" />
     </ItemGroup>
 
     <PropertyGroup>

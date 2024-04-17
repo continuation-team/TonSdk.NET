@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\TonSdk.Client\src\TonSdk.Client.csproj" />
         <ProjectReference Include="..\src\TonSdk.Contracts.csproj" />
     </ItemGroup>
 
