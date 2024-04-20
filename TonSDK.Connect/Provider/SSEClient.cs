@@ -49,9 +49,9 @@ namespace TonSdk.Connect
 
         public void StopClient()
         {
-            if (!_isRunning) return;
-
             _cancellationTokenSource?.Cancel();
+            if (!_isRunning) return;
+            
             Dispose();
             _isRunning = false;
         }
