@@ -115,6 +115,7 @@ namespace TonSdk.Connect
         {
             try
             {
+                _gateway.Pause();
                 DisconnectRpcRequest request = new DisconnectRpcRequest()
                 {
                     method = "disconnect",

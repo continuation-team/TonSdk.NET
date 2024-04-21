@@ -24,6 +24,7 @@
     * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
     * [Preprocessed V2](user-manual/contracts/wallet/preprocessed-v2.md)
 * [Use cases](user-manual/use-cases/README.md)
+  * [Create Nft Collection and Mint Nfts](user-manual/use-cases/create-nft-collection-and-mint-nfts.md)
   * [Create and Mint Jettons](user-manual/use-cases/create-and-mint-jettons.md)
   * [Sending Jettons](user-manual/use-cases/sending-jettons.md)
   * [Sending NFTs](user-manual/use-cases/sending-nfts.md)
