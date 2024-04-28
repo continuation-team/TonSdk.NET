@@ -23,6 +23,8 @@
   * [Wallet](user-manual/contracts/wallet/README.md)
     * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
     * [Preprocessed V2](user-manual/contracts/wallet/preprocessed-v2.md)
+* [Unity TonConnect 2.0](user-manual/unity-tonconnect-2.0/README.md)
+  * [Getting Started](user-manual/unity-tonconnect-2.0/getting-started.md)
 * [Use cases](user-manual/use-cases/README.md)
   * [Create Nft Collection and Mint Nfts](user-manual/use-cases/create-nft-collection-and-mint-nfts.md)
   * [Create and Mint Jettons](user-manual/use-cases/create-and-mint-jettons.md)
