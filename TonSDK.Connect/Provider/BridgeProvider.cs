@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace TonSdk.Connect
 {
@@ -130,7 +131,49 @@ namespace TonSdk.Connect
             }
         }
 
+        
+
         private string GenerateUniversalLink(string universalLink, ConnectRequest connectRequest)
+        {
+            if (UrlUtils.IsTelegramUrl(universalLink))
+                return GenerateTGUniversalLink(universalLink, connectRequest);
+            return GenerateRegularUniversalLink(universalLink, connectRequest);
+        }
+        
+        private string GenerateTGUniversalLink(string universalLink, ConnectRequest connectRequest)
+        {
+            var urlToWrap = GenerateRegularUniversalLink("about:blank", connectRequest);
+            var linkParams = HttpUtility.ParseQueryString(new Uri(urlToWrap).Query);
+
+            var startapp = "tonconnect-" + UrlUtils.EncodeTelegramUrlParameters(linkParams.ToString());
+
+            // TODO: Remove this line after all dApps and the wallets-list.json have been updated
+            var updatedUniversalLink = ConvertToDirectLink(universalLink);
+
+            var url = new UriBuilder(updatedUniversalLink);
+            var query = HttpUtility.ParseQueryString(url.Query);
+            query["startapp"] = startapp;
+            url.Query = query.ToString();
+
+            return url.ToString();
+        }
+        
+        private static string ConvertToDirectLink(string universalLink)
+        {
+            var uriBuilder = new UriBuilder(universalLink);
+            var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query);
+
+            if (queryParams["attach"] != null)
+            {
+                queryParams.Remove("attach");
+                uriBuilder.Path += "/start";
+            }
+
+            uriBuilder.Query = queryParams.ToString();
+            return uriBuilder.ToString();
+        }
+
+        private string GenerateRegularUniversalLink(string universalLink, ConnectRequest connectRequest)
         {
             UriBuilder url = new UriBuilder(universalLink);
             url.Port = -1;
