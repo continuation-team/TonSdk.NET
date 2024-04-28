@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Connect</RootNamespace>
         <PackageId>TonSdk.Connect</PackageId>
-        <Version>0.2.2</Version>
+        <Version>0.2.3</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Library that allows to interact with Ton Connect 2.0</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>

@@ -18,7 +18,7 @@ namespace TonSdk.Connect
 
     internal class WalletsListManager
     {
-        private string walletsListSource = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json";
+        private string walletsListSource = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
         private int cacheTtl;
 
         private List<WalletConfig> walletsListCache;
