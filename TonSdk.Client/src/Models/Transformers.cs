@@ -629,7 +629,9 @@ namespace TonSdk.Client
             Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0
                 ? new Address(outRawMessage.Source)
                 : null;
-            Destination = new Address(outRawMessage.Destination);
+            Destination = outRawMessage.Destination != null && outRawMessage.Destination.Length != 0
+                ? new Address(outRawMessage.Destination)
+                : null;
             Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
             FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
             IhrFee = new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9));
