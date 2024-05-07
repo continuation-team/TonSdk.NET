@@ -36,4 +36,10 @@ In WebGL builds,  you must choose TC\_Minimal template, to make tonconnect worki
 
 <figure><img src="../../.gitbook/assets/изображение (1).png" alt=""><figcaption></figcaption></figure>
 
+{% hint style="danger" %}
+Make sure that you disable **Strip Engine Code** and set **Managed Stripping Level** to **Minimal**. Otherwise it wont work correctly in WebGL builds.
+{% endhint %}
+
+
+
 In other cases you can build your game like in any time, and it will work in all unity builds.
