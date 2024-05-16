@@ -138,7 +138,10 @@ namespace TonSdk.Core.Boc {
                 throw new Exception("BoC not enough bytes for an exotic cell type");
             }
 
-            if (isExotic) throw new NotImplementedException("Exotic cells not implemented yet");
+            var type = isExotic ? (CellType)(int)data.Slice(0, 8).Parse().LoadInt(8) : CellType.ORDINARY;
+            
+            if (isExotic && type == CellType.ORDINARY)
+                throw new Exception("BoC an exotic cell can't be of ordinary type");
 
             var refs = new ulong[totalRefs];
             for (var i = 0; i < totalRefs; i++) {
@@ -146,7 +149,7 @@ namespace TonSdk.Core.Boc {
             }
 
             return new RawCell() {
-                Type = CellType.ORDINARY,
+                Type = type,
                 Builder = new CellBuilder(data.Length).StoreBits(data),
                 Refs = refs
             };

@@ -109,4 +109,11 @@ namespace TonSdk.Client.Stack
         [JsonProperty("key")] public const string Key = "VmStackTuple";
         [JsonProperty("tuple")] public IStackItem[] Value { get; set; }
     }
+
+    [Serializable]
+    internal struct StackJsonItem
+    {
+        [JsonProperty("type")] public string Type;
+        [JsonProperty("value")] public string Value;
+    }
 }

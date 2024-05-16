@@ -194,10 +194,10 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeSendMessage(payload);
         }
 
-        public async Task<byte[]> GetAccountState(Address address) => await FetchAccountState(address,
+        public async Task<AccountStateResult> GetAccountState(Address address) => await FetchAccountState(address,
             "liteServer.getAccountState id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState");
         
-        public async Task<byte[]> GetAccountStatePrunned(Address address) => await FetchAccountState(address,
+        public async Task<AccountStateResult> GetAccountStatePrunned(Address address) => await FetchAccountState(address,
             "liteServer.getAccountStatePrunned id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState");
 
         public async Task<RunSmcMethodResult> RunSmcMethod(Address address, string methodName, byte[] stack, RunSmcOptions options)
@@ -447,7 +447,7 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetShardBlockProof(payload);
         }
         
-        private async Task<byte[]> FetchAccountState(Address address, string query)
+        private async Task<AccountStateResult> FetchAccountState(Address address, string query)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
@@ -463,7 +463,7 @@ namespace TonSdk.Adnl.LiteClient
             TLReadBuffer payload = await tcs.Task;
             if (payload == null) return null;
 
-            byte[] stateBytes = LiteClientDecoder.DecodeGetAccountState(payload);
+            var stateBytes = LiteClientDecoder.DecodeGetAccountState(payload);
             return stateBytes;
         }
         

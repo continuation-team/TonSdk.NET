@@ -34,6 +34,33 @@ namespace TonSdk.Client.Stack
             return items.ToArray();
         }
         
+        internal static StackJsonItem[] PackInStringV3(IStackItem[] stackItems)
+        {
+            var items = new List<StackJsonItem>();
+            foreach (var stackItem in stackItems)
+            {
+                switch (stackItem)
+                {
+                    case VmStackCell cell:
+                        items.Add(new StackJsonItem() { Type = "cell", Value = cell.Value.ToString() });
+                        break;
+                    case VmStackInt value:
+                        items.Add(new StackJsonItem() { Type = "num", Value = value.Value.ToString() });
+                        break;
+                    case VmStackTinyInt value:
+                        items.Add(new StackJsonItem() { Type = "num", Value = value.Value.ToString() });
+                        break;
+                    case VmStackSlice slice:
+                        items.Add(new StackJsonItem() { Type = "slice", Value = slice.Value.RestoreRemainder().ToString() });
+                        break;
+                    case VmStackBuilder builder:
+                        items.Add(new StackJsonItem() { Type = "cell", Value = builder.Value.Build().ToString() });
+                        break;
+                }
+            }
+            return items.ToArray();
+        }
+        
         public static Cell SerializeStack(IStackItem[] values)
         {
             // vm_stack#_ depth:(## 24) stack:(VmStackList depth) = VmStack;

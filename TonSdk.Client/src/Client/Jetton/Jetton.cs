@@ -42,21 +42,21 @@ namespace TonSdk.Client
 
             
             Address jettonMasterAddress = 
-                client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ?
+                client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
                 ((Cell)runGetMethodResult.Value.Stack[2]).Parse().LoadAddress()! 
                 : ((VmStackSlice)runGetMethodResult.Value.StackItems[2]).Value.LoadAddress();
             uint decimals = await GetDecimals(jettonMasterAddress);
 
             JettonWalletData jettonWalletData = new JettonWalletData()
             {
-                Balance = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ?
+                Balance = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
                     new Coins((decimal)(BigInteger)runGetMethodResult.Value.Stack[0], new CoinsOptions(true, (int)decimals)):
                     new Coins((decimal)((VmStackTinyInt)runGetMethodResult.Value.StackItems[0]).Value, new CoinsOptions(true, (int)decimals)),
-                OwnerAddress = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ? 
+                OwnerAddress = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ? 
                     ((Cell)runGetMethodResult.Value.Stack[1]).Parse().LoadAddress()! :
                     ((VmStackSlice)runGetMethodResult.Value.StackItems[1]).Value.LoadAddress(),
                 JettonMasterAddress = jettonMasterAddress,
-                JettonWalletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ? 
+                JettonWalletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ? 
                     (Cell)runGetMethodResult.Value.Stack[3] : ((VmStackCell)runGetMethodResult.Value.StackItems[3]).Value
             };
 
@@ -90,7 +90,7 @@ namespace TonSdk.Client
             
             Address admin;
             var totalSupply = new Coins(0);
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
             {
                 admin = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
                 totalSupply = new Coins((decimal)(BigInteger)result.Value.Stack[0], new CoinsOptions(true));
@@ -115,10 +115,10 @@ namespace TonSdk.Client
             {
                 TotalSupply = totalSupply,
                 AdminAddress = admin,
-                Content = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ? 
+                Content = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ? 
                     await JettonUtils.ParseMetadata((Cell)result.Value.Stack[3]!) :
                     await JettonUtils.ParseMetadata(((VmStackCell)result.Value.StackItems[3]).Value),
-                JettonWalletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ?
+                JettonWalletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
                     (Cell)result.Value.Stack[4]! :
                     ((VmStackCell)result.Value.StackItems[4]).Value
             };
@@ -177,7 +177,7 @@ namespace TonSdk.Client
             };
             RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stackItems.ToArray());
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) Console.WriteLine("error");    
-            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
+            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
                 ? ((Cell)result.Value.Stack[0]).Parse().LoadAddress()! 
                 : ((VmStackSlice)result.Value.StackItems[0]).Value.LoadAddress();
         }

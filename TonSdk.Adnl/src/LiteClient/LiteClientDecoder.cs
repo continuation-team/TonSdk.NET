@@ -125,7 +125,7 @@ namespace TonSdk.Adnl.LiteClient
 
         internal static int DecodeSendMessage(TLReadBuffer buffer) =>  buffer.ReadInt32();
 
-        internal static byte[] DecodeGetAccountState(TLReadBuffer buffer)
+        internal static AccountStateResult DecodeGetAccountState(TLReadBuffer buffer)
         {
             // id:tonNode.blockIdExt
             buffer.ReadInt32();
@@ -141,12 +141,13 @@ namespace TonSdk.Adnl.LiteClient
             buffer.ReadInt256();
             buffer.ReadInt256();
 
-            // shard_proof:bytes
-            buffer.ReadBuffer();
-            // proof:bytes
-            buffer.ReadBuffer();
-            
-            return buffer.ReadBuffer();
+            var result = new AccountStateResult
+            {
+                ShardProof = buffer.ReadBuffer(),
+                Proof = buffer.ReadBuffer(),
+                State = buffer.ReadBuffer()
+            };
+            return result;
         }
 
         internal static RunSmcMethodResult DecodeRunSmcMethod(TLReadBuffer buffer)

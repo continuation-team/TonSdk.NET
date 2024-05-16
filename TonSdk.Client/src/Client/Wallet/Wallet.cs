@@ -30,8 +30,8 @@ namespace TonSdk.Client
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
 
             uint seqno = 0;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
-                seqno = (uint)(BigInteger)result.Value.Stack[0];
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
+                seqno = uint.Parse(result.Value.Stack[0].ToString());
             else
             {
                 if (result.Value.StackItems[0] is VmStackInt)
@@ -55,7 +55,7 @@ namespace TonSdk.Client
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
             
             uint id = 0;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
                 id = (uint)(BigInteger)result.Value.Stack[0];
             else
             {
@@ -79,7 +79,8 @@ namespace TonSdk.Client
             var result = await client.RunGetMethod(address, "get_plugin_list", Array.Empty<IStackItem>());
             if(result == null) return null;
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
-            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ? result.Value.Stack : result.Value.StackItems;
+            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
+                ? result.Value.Stack : result.Value.StackItems;
         }
     }
 }
