@@ -13,6 +13,14 @@ public class ClientTest
         new HttpParameters() { Endpoint = "https://toncenter.com/api/v3/", ApiKey = "841a5532a6549cc38f465973eab609c9acb34bb8a15608c85468af38a2842cc9" });
     TonClient client_lite = new TonClient(TonClientType.LITECLIENT, new LiteClientParameters("5.9.10.47", 19949, "n4VDnSCUuSpjnCyUk9e3QOOd6o0ItSWYbTnW3Wnn8wk="));
 
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        client.Dispose();
+        client_lite.Dispose();
+        clientv3.Dispose();
+    }
+    
     [Test]
     public async Task Test_AddressBalance()
     {
