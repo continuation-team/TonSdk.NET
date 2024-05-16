@@ -89,12 +89,15 @@ namespace TonSdk.Client
             if(runGetMethodResult == null) throw new Exception("Cannot retrieve DNS resolve data.");
             if (runGetMethodResult.Value.ExitCode != 0 && runGetMethodResult.Value.ExitCode != 1) throw new Exception("Cannot retrieve DNS resolve data.");
 
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 && runGetMethodResult.Value.Stack.Length != 2 || client.GetClientType() == TonClientType.LITECLIENT &&
+            if (((client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
+                  || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3) 
+                 && runGetMethodResult.Value.Stack.Length != 2) 
+                || client.GetClientType() == TonClientType.LITECLIENT &&
                 runGetMethodResult.Value.StackItems.Length != 2)
                 throw new Exception("Invalid dnsresolve response.");
 
             BigInteger lenBig = BigInteger.Zero;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
                 lenBig = (BigInteger)runGetMethodResult.Value.Stack[0];
             else
             {
@@ -107,7 +110,7 @@ namespace TonSdk.Client
             if (lenBig < 0) lenBig *= -1;
             uint resultLen = (uint)lenBig;
             
-            Cell cell = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
+            Cell cell = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 
                 ? (Cell)runGetMethodResult.Value.Stack[1] : ((VmStackCell)runGetMethodResult.Value.StackItems[1]).Value;
 
             if (cell == null || cell.Bits == null) throw new Exception("Invalid dnsresolve response.");

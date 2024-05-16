@@ -10,7 +10,10 @@ namespace TonSdk.Client
     public enum TonClientType
     {
         HTTP_TONCENTERAPIV2,
-        LITECLIENT
+        HTTP_TONCENTERAPIV3,
+        HTTP_TONWHALESAPI,
+        LITECLIENT,
+        
     }
     
     public interface ITonClientOptions {}

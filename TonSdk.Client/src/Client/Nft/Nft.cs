@@ -58,7 +58,7 @@ namespace TonSdk.Client
             var result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray());
             
             if ( result == null || result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft address.");
-            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 
+            return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
                 ? ((Cell)result.Value.Stack[0]).Parse().LoadAddress()! 
                 : ((VmStackSlice)result.Value.StackItems[0]).Value.LoadAddress();
         }
@@ -77,7 +77,7 @@ namespace TonSdk.Client
             
             Address royaltyAddress;
             BigInteger numerator = BigInteger.Zero, denominator = BigInteger.Zero;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
             {
                 royaltyAddress = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
                 numerator = (BigInteger)result.Value.Stack[0];
@@ -128,7 +128,7 @@ namespace TonSdk.Client
             Address ownerAddress;
             uint nextItemIndex = 0;
             Cell data;
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
             {
                 ownerAddress = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
                 nextItemIndex = (uint)(BigInteger)result.Value.Stack[0];
@@ -178,7 +178,7 @@ namespace TonSdk.Client
             bool init = false;
             BigInteger index = BigInteger.Zero;
             Cell content; 
-            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2)
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
             {
                 collection = ((Cell)result.Value.Stack[2]).Parse().LoadAddress()!;
                 owner = ((Cell)result.Value.Stack[3]).Parse().LoadAddress()!;

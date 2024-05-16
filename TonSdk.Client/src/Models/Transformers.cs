@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -231,6 +232,7 @@ namespace TonSdk.Client
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
             [JsonProperty("result")] public OutBlockTransactionsResult Result { get; set; }
+            [JsonProperty("transactions")] public OutV3ShortTransactionsResult[] Transactions { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
@@ -250,11 +252,17 @@ namespace TonSdk.Client
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
+        
+        internal struct RootV3LookUpBlock
+        {
+            [JsonProperty("blocks")] public BlockIdExtended[] Blocks { get; set; }
+        }
 
         internal struct RootTransactions
         {
             [JsonProperty("ok")] public bool Ok { get; set; }
             [JsonProperty("result")] public OutTransactionsResult[] Result { get; set; }
+            [JsonProperty("transactions")] public OutV3TransactionsResult[] Transactions { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
         }
@@ -273,6 +281,7 @@ namespace TonSdk.Client
             [JsonProperty("result")] public SendBocResult Result { get; set; }
             [JsonProperty("id")] public string Id { get; set; }
             [JsonProperty("jsonrpc")] public string JsonRPC { get; set; }
+            [JsonProperty("message_hash")] public string MessageHash { get; set; }
         }
 
         internal struct RootEstimateFee
@@ -312,6 +321,17 @@ namespace TonSdk.Client
             [JsonProperty("frozen_hash")] public string FrozenHash;
             [JsonProperty("sync_utime")] public long SyncUtime;
         }
+        
+        internal struct OutV3AddressInformationResult
+        {
+            [JsonProperty("status")] public string Status;
+            [JsonProperty("balance")] public string Balance;
+            [JsonProperty("code")] public string Code;
+            [JsonProperty("data")] public string Data;
+            [JsonProperty("last_transaction_lt")] public string LastTransactionLt;
+            [JsonProperty("last_transaction_hash")] public string LastTransactionHash;
+            [JsonProperty("frozen_hash")] public string FrozenHash;
+        }
 
         internal struct OutWalletInformationResult
         {
@@ -323,6 +343,17 @@ namespace TonSdk.Client
             [JsonProperty("last_transaction_id")] public TransactionId LastTransactionId;
             [JsonProperty("wallet_id")] public string WalletId;
         }
+        
+        internal struct OutV3WalletInformationResult
+        {
+            [JsonProperty("balance")] public string Balance;
+            [JsonProperty("status")] public string Status;
+            [JsonProperty("wallet_type")] public string WalletType;
+            [JsonProperty("seqno")] public string Seqno;
+            [JsonProperty("last_transaction_lt")] public string LastTransactionLt;
+            [JsonProperty("last_transaction_hash")] public string LastTransactionHash;
+            [JsonProperty("wallet_id")] public string WalletId;
+        }
 
         internal struct OutMasterchanInformationResult
         {
@@ -330,10 +361,31 @@ namespace TonSdk.Client
             [JsonProperty("init")] public BlockIdExtended InitBlock;
             [JsonProperty("state_root_hash")] public string StateRootHash;
         }
+        
+        internal struct OutV3MasterchainInformationResult
+        {
+            [JsonProperty("last")] public BlockIdExtended LastBlock;
+            [JsonProperty("first")] public BlockIdExtended InitBlock;
+        }
 
         internal struct OutShardsInformationResult
         {
             [JsonProperty("shards")] public BlockIdExtended[] Shards;
+        }
+        
+        internal struct OutV3ShardsInformationResult
+        {
+            [JsonProperty("blocks")] public OutBlockIdExtended[] Blocks;
+        }
+        
+        internal struct OutBlockIdExtended
+        {
+            [JsonProperty("workchain")] public int Workchain;
+            [JsonProperty("shard")] public string Shard;
+            [JsonProperty("seqno")] public string Seqno;
+            [JsonProperty("hash")] public string Hash;
+            [JsonProperty("root_hash")] public string RootHash;
+            [JsonProperty("file_hash")] public string FileHash;
         }
 
         internal struct OutBlockTransactionsResult
@@ -377,6 +429,17 @@ namespace TonSdk.Client
             [JsonProperty("in_msg")] public OutRawMessage InMsg;
             [JsonProperty("out_msgs")] public OutRawMessage[] OutMsgs;
         }
+        
+        internal struct OutV3TransactionsResult
+        {
+            [JsonProperty("now")] public long Now;
+            [JsonProperty("lt")] public ulong Lt;
+            [JsonProperty("hash")] public string Hash;
+            [JsonProperty("total_fees")] public string Fee;
+            
+            [JsonProperty("in_msg")] public OutV3RawMessage InMsg;
+            [JsonProperty("out_msgs")] public OutV3RawMessage[] OutMsgs;
+        }
 
         internal struct OutRawMessage
         {
@@ -390,12 +453,53 @@ namespace TonSdk.Client
             [JsonProperty("msg_data")] public OutRawMessageData MsgData;
             [JsonProperty("message")] public string Message;
         }
+        
+        internal struct OutV3RawMessage
+        {
+            [JsonProperty("source")] public string Source;
+            [JsonProperty("destination")] public string Destination;
+            [JsonProperty("value")] public string Value;
+            [JsonProperty("fwd_fee")] public string FwdFee;
+            [JsonProperty("ihr_fee")] public string IhrFee;
+            [JsonProperty("created_lt")] public long CreatedLt;
+            [JsonProperty("message_content")] public OutV3RawMessageData MsgData;
+        }
+        
+        internal struct OutV3RawMessageData
+        {
+            [JsonProperty("hash")] public string BodyHash;
+            [JsonProperty("body")] public string Body;
+            [JsonProperty("decoded")] public OutV3MessageDataDecoded? Decoded;
+        }
+        
+        internal struct OutV3MessageDataDecoded
+        {
+            [JsonProperty("comment")] public string Comment;
+        }
 
         internal struct OutRawMessageData
         {
             [JsonProperty("text")] public string Text;
             [JsonProperty("body")] public string Body;
             [JsonProperty("init_state")] public string InitState;
+        }
+        
+        public struct OutV3ShortTransactionsResult
+        {
+            [JsonProperty("description")] public OutV3ShortTransactionsDescription Description;
+            [JsonProperty("account")] public string Account;
+            [JsonProperty("lt")] public ulong Lt;
+            [JsonProperty("hash")] public string Hash;
+        }
+
+        public struct OutV3ShortTransactionsDescription
+        {
+            [JsonProperty("compute_ph")] public OutV3ShortTransactionsDescriptionComputePh ComputePh;
+        }
+    
+        public struct OutV3ShortTransactionsDescriptionComputePh
+        {
+            [JsonProperty("mode")] public int Mode;
         }
     }
 
@@ -417,6 +521,20 @@ namespace TonSdk.Client
         public BlockIdExtended()
         {
             
+        }
+        
+        public BlockIdExtended(
+            int workchain,
+            string rootHash,
+            string fileHash,
+            long shard,
+            int seqno)
+        {
+            Workchain = workchain;
+            RootHash = rootHash;
+            FileHash = fileHash;
+            Shard = shard;
+            Seqno = seqno;
         }
         
         public BlockIdExtended(TonSdk.Adnl.LiteClient.BlockIdExtended blockIdExtended)
@@ -490,6 +608,45 @@ namespace TonSdk.Client
         public TransactionId LastTransactionId;
         public string FrozenHash;
 
+        internal AddressInformationResult(OutV3AddressInformationResult outAddressInformationResult)
+        {
+            switch (outAddressInformationResult.Status)
+            {
+                case "active":
+                {
+                    State = AccountState.Active;
+                    break;
+                }
+                case "frozen":
+                {
+                    State = AccountState.Frozen;
+                    break;
+                }
+                case "uninitialized":
+                {
+                    State = AccountState.Uninit;
+                    break;
+                }
+                default:
+                {
+                    State = AccountState.NonExist;
+                    break;
+                }
+            }
+
+            Balance = new Coins(outAddressInformationResult.Balance, new CoinsOptions(true, 9));
+            Code = string.IsNullOrEmpty(outAddressInformationResult.Code) ? null : Cell.From(outAddressInformationResult.Code);
+            Data = string.IsNullOrEmpty(outAddressInformationResult.Data) ? null : Cell.From(outAddressInformationResult.Data);
+            LastTransactionId = new TransactionId()
+            {
+                Hash = outAddressInformationResult.LastTransactionHash,
+                Lt = ulong.Parse(string.IsNullOrEmpty(outAddressInformationResult.LastTransactionLt) ? "0" : outAddressInformationResult.LastTransactionLt)
+            };
+            // BlockId = outAddressInformationResult.BlockId;
+            FrozenHash = outAddressInformationResult.FrozenHash;
+            // SyncUtime = outAddressInformationResult.SyncUtime;
+        }
+        
         internal AddressInformationResult(OutAddressInformationResult outAddressInformationResult)
         {
             switch (outAddressInformationResult.State)
@@ -530,13 +687,20 @@ namespace TonSdk.Client
     {
         public BlockIdExtended LastBlock;
         public BlockIdExtended InitBlock;
-        public string StateRootHash;
+        public string? StateRootHash;
 
         internal MasterchainInformationResult(OutMasterchanInformationResult outAddressInformationResult)
         {
             LastBlock = outAddressInformationResult.LastBlock;
             InitBlock = outAddressInformationResult.InitBlock;
             StateRootHash = outAddressInformationResult.StateRootHash;
+        }
+        
+        internal MasterchainInformationResult(OutV3MasterchainInformationResult outAddressInformationResult)
+        {
+            LastBlock = outAddressInformationResult.LastBlock;
+            InitBlock = outAddressInformationResult.InitBlock;
+            StateRootHash = null;
         }
         
         internal MasterchainInformationResult(MasterChainInfo masterChainInfo)
@@ -555,6 +719,14 @@ namespace TonSdk.Client
         {
             Shards = outShardsInformationResult.Shards;
         }
+        
+        internal ShardsInformationResult(OutV3ShardsInformationResult outShardsInformationResult)
+        {
+            Shards = outShardsInformationResult.Blocks
+                .Where(shard => shard.Workchain != -1)
+                .Select(shard => new BlockIdExtended(shard.Workchain, shard.RootHash, shard.FileHash, Convert.ToInt64(shard.Shard, 16), Convert.ToInt32(shard.Seqno)))
+                .ToArray();
+        }
     }
 
     public struct BlockTransactionsResult
@@ -571,6 +743,14 @@ namespace TonSdk.Client
             Incomplete = outBlockTransactionsResult.Incomplete;
             Transactions = outBlockTransactionsResult.Transactions;
         }
+    }
+    
+    public struct BlockTransactionsResultExtended
+    {
+        public BlockIdExtended Id;
+        public int ReqCount;
+        public bool Incomplete;
+        public TransactionsInformationResult[] Transactions;
     }
 
     public struct TransactionsInformationResult
@@ -600,6 +780,27 @@ namespace TonSdk.Client
                 OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
             }
         }
+        
+        internal TransactionsInformationResult(OutV3TransactionsResult outTransactionsResult)
+        {
+            Utime = outTransactionsResult.Now;
+            Data = null;
+            TransactionId = new TransactionId()
+            {
+                Hash = outTransactionsResult.Hash,
+                Lt = outTransactionsResult.Lt
+            };
+            Fee = new Coins(outTransactionsResult.Fee, new CoinsOptions(true, 9));
+            StorageFee = null;
+            OtherFee = null;
+            InMsg = new RawMessage(outTransactionsResult.InMsg);
+
+            OutMsgs = new RawMessage[outTransactionsResult.OutMsgs.Length];
+            for (int i = 0; i < outTransactionsResult.OutMsgs.Length; i++)
+            {
+                OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
+            }
+        }
     }
 
     public struct ConfigParamResult
@@ -619,7 +820,7 @@ namespace TonSdk.Client
         public Coins Value;
         public Coins FwdFee;
         public Coins IhrFee;
-        public long CreaterLt;
+        public long CreatedLt;
         public string BodyHash;
         public RawMessageData MsgData;
         public string Message;
@@ -635,10 +836,25 @@ namespace TonSdk.Client
             Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
             FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
             IhrFee = new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9));
-            CreaterLt = outRawMessage.CreaterLt;
+            CreatedLt = outRawMessage.CreaterLt;
             BodyHash = outRawMessage.BodyHash;
             MsgData = new RawMessageData(outRawMessage.MsgData);
             Message = outRawMessage.Message;
+        }
+        
+        internal RawMessage(OutV3RawMessage outRawMessage)
+        {
+            Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0
+                ? new Address(outRawMessage.Source)
+                : null;
+            Destination = new Address(outRawMessage.Destination);
+            Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
+            FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
+            IhrFee = new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9));
+            CreatedLt = outRawMessage.CreatedLt;
+            BodyHash = outRawMessage.MsgData.BodyHash;
+            MsgData = new RawMessageData(outRawMessage.MsgData);
+            Message = null;
         }
     }
 
@@ -654,12 +870,25 @@ namespace TonSdk.Client
             Body = outRawMessageData.Body != null ? Cell.From(outRawMessageData.Body) : null;
             InitState = outRawMessageData.InitState ?? null;
         }
+        internal RawMessageData(OutV3RawMessageData outRawMessageData)
+        {
+            Text = outRawMessageData.Decoded?.Comment;
+            Body = outRawMessageData.Body != null ? Cell.From(outRawMessageData.Body) : null;
+            InitState = null;
+        }
     }
 
     internal struct OutRunGetMethod
     {
         [JsonProperty("gas_used")] public int GasUsed;
         [JsonProperty("stack")] public object[][] Stack;
+        [JsonProperty("exit_code")] public int ExitCode;
+    }
+    
+    internal struct OutV3RunGetMethod
+    {
+        [JsonProperty("gas_used")] public int GasUsed;
+        [JsonProperty("stack")] public JObject[] Stack;
         [JsonProperty("exit_code")] public int ExitCode;
     }
 
@@ -671,6 +900,19 @@ namespace TonSdk.Client
         public IStackItem[] StackItems;
 
         internal RunGetMethodResult(OutRunGetMethod outRunGetMethod)
+        {
+            GasUsed = outRunGetMethod.GasUsed;
+            ExitCode = outRunGetMethod.ExitCode;
+            Stack = new object[outRunGetMethod.Stack.Length];
+            for (int i = 0; i < outRunGetMethod.Stack.Length; i++)
+            {
+                Stack[i] = ParseStackItem(outRunGetMethod.Stack[i]);
+            }
+
+            StackItems = new IStackItem[] { };
+        }
+        
+        internal RunGetMethodResult(OutV3RunGetMethod outRunGetMethod)
         {
             GasUsed = outRunGetMethod.GasUsed;
             ExitCode = outRunGetMethod.ExitCode;
@@ -712,6 +954,48 @@ namespace TonSdk.Client
                     throw new Exception($"Unknown type {typeName}");
             }
         }
+        
+        internal static object ParseStackItem(JObject item)
+        {
+            string type = item["type"].ToString();
+
+            switch (type)
+            {
+                case "num":
+                {
+                    string valueStr = item["value"].ToString();
+                    if (valueStr == null)
+                        throw new Exception("Expected a string value for 'num' type.");
+
+                    bool isNegative = valueStr[0] == '-';
+                    string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
+                    BitsSlice bitsSlice = new Bits(slice).Parse();
+                    BigInteger x = bitsSlice.LoadUInt(bitsSlice.RemainderBits);
+
+                    return isNegative ? 0 - x : x;
+                }
+                case "cell":
+                {
+                    return Cell.From(item["value"].ToString());
+                }
+                case "list":
+                case "tuple":
+                {
+                    if (item["value"] is JObject jObject)
+                    {
+                        return ParseObject(jObject);
+                    }
+                    else
+                    {
+                        throw new Exception("Expected a JObject value for 'list' or 'tuple' type.");
+                    }
+                }
+                default:
+                {
+                    throw new Exception("Unknown type " + type);
+                }
+            }
+        }
 
         internal static object ParseStackItem(object[] item)
         {
@@ -725,13 +1009,23 @@ namespace TonSdk.Client
                         string valueStr = value as string;
                         if (valueStr == null)
                             throw new Exception("Expected a string value for 'num' type.");
-
+                        
                         bool isNegative = valueStr[0] == '-';
                         string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
-                        BitsSlice bitsSlice = new Bits(slice).Parse();
-                        BigInteger x = bitsSlice.LoadUInt(bitsSlice.RemainderBits);
+                        
+                        if (slice.Length % 2 != 0)
+                            slice = "0" + slice;
 
-                        return isNegative ? 0 - x : x;
+                        int length = slice.Length;
+                        byte[] bytes = new byte[length / 2];
+                        for (int i = 0; i < length; i += 2)
+                        {
+                            bytes[i / 2] = Convert.ToByte(slice.Substring(i, 2), 16);
+                        }
+                        
+                        var bigInt = new BigInteger(bytes.Reverse().ToArray());
+
+                        return isNegative ? 0 - bigInt : bigInt;
                     }
                 case "cell":
                     {
@@ -773,6 +1067,56 @@ namespace TonSdk.Client
         public long? Seqno;
         public TransactionId LastTransactionId;
         public long? WalletId;
+
+        internal WalletInformationResult(AddressInformationResult addressInformationResult)
+        {
+            WalletType = null;
+            Seqno = null;
+            WalletId = null;
+            IsWallet = false;
+
+            Balance = addressInformationResult.Balance;
+            LastTransactionId = addressInformationResult.LastTransactionId;
+            State = addressInformationResult.State;
+        }
+        
+        internal WalletInformationResult(OutV3WalletInformationResult walletInformationResult)
+        {
+            Seqno = long.Parse(walletInformationResult.Seqno);
+            WalletType = walletInformationResult.WalletType;
+            WalletId = long.Parse(walletInformationResult.WalletId);
+            IsWallet = true;
+            
+            Balance = new Coins(walletInformationResult.Balance, new CoinsOptions(true, 9));
+            LastTransactionId = new TransactionId()
+            {
+                Hash =  walletInformationResult.LastTransactionHash,
+                Lt =  ulong.Parse(walletInformationResult.LastTransactionLt)
+            };
+            switch (walletInformationResult.Status)
+            {
+                case "active":
+                {
+                    State = AccountState.Active;
+                    break;
+                }
+                case "frozen":
+                {
+                    State = AccountState.Frozen;
+                    break;
+                }
+                case "uninitialized":
+                {
+                    State = AccountState.Uninit;
+                    break;
+                }
+                default:
+                {
+                    State = AccountState.NonExist;
+                    break;
+                }
+            }
+        }
 
         internal WalletInformationResult(OutWalletInformationResult walletInformationResult)
         {
@@ -822,12 +1166,24 @@ namespace TonSdk.Client
     public struct SendBocResult
     {
         [JsonProperty("@type")] public string Type;
+        [JsonProperty("hash")] public string Hash;
     }
 
-    public struct EstimateFeeResult
+    public interface IEstimateFeeResult
+    {
+        public SourceFees SourceFees { get; set; }
+    }
+
+    public struct EstimateFeeResult : IEstimateFeeResult
     {
         [JsonProperty("@type")] public string Type;
-        [JsonProperty("source_fees")] public SourceFees SourceFees;
+        [JsonProperty("source_fees")] public SourceFees SourceFees { get; set; }
+    }
+    
+    public struct EstimateFeeResultExtended : IEstimateFeeResult
+    {
+        [JsonProperty("source_fees")] public SourceFees SourceFees { get; set; }
+        [JsonProperty("destination_fees")] public SourceFees[] DestinationFees { get; set; }
     }
 
     public struct SourceFees
