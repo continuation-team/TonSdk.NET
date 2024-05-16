@@ -30,7 +30,6 @@ namespace TonSdk.Client
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
 
             uint seqno = 0;
-            Console.WriteLine(result.Value.Stack[0].ToString());
             if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
                 seqno = uint.Parse(result.Value.Stack[0].ToString());
             else
