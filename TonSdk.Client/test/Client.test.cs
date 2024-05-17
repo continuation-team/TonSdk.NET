@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using TonSdk.Core;
@@ -19,6 +20,46 @@ public class ClientTest
         client.Dispose();
         client_lite.Dispose();
         clientv3.Dispose();
+    }
+    
+    private BigInteger ParseStackItemNum(string valueStr)
+    { 
+        bool isNegative = valueStr[0] == '-';
+        string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
+                        
+        if (slice.Length % 2 != 0)
+        {
+            slice = "0" + slice;
+        }
+
+        int length = slice.Length;
+        byte[] bytes = new byte[length / 2];
+        for (int i = 0; i < length; i += 2)
+        {
+            bytes[i / 2] = Convert.ToByte(slice.Substring(i, 2), 16);
+        }
+                        
+        if (bytes[0] >= 0x80)
+        {
+            byte[] temp = new byte[bytes.Length + 1];
+            Array.Copy(bytes, 0, temp, 1, bytes.Length);
+            bytes = temp;
+        }
+
+        Array.Reverse(bytes);
+        var bigInt = new BigInteger(bytes);
+                        
+        return isNegative ? 0 - bigInt : bigInt;
+    }
+    
+    [Test]
+    public void Test_ParseStackItemNum()
+    {
+        Assert.That(ParseStackItemNum("0xf") == 15, Is.EqualTo(true));
+        Assert.That(ParseStackItemNum("0x0f") == 15, Is.EqualTo(true));
+        Assert.That(ParseStackItemNum("0x10") == 16, Is.EqualTo(true));
+        Assert.That(ParseStackItemNum("0x159ecd52") == 362728786, Is.EqualTo(true));
+        Assert.That(ParseStackItemNum("0x9a") == 154, Is.EqualTo(true));
     }
     
     [Test]
