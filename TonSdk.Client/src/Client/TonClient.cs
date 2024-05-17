@@ -7,18 +7,18 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Client
 {
-    public class TonClient
+    public class TonClient : ITonClient, IDisposable
     {
-        private TonClientType _type;
-        private HttpApi _httpApi;
-        private HttpApiV3 _httpApiV3;
-        private HttpWhales _httpWhales;
-        private LiteClientApi _liteClientApi;
+        private readonly TonClientType _type;
+        private readonly HttpApi _httpApi;
+        private readonly HttpApiV3 _httpApiV3;
+        private readonly HttpWhales _httpWhales;
+        private readonly LiteClientApi _liteClientApi;
         
-        public Jetton Jetton { get; private set; }
-        public Nft Nft { get; private set; }
-        public Wallet Wallet { get; private set; }
-        public Dns Dns { get; private set; }
+        public Jetton Jetton { get; }
+        public Nft Nft { get; }
+        public Wallet Wallet { get; }
+        public Dns Dns { get; }
         
         public TonClient(TonClientType clientType, ITonClientOptions options)
         {
@@ -338,6 +338,14 @@ namespace TonSdk.Client
                 TonClientType.LITECLIENT => throw new Exception("Method cannot be called with LiteClient. Use other client type instead."),
                 _ => null
             };
+        }
+
+        public void Dispose()
+        {
+            _httpApi?.Dispose();
+            _httpApiV3?.Dispose();
+            _httpWhales?.Dispose();
+            _liteClientApi?.Dispose();
         }
     }
 }

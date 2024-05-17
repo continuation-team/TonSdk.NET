@@ -17,6 +17,12 @@ public class DevelopmentTests
     {
         _client = new TonClient(TonClientType.LITECLIENT, new LiteClientParameters("5.9.10.47", 19949, "n4VDnSCUuSpjnCyUk9e3QOOd6o0ItSWYbTnW3Wnn8wk="));
     }
+    
+    [TearDown]
+    public void TearDownTest()
+    {
+        _client.Dispose();
+    }
 
     [Test]
     public async Task Test_GetAddressInformation()

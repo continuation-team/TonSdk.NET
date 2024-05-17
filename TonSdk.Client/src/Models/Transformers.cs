@@ -1014,7 +1014,9 @@ namespace TonSdk.Client
                         string slice = isNegative ? valueStr.Substring(3) : valueStr.Substring(2);
                         
                         if (slice.Length % 2 != 0)
+                        {
                             slice = "0" + slice;
+                        }
 
                         int length = slice.Length;
                         byte[] bytes = new byte[length / 2];
@@ -1023,8 +1025,16 @@ namespace TonSdk.Client
                             bytes[i / 2] = Convert.ToByte(slice.Substring(i, 2), 16);
                         }
                         
-                        var bigInt = new BigInteger(bytes.Reverse().ToArray());
+                        if (bytes[0] >= 0x80)
+                        {
+                            byte[] temp = new byte[bytes.Length + 1];
+                            Array.Copy(bytes, 0, temp, 1, bytes.Length);
+                            bytes = temp;
+                        }
 
+                        Array.Reverse(bytes);
+                        var bigInt = new BigInteger(bytes);
+                        
                         return isNegative ? 0 - bigInt : bigInt;
                     }
                 case "cell":

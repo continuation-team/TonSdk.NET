@@ -14,9 +14,9 @@ using TonSdk.Core.Crypto;
 
 namespace TonSdk.Client
 {
-    internal class LiteClientApi
+    internal class LiteClientApi : IDisposable
     {
-        private LiteClient _liteClient;
+        private readonly LiteClient _liteClient;
         
         internal LiteClientApi(string host, int port, string pubKey)
         {
@@ -515,6 +515,11 @@ namespace TonSdk.Client
                 LoadBinTreeR(slice.LoadRef().Parse(), ref shards);
                 LoadBinTreeR(slice.LoadRef().Parse(), ref shards);
             }
+        }
+
+        public void Dispose()
+        {
+            _liteClient.Disconnect();
         }
     }
 }
