@@ -182,7 +182,7 @@ namespace TonSdk.Client
             {
                 boc = boc.ToString("base64")
             };
-            var result = await new TonRequest(new RequestParameters("sendBoc", requestBody), _httpClient).Call();
+            var result = await new TonRequest(new RequestParameters("sendBocReturnHash", requestBody), _httpClient).Call();
             RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
             SendBocResult outSendBoc = resultRoot.Result;
             return outSendBoc;
