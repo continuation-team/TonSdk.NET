@@ -21,7 +21,7 @@ namespace TonSdk.Core.Crypto
             var generatedPublicKey = privateKeyParams.GeneratePublicKey();
             var encodedPublicKey = generatedPublicKey.GetEncoded();
 
-            if (publicKey != encodedPublicKey)
+            if (encodedPublicKey != null && publicKey != encodedPublicKey)
                 throw new ArgumentException("Public key does not match the private key.");
 
             _publicKey = encodedPublicKey;
