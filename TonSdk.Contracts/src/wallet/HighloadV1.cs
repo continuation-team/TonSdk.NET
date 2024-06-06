@@ -29,7 +29,7 @@ namespace TonSdk.Contracts.Wallet
             _code = Cell.From(WalletSources.HighloadV1);
             _subwalletId = opt.SubwalletId ?? WalletTraits.SUBWALLET_ID;
             _publicKey = opt.PublicKey;
-            _stateInit = buildStateInit();
+            _stateInit = BuildStateInit();
         }
 
         public HighloadV1Storage ParseStorage(CellSlice slice)
@@ -43,7 +43,7 @@ namespace TonSdk.Contracts.Wallet
             };
         }
 
-        protected sealed override StateInit buildStateInit()
+        protected sealed override StateInit BuildStateInit()
         {
             var data = new CellBuilder()
                 .StoreUInt(0, 32) // seqno

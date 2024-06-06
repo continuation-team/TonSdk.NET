@@ -8,7 +8,6 @@ namespace TonSdk.Contracts.Jetton
     {
         public Address AdminAddress { get; set; }
         public IJettonContentStorage JettonContent { get; set; }
-        public int? Workchain { get; set; }
         public Cell? Code { get; set; }
     }
     
@@ -64,7 +63,6 @@ namespace TonSdk.Contracts.Jetton
             _content = options.JettonContent;
             _code = options.Code ?? Cell.From(Models.JETTON_MINTER_CODE_HEX);
             _stateInit = BuildStateInit();
-            _address = new Address(options.Workchain ?? 0, _stateInit);
         }
 
         public static Cell CreateMintRequest(JettonMintOptions opt)

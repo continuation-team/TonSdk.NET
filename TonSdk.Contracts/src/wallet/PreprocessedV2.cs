@@ -23,7 +23,7 @@ namespace TonSdk.Contracts.Wallet
         {
             _code = Cell.From(WalletSources.PreprocessedV2);
             _publicKey = opt.PublicKey;
-            _stateInit = buildStateInit();
+            _stateInit = BuildStateInit();
         }
 
         public PreprocessedV2Storage ParseStorage(CellSlice slice)
@@ -36,7 +36,7 @@ namespace TonSdk.Contracts.Wallet
             };
         }
 
-        protected sealed override StateInit buildStateInit()
+        protected sealed override StateInit BuildStateInit()
         {
             var data = new CellBuilder()
                 .StoreBytes(_publicKey)

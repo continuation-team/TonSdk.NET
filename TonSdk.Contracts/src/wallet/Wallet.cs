@@ -4,34 +4,12 @@ using TonSdk.Core.Boc;
 
 namespace TonSdk.Contracts.Wallet
 {
-    public abstract class WalletBase
+    public abstract class WalletBase : ContractBase
     {
         protected Cell _code;
         protected byte[] _publicKey;
         protected StateInit _stateInit;
-
-        public Cell Code => _code;
-
         public byte[] PublicKey => _publicKey;
-
-        public StateInit StateInit => _stateInit;
-
-        /// <summary>
-        ///  Get wallet address with default AddressStringifyOptions
-        /// </summary>
-        /// <param name="options">
-        /// AddressStringifyOptions
-        /// <remarks>Default options: AddressStringifyOptions(bounceable: false,testOnly: false,urlSafe: true)</remarks>
-        /// </param>
-        /// <returns></returns>
-        public virtual Address ToAddress(IAddressRewriteOptions options = null)
-        {
-            var defaultOptions = new AddressStringifyOptions(false, false, true);
-            _stateInit = buildStateInit();
-            return new Address(options?.Workchain ?? defaultOptions.Workchain!.Value, _stateInit, defaultOptions);
-        }
-
-        protected abstract StateInit buildStateInit();
     }
 
     public struct WalletTransfer

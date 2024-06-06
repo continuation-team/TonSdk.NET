@@ -31,7 +31,7 @@ namespace TonSdk.Contracts.Wallet
             _code = Cell.From(WalletSources.HighloadV2);
             _publicKey = opt.PublicKey;
             _subwalletId = opt.SubwalletId ?? WalletTraits.SUBWALLET_ID;
-            _stateInit = buildStateInit();
+            _stateInit = BuildStateInit();
 
             _oldQueries_hmapOptions = new HashmapOptions<int, WalletTransfer>
             {
@@ -69,7 +69,7 @@ namespace TonSdk.Contracts.Wallet
             };
         }
 
-        protected sealed override StateInit buildStateInit()
+        protected sealed override StateInit BuildStateInit()
         {
             var data = new CellBuilder()
                 .StoreUInt(_subwalletId, 32)

@@ -8,7 +8,6 @@ namespace TonSdk.Contracts.nft
 {
     public struct NftCollectionOptions : ContractBaseOptions
     {
-        public int? Workchain { get; set; }
         public Cell? Code { get; set; }
         
         public Cell? NftItemCode { get; set; }
@@ -60,7 +59,6 @@ namespace TonSdk.Contracts.nft
             
             _code = options.Code ?? Cell.From(Models.NFT_COLLECTION_CODE_HEX);
             _stateInit = BuildStateInit();
-            _address = new Address(options.Workchain ?? 0, _stateInit);
         }
         
         public static Cell CreateMintRequest(NftMintOptions opt)
