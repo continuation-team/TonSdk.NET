@@ -6,9 +6,7 @@ namespace TonSdk.Contracts.Wallet
 {
     public abstract class WalletBase : ContractBase
     {
-        protected Cell _code;
         protected byte[] _publicKey;
-        protected StateInit _stateInit;
         public byte[] PublicKey => _publicKey;
     }
 
