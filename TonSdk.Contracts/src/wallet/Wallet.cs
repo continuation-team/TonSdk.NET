@@ -1,13 +1,15 @@
+using System;
 using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 
-namespace TonSdk.Contracts.Wallet {
-    public abstract class WalletBase {
+namespace TonSdk.Contracts.Wallet
+{
+    public abstract class WalletBase
+    {
         protected Cell _code;
         protected byte[] _publicKey;
         protected StateInit _stateInit;
-        protected Address _address;
 
         public Cell Code => _code;
 
@@ -15,22 +17,38 @@ namespace TonSdk.Contracts.Wallet {
 
         public StateInit StateInit => _stateInit;
 
-        public Address Address => _address;
+        /// <summary>
+        ///  Get wallet address with default AddressStringifyOptions
+        /// </summary>
+        /// <param name="options">
+        /// AddressStringifyOptions
+        /// <remarks>Default options: AddressStringifyOptions(bounceable: false,testOnly: false,urlSafe: true)</remarks>
+        /// </param>
+        /// <returns></returns>
+        public virtual Address ToAddress(IAddressRewriteOptions options = null)
+        {
+            var defaultOptions = new AddressStringifyOptions(false, false, true);
+            _stateInit = buildStateInit();
+            return new Address(options?.Workchain ?? defaultOptions.Workchain!.Value, _stateInit, defaultOptions);
+        }
 
         protected abstract StateInit buildStateInit();
     }
 
-    public struct WalletTransfer {
+    public struct WalletTransfer
+    {
         public MessageX Message;
         public byte Mode;
     }
 
-    public static class WalletTraits {
+    public static class WalletTraits
+    {
         public const uint SUBWALLET_ID = 698983191;
         // why 698983191?? -> https://github.com/ton-blockchain/ton/blob/4b940f8bad9c2d3bf44f196f6995963c7cee9cc3/tonlib/tonlib/TonlibClient.cpp#L2420
     }
 
-    public static class WalletSources {
+    public static class WalletSources
+    {
         public const string V3R1 =
             "B5EE9C724101010100620000C0FF0020DD2082014C97BA9730ED44D0D70B1FE0A4F2608308D71820D31FD31FD31FF82313BBF263ED44D0D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F8009320D74A96D307D402FB00E8D101A4C8CB1FCB1FCBFFC9ED543FBE6EE0";
 
@@ -45,7 +63,7 @@ namespace TonSdk.Contracts.Wallet {
 
         public const string HighloadV2 =
             "B5EE9C724101090100E5000114FF00F4A413F4BCF2C80B010201200203020148040501EAF28308D71820D31FD33FF823AA1F5320B9F263ED44D0D31FD33FD3FFF404D153608040F40E6FA131F2605173BAF2A207F901541087F910F2A302F404D1F8007F8E16218010F4786FA5209802D307D43001FB009132E201B3E65B8325A1C840348040F4438AE63101C8CB1F13CB3FCBFFF400C9ED54080004D03002012006070017BD9CE76A26869AF98EB85FFC0041BE5F976A268698F98E99FE9FF98FA0268A91040207A0737D098C92DBFC95DD1F140034208040F4966FA56C122094305303B9DE2093333601926C21E2B39F9E545A";
-        
+
         public const string HighloadV1 =
             "B5EE9C7241020801000097000114FF00F4A413F4BCF2C80B01020120030200B8F28308D71820D31FD31FD31F02F823BBF263ED44D0D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F404D1F8007F8E16218010F4786FA5209802D307D43001FB009132E201B3E65B01A4C8CB1FCB1FCBFFC9ED54020148070402014806050011B8C97ED44D0D70B1F80017BB39CED44D0D33F31D70BFF80004D03025869C35";
 

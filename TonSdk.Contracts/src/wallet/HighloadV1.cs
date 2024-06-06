@@ -32,7 +32,6 @@ namespace TonSdk.Contracts.Wallet
             _subwalletId = opt.SubwalletId ?? WalletTraits.SUBWALLET_ID;
             _publicKey = opt.PublicKey;
             _stateInit = buildStateInit();
-            _address = new Address(opt.Workchain ?? 0, _stateInit);
         }
 
         public HighloadV1Storage ParseStorage(CellSlice slice)
@@ -85,7 +84,7 @@ namespace TonSdk.Contracts.Wallet
 
             return new ExternalInMessage(new ExternalInMessageOptions
             {
-                Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = Address }),
+                Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = ToAddress() }),
                 Body = bodyBuilder.Build(),
                 StateInit = seqno == 0 ? _stateInit : null
             });
@@ -102,7 +101,7 @@ namespace TonSdk.Contracts.Wallet
 
             return new ExternalInMessage(new ExternalInMessageOptions
             {
-                Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = Address }),
+                Info = new ExtInMsgInfo(new ExtInMsgInfoOptions { Dest = ToAddress() }),
                 Body = bodyBuilder.Build(),
                 StateInit = _stateInit
             });
