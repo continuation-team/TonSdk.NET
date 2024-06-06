@@ -1,5 +1,4 @@
 using System;
-using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 
@@ -8,7 +7,6 @@ namespace TonSdk.Contracts.Wallet
     public struct HighloadV1Options
     {
         public byte[] PublicKey;
-        public int? Workchain;
         public uint? SubwalletId;
     }
 
