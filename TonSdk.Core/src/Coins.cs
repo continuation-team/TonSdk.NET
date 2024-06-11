@@ -33,12 +33,12 @@ namespace TonSdk.Core {
                 decimals = options?.Decimals != null ? options.Decimals : 9;
             }
 
-            var _value = value?.ToString().Replace(",", ".");
+            var _value = value?.ToString().Replace(",", ".") ?? "0";
 
             CheckCoinsType(_value);
             CheckCoinsDecimals(decimals);
 
-            decimal decimalValue = decimal.Parse(_value, new CultureInfo("en-US"));
+            decimal decimalValue = decimal.Parse(_value);
 
             int digitsValue = GetDigitsAfterDecimalPoint(decimalValue);
             if (digitsValue > decimals) {
@@ -206,7 +206,7 @@ namespace TonSdk.Core {
         private static void CheckCoinsType(object value) {
             if (IsValid(value) && IsConvertable(value)) return;
             if (IsCoins(value)) return;
-
+            
             throw new Exception("Invalid Coins value");
         }
 
@@ -245,7 +245,7 @@ namespace TonSdk.Core {
 
         private static bool IsConvertable(object value) {
             try {
-                decimal.Parse(value.ToString(), new CultureInfo("en-US"));
+                decimal.Parse(value.ToString());
                 return true;
             }
             catch (Exception) {
@@ -258,7 +258,7 @@ namespace TonSdk.Core {
         }
 
         private static int GetDigitsAfterDecimalPoint(decimal number) {
-            string[] parts = number.ToString(new CultureInfo("en-US")).Split('.');
+            string[] parts = number.ToString(CultureInfo.InvariantCulture).Split('.');
             if (parts.Length == 2) {
                 return parts[1].Length;
             }
