@@ -19,7 +19,8 @@ public class CoinsTest
         Assert.Throws<Exception>(() => new Coins(string.Empty), "Invalid value");
         Assert.Throws<Exception>(() => new Coins("cat"), "Invalid value");
         Assert.Throws<Exception>(() => new Coins("10.5d"), "Invalid value");
-        Assert.Throws<Exception>(() => new Coins(20.555, new CoinsOptions(false, 0)), "Invalid Coins value, decimals places \"3\" can't be greater than selected \"0\"");
+        Assert.Throws<Exception>(() => new Coins(20.555, new CoinsOptions(false, 0)),
+            "Invalid Coins value, decimals places \"3\" can't be greater than selected \"0\"");
     }
 
     [Test]
@@ -67,8 +68,10 @@ public class CoinsTest
         Assert.That(new Coins("10").IsNegative, Is.EqualTo(false));
         Assert.That(new Coins("10").IsPositive, Is.EqualTo(true));
         Assert.That(new Coins(0).IsZero, Is.EqualTo(true));
-        Assert.DoesNotThrow(() =>new Coins(10).ToBigInt());
-        Assert.That(new Coins("10,641462085").ToDecimal() == decimal.Parse("10,641462085"), Is.EqualTo(true));
+        Assert.DoesNotThrow(() => new Coins(10).ToBigInt());
+        var d1 = new Coins("10,641462085").ToDecimal();
+        var d2=decimal.Parse("10,641462085");
+        Assert.Equals(new Coins("10,641462085").ToDecimal() ,decimal.Parse("10,641462085") );
     }
 
     [Test]
@@ -144,5 +147,11 @@ public class CoinsTest
     {
         Assert.That(Coins.FromNano(9007199254740992).ToString(), Is.EqualTo("9007199,254740992"));
         Assert.That(Coins.FromNano("9007199254740992").ToString(), Is.EqualTo("9007199,254740992"));
+    }
+
+    [Test]
+    public void Test_LittleDoubleNumber()
+    {
+        Assert.DoesNotThrow(() => { new Coins(0.00000001); });
     }
 }
