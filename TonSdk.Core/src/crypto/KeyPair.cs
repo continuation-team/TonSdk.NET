@@ -13,17 +13,10 @@ namespace TonSdk.Core.Crypto
         public byte[] PrivateKey => _privateKey;
         public byte[] PublicKey => _publicKey;
 
-        public KeyPair(byte[] privateKey, byte[] publicKey = null)
+        public KeyPair(byte[] privateKey, byte[] publicKey)
         {
-            var privateKeyParams = new Ed25519PrivateKeyParameters(privateKey, 0);
-            var generatedPublicKey = privateKeyParams.GeneratePublicKey();
-            var encodedPublicKey = generatedPublicKey.GetEncoded();
-
-            if (encodedPublicKey != null && publicKey != encodedPublicKey)
-                throw new ArgumentException("Public key does not match the private key.");
-
             _privateKey = privateKey;
-            _publicKey = encodedPublicKey;
+            _publicKey = publicKey;
         }
 
         private static byte[] SignDetached(byte[] hash, byte[] privateKey)
