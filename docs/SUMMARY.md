@@ -23,6 +23,8 @@
   * [Wallet](user-manual/contracts/wallet/README.md)
     * [Wallet V3, V4](user-manual/contracts/wallet/wallet-v3-v4.md)
     * [Preprocessed V2](user-manual/contracts/wallet/preprocessed-v2.md)
+* [DeFi](user-manual/defi/README.md)
+  * [DeDust](user-manual/defi/dedust.md)
 * [Unity TonConnect 2.0](user-manual/unity-tonconnect-2.0/README.md)
   * [Getting Started](user-manual/unity-tonconnect-2.0/getting-started.md)
 * [Use cases](user-manual/use-cases/README.md)
