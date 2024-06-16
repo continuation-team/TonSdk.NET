@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <LangVersion>8.0</LangVersion>
+        <RootNamespace>TonSdk.DeFi</RootNamespace>
+        <PackageId>TonSdk.DeFi</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Continuation Team</Authors>
+        <PackageDescription>Library for work with popular TON DeFis.</PackageDescription>
+        <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="" />
+        <None Include="../LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="TonSdk.Client" Version="0.3.4" />
+        <PackageReference Include="TonSdk.Contracts" Version="0.3.1" />
+        <PackageReference Include="TonSdk.Core" Version="0.3.3" />
+    </ItemGroup>
+
+</Project>

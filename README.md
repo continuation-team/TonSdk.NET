@@ -27,6 +27,11 @@ Library to work with Ton Connect 2.0
 [![NuGet](https://img.shields.io/nuget/vpre/TonSdk.Adnl.svg)](https://www.nuget.org/packages/TonSdk.Adnl) \
 Library to work with Ton ADNL
 
+### [TonSdk.DeFi](https://www.nuget.org/packages/TonSdk.DeFi/)
+[![NuGet](https://img.shields.io/nuget/dt/TonSdk.Defi.svg)](https://www.nuget.org/packages/TonSdk.DeFi)
+[![NuGet](https://img.shields.io/nuget/vpre/TonSdk.DeFi.svg)](https://www.nuget.org/packages/TonSdk.DeFi) \
+Library to work with Ton DeFi`s
+
 ## Features and status
 
 - [x] Builder, Cell, Slice

@@ -48,8 +48,7 @@ namespace TonSdk.Core
             CheckCoinsType(value);
             CheckCoinsDecimals(decimals);
 
-            Debug.Assert(TryConvertToDecimal(value, out decimal decimalValue), "Should not fail");
-
+            TryConvertToDecimal(value, out decimal decimalValue);
             int digitsValue = GetDigitsAfterDecimalPoint(decimalValue);
             if (digitsValue > decimals)
             {
