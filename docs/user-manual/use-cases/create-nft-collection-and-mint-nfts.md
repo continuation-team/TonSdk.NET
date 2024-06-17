@@ -31,7 +31,7 @@ WalletV4Options options = new WalletV4Options()
 };
 
 // create wallet instance
-WalletV4 wallet = new WalletV4(optionsV4, 2); 
+WalletV4 wallet = new WalletV4(options, 2); 
 
 // define nft collections options
 NftCollectionOptions opts = new NftCollectionOptions()
@@ -66,10 +66,10 @@ var msg = wallet.CreateTransferMessage(new[]
         }),
         Mode = 3 // message mode
     }
-}, seqno ?? 0).Sign(m.Keys.PrivateKey);
+}, seqno ?? 0).Sign(mnemonic.Keys.PrivateKey);
 
 // send this message via TonClient
-await client.SendBoc(msg.Cell);
+await tonClient.SendBoc(msg.Cell);
 
 // print collection contract address
 Console.WriteLine(collection.Address);
@@ -113,11 +113,11 @@ var msg = wallet.CreateTransferMessage(new[]
         }),
         Mode = 3 // message mode
     }
-}, seqno ?? 0).Sign(m.Keys.PrivateKey);
+}, seqno ?? 0).Sign(mnemonic.Keys.PrivateKey);
 
 // send this message via TonClient
-await client.SendBoc(msg.Cell);
+await tonClient.SendBoc(msg.Cell);
 
 // print item address
-Console.WriteLine(await client.Nft.GetItemAddress(collection.Address, 0));
+Console.WriteLine(await tonClient.Nft.GetItemAddress(collection.Address, 0));
 ```
