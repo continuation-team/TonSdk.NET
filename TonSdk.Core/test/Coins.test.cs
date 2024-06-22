@@ -71,7 +71,7 @@ public class CoinsTest
         Assert.DoesNotThrow(() => new Coins(10).ToBigInt());
         var d1 = new Coins("10,641462085").ToDecimal();
         var d2=decimal.Parse("10,641462085");
-        Assert.Equals(new Coins("10,641462085").ToDecimal() ,decimal.Parse("10,641462085") );
+        Assert.That(new Coins("10,641462085").ToDecimal() ,Is.EqualTo(decimal.Parse("10,641462085")));
     }
 
     [Test]
@@ -152,6 +152,9 @@ public class CoinsTest
     [Test]
     public void Test_LittleDoubleNumber()
     {
-        Assert.DoesNotThrow(() => { new Coins(0.00000001); });
+        Assert.DoesNotThrow(() =>
+        {
+            var coins = new Coins(0.00000001);
+        });
     }
 }

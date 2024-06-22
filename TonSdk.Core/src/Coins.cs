@@ -1,25 +1,20 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
-namespace TonSdk.Core
-{
-    public class CoinsOptions
-    {
+namespace TonSdk.Core {
+    public class CoinsOptions {
         public bool IsNano { get; set; }
         public int Decimals { get; set; }
 
-        public CoinsOptions(bool IsNano = false, int Decimals = 9)
-        {
+        public CoinsOptions(bool IsNano = false, int Decimals = 9) {
             this.IsNano = IsNano;
             this.Decimals = Decimals;
         }
     }
 
-    public class Coins
-    {
+    public class Coins {
         private decimal Value { get; set; }
         private int Decimals { get; set; }
         private decimal Multiplier { get; set; }
@@ -29,29 +24,24 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="value">The value of the coins.</param>
         /// <param name="options">Optional options for customizing the coins.</param>
-        public Coins(object value, CoinsOptions? options = null)
-        {
+        public Coins(object value, CoinsOptions? options = null) {
             bool isNano = false;
             int decimals = 9;
 
-            if (options != null)
-            {
+            if (options != null) {
                 isNano = options?.IsNano != null ? options.IsNano : false;
                 decimals = options?.Decimals != null ? options.Decimals : 9;
             }
 
-            if (value is string valueStr)
-            {
-                value = valueStr.Replace(",", ".");
-            }
+            var _value = value?.ToString().Replace(",", ".");
 
-            CheckCoinsType(value);
+            CheckCoinsType(_value);
             CheckCoinsDecimals(decimals);
 
-            TryConvertToDecimal(value, out decimal decimalValue);
+            TryConvertCoinsValue(_value, out decimal decimalValue);
+
             int digitsValue = GetDigitsAfterDecimalPoint(decimalValue);
-            if (digitsValue > decimals)
-            {
+            if (digitsValue > decimals) {
                 throw new Exception(
                     $"Invalid Coins value, decimals places \"{digitsValue}\" can't be greater than selected \"{decimals}\"");
             }
@@ -66,8 +56,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to add.</param>
         /// <returns>A new Coins instance with the sum of the values.</returns>
-        public Coins Add(Coins coins)
-        {
+        public Coins Add(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
 
@@ -80,8 +69,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to subtract.</param>
         /// <returns>A new Coins instance with the difference of the values.</returns>
-        public Coins Sub(Coins coins)
-        {
+        public Coins Sub(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
 
@@ -94,8 +82,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="value">The value to multiply by.</param>
         /// <returns>A new Coins instance with the multiplied value.</returns>
-        public Coins Mul(object value)
-        {
+        public Coins Mul(object value) {
             CheckValue(value);
             CheckConvertibility(value);
 
@@ -110,8 +97,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="value">The value to divide by.</param>
         /// <returns>A new Coins instance with the divided value.</returns>
-        public Coins Div(object value)
-        {
+        public Coins Div(object value) {
             CheckValue(value);
             CheckConvertibility(value);
 
@@ -126,8 +112,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to compare.</param>
         /// <returns>True if the values are equal, false otherwise.</returns>
-        public bool Eq(Coins coins)
-        {
+        public bool Eq(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
             return Value == coins.Value;
@@ -138,8 +123,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to compare.</param>
         /// <returns>True if the current value is greater, false otherwise.</returns>
-        public bool Gt(Coins coins)
-        {
+        public bool Gt(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
             return Value > coins.Value;
@@ -150,8 +134,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to compare.</param>
         /// <returns>True if the current value is greater or equal, false otherwise.</returns>
-        public bool Gte(Coins coins)
-        {
+        public bool Gte(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
             return Value >= coins.Value;
@@ -162,8 +145,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to compare.</param>
         /// <returns>True if the current value is less, false otherwise.</returns>
-        public bool Lt(Coins coins)
-        {
+        public bool Lt(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
             return Value < coins.Value;
@@ -174,8 +156,7 @@ namespace TonSdk.Core
         /// </summary>
         /// <param name="coins">The Coins to compare.</param>
         /// <returns>True if the current value is less or equal, false otherwise.</returns>
-        public bool Lte(Coins coins)
-        {
+        public bool Lte(Coins coins) {
             CheckCoins(coins);
             CompareCoinsDecimals(this, coins);
             return Value <= coins.Value;
@@ -209,8 +190,7 @@ namespace TonSdk.Core
         /// Returns a string representation of the Coins value.
         /// </summary>
         /// <returns>A string representation of the Coins value.</returns>
-        public override string ToString()
-        {
+        public override string ToString() {
             decimal value = Value / Multiplier;
             string formattedValue = value.ToString("F" + Decimals);
 
@@ -223,96 +203,79 @@ namespace TonSdk.Core
             return coins;
         }
 
-        private static void CheckCoinsType(object value)
-        {
-            if (IsValid(value) && IsConvertable(value)) return;
+        private static void CheckCoinsType(object value) {
+            if (IsValid(value) && TryConvertCoinsValue(value, out _)) return;
             if (IsCoins(value)) return;
 
             throw new Exception("Invalid Coins value");
         }
 
-        private static void CheckCoinsDecimals(int decimals)
-        {
-            if (decimals < 0 || decimals > 18)
-            {
+        private static void CheckCoinsDecimals(int decimals) {
+            if (decimals < 0 || decimals > 18) {
                 throw new Exception("Invalid decimals value, must be 0-18");
             }
         }
 
-        private static void CheckCoins(Coins value)
-        {
+        private static void CheckCoins(Coins value) {
             //if (IsCoins(value)) return;
             //throw new Exception("Invalid value");
         }
 
-        private static void CompareCoinsDecimals(Coins a, Coins b)
-        {
-            if (a.Decimals != b.Decimals)
-            {
+        private static void CompareCoinsDecimals(Coins a, Coins b) {
+            if (a.Decimals != b.Decimals) {
                 throw new Exception("Can't perform mathematical operation of Coins with different decimals");
             }
         }
 
-        private static void CheckValue(object value)
-        {
+        private static void CheckValue(object value) {
             if (IsValid(value)) return;
             throw new Exception("Invalid value");
         }
 
-        private static void CheckConvertibility(object value)
-        {
-            if (IsConvertable(value)) return;
+        private static void CheckConvertibility(object value) {
+            if (TryConvertCoinsValue(value, out _)) return;
 
             throw new Exception("Invalid value");
         }
 
-        private static bool IsValid(object value)
-        {
+        private static bool IsValid(object value) {
             return value is string || value is int || value is decimal || value is double || value is float ||
                    value is long;
         }
 
-        private static bool IsConvertable(object value)
+        private static bool TryConvertCoinsValue(object value, out decimal result)
         {
-            return TryConvertToDecimal(value, out _);
-        }
-
-        private static bool TryConvertToDecimal(object value, out decimal result)
-        {
-            var strValue = value.ToString();
-            if (double.TryParse(strValue, NumberStyles.Float, CultureInfo.InvariantCulture,
-                    out var doubleValue))
-            {
-                result = (decimal)doubleValue;
-                return true;
-            }
-
-            if (decimal.TryParse(strValue, NumberStyles.Float, CultureInfo.InvariantCulture,
-                    out var decimalValue))
-            {
-                result = decimalValue;
-                return true;
-            }
-
             result = 0;
-            return false;
+            try {
+                Console.WriteLine(value);
+                
+                if (decimal.TryParse(value.ToString(), NumberStyles.Any, new CultureInfo("en-US"), out result)) {
+                    return true;
+                }
+                
+                double doubleValue;
+                if (double.TryParse(value.ToString(), NumberStyles.Any, new CultureInfo("en-US"), out doubleValue)) {
+                    result = (decimal)doubleValue;
+                    return true;
+                }
+
+                return false;
+            }
+            catch {
+                return false;
+            }
         }
 
-
-        private static bool IsCoins(object value)
-        {
+        private static bool IsCoins(object value) {
             return value is Coins;
         }
 
-        private static int GetDigitsAfterDecimalPoint(decimal number)
-        {
+        private static int GetDigitsAfterDecimalPoint(decimal number) {
             string[] parts = number.ToString(new CultureInfo("en-US")).Split('.');
-            if (parts.Length == 2)
-            {
+            if (parts.Length == 2) {
                 return parts[1].Length;
             }
-            else
-            {
+            else {
                 return 0;
             }
         }
@@ -323,8 +286,7 @@ namespace TonSdk.Core
         /// <param name="value">The value in nano.</param>
         /// <param name="decimals">The number of decimal places.</param>
         /// <returns>A new Coins instance representing the value in nano.</returns>
-        public static Coins FromNano(object value, int decimals = 9)
-        {
+        public static Coins FromNano(object value, int decimals = 9) {
             CheckCoinsType(value);
             CheckCoinsDecimals(decimals);
 
@@ -335,11 +297,10 @@ namespace TonSdk.Core
         /// Converts the value of the Coins instance to a BigInteger.
         /// </summary>
         /// <returns>A BigInteger representation of the value.</returns>
-        public BigInteger ToBigInt()
-        {
+        public BigInteger ToBigInt() {
             return new BigInteger(Value);
         }
-
+        
         /// <summary>
         /// Return the pointed value of the Coins instance in decimal.
         /// </summary>
