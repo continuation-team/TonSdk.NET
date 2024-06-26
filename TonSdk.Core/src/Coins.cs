@@ -247,8 +247,6 @@ namespace TonSdk.Core {
         {
             result = 0;
             try {
-                Console.WriteLine(value);
-                
                 if (decimal.TryParse(value.ToString(), NumberStyles.Any, new CultureInfo("en-US"), out result)) {
                     return true;
                 }

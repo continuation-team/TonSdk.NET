@@ -82,5 +82,42 @@ namespace TonSdk.Client
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
                 ? result.Value.Stack : result.Value.StackItems;
         }
+        
+        /// <summary>
+        /// Retrieves the public key ow the wallet with the specified address.
+        /// </summary>
+        /// <param name="address">The address for which to retrieve the public key.</param>
+        /// <returns>
+        /// The public key associated with the address, or empty byte[] if the retrieval failed or wrong contract.
+        /// </returns>
+        public async Task<byte[]> GetPublicKey(Address address)
+        {
+            var result = await client.RunGetMethod(address, "get_public_key", Array.Empty<IStackItem>());
+            if(result == null) return null;
+            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
+            byte[] publicKey = Array.Empty<byte>();
+
+            if (client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 ||
+                client.GetClientType() == TonClientType.HTTP_TONWHALESAPI ||
+                client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3)
+            {
+                byte[] key = ((BigInteger)result.Value.Stack[0]).ToByteArray();
+                Array.Reverse(key);
+                publicKey = new byte[key.Length - 1];
+                Array.Copy(key, 1, publicKey, 0, key.Length - 1);
+                return publicKey;
+            }
+            else
+            {
+                if (!(result.Value.StackItems[0] is VmStackInt))
+                    return publicKey;
+                
+                byte[] key = ((VmStackInt)result.Value.StackItems[0]).Value.ToByteArray();
+                Array.Reverse(key);
+                publicKey = new byte[key.Length - 1];
+                Array.Copy(key, 1, publicKey, 0, key.Length - 1);
+                return publicKey;
+            }
+        }
     }
 }
