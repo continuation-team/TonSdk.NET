@@ -194,13 +194,13 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeSendMessage(payload);
         }
 
-        public async Task<AccountStateResult> GetAccountState(Address address) => await FetchAccountState(address,
-            "liteServer.getAccountState id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState");
+        public async Task<AccountStateResult> GetAccountState(Address address, BlockIdExtended? blockIdExtended = null) => await FetchAccountState(address,
+            "liteServer.getAccountState id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState", blockIdExtended);
         
-        public async Task<AccountStateResult> GetAccountStatePrunned(Address address) => await FetchAccountState(address,
-            "liteServer.getAccountStatePrunned id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState");
+        public async Task<AccountStateResult> GetAccountStatePrunned(Address address, BlockIdExtended? blockIdExtended = null) => await FetchAccountState(address,
+            "liteServer.getAccountStatePrunned id:tonNode.blockIdExt account:liteServer.accountId = liteServer.AccountState", blockIdExtended);
 
-        public async Task<RunSmcMethodResult> RunSmcMethod(Address address, string methodName, byte[] stack, RunSmcOptions options)
+        public async Task<RunSmcMethodResult> RunSmcMethod(Address address, string methodName, byte[] stack, RunSmcOptions options, BlockIdExtended? blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
@@ -219,7 +219,7 @@ namespace TonSdk.Adnl.LiteClient
             if (options.LibExtras)
                 mode |= 1u << 4;
             
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -235,11 +235,11 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeRunSmcMethod(payload);
         }
 
-        public async Task<ShardInfo> GetShardInfo(int workchain, long shard, bool exact = false)
+        public async Task<ShardInfo> GetShardInfo(int workchain, long shard, bool exact = false, BlockIdExtended? blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -259,13 +259,13 @@ namespace TonSdk.Adnl.LiteClient
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            if(blockIdExtended == null)
-                blockIdExtended = (await GetMasterChainInfo()).LastBlockId;
+            
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
             
-            (id, data) = LiteClientEncoder.EncodeGetAllShardsInfo(blockIdExtended);
+            (id, data) = LiteClientEncoder.EncodeGetAllShardsInfo(blockId);
             
             var tcs = new TaskCompletionSource<TLReadBuffer>();
             _pendingRequests.Add(Utils.BytesToHex(id), tcs);
@@ -375,11 +375,11 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetBlockProof(payload);
         }
 
-        public async Task<ConfigInfo> GetConfigAll()
+        public async Task<ConfigInfo> GetConfigAll(BlockIdExtended? blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -394,11 +394,11 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetConfigAll(payload);
         }
         
-        public async Task<ConfigInfo> GetConfigParams(int[] paramIds)
+        public async Task<ConfigInfo> GetConfigParams(int[] paramIds, BlockIdExtended? blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
             
             byte[] id;
             byte[] data;
@@ -447,11 +447,13 @@ namespace TonSdk.Adnl.LiteClient
             return LiteClientDecoder.DecodeGetShardBlockProof(payload);
         }
         
-        private async Task<AccountStateResult> FetchAccountState(Address address, string query)
+        private async Task<AccountStateResult> FetchAccountState(Address address, string query, BlockIdExtended? blockIdExtended = null)
         {
             if (_adnlClient.State != AdnlClientState.Open) 
                 throw new Exception("Connection to lite server must be init before method calling. Use Connect() method to set up connection.");
-            BlockIdExtended blockId = (await GetMasterChainInfo()).LastBlockId;
+
+            var blockId = blockIdExtended ?? (await GetMasterChainInfo()).LastBlockId;
+            
             byte[] id;
             byte[] data;
             
