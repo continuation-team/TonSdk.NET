@@ -28,7 +28,16 @@ namespace TonSdk.Client
             await _liteClient.Connect();
         }
 
-        internal async Task<WalletInformationResult> GetWalletInformation(Address address)
+        private Adnl.LiteClient.BlockIdExtended ConvertBlockIdToAdnlBase(BlockIdExtended block)
+        {
+            return new Adnl.LiteClient.BlockIdExtended(
+                block.Workchain, 
+                Convert.FromBase64String(block.RootHash),
+                Convert.FromBase64String(block.FileHash),
+                block.Shard, (int)block.Seqno);
+        }
+
+        internal async Task<WalletInformationResult> GetWalletInformation(Address address, BlockIdExtended? block = null)
         {
             await Init();
             
@@ -38,7 +47,7 @@ namespace TonSdk.Client
                 Balance = new Coins(0)
             };
 
-            var addressInformation = await GetAddressInformation(address);
+            var addressInformation = await GetAddressInformation(address, block);
             result.State = addressInformation.State;
             
             if (addressInformation.State == AccountState.Uninit || addressInformation.State == AccountState.NonExist) 
@@ -57,11 +66,11 @@ namespace TonSdk.Client
             }
             return result;
         }
-        internal async Task<AddressInformationResult> GetAddressInformation(Address address)
+        internal async Task<AddressInformationResult> GetAddressInformation(Address address, BlockIdExtended? block = null)
         {
-            AddressInformationResult result = new AddressInformationResult();
+            var result = new AddressInformationResult();
             await Init();
-            var res = await _liteClient.GetAccountState(address);
+            var res = await _liteClient.GetAccountState(address, block == null ? null : ConvertBlockIdToAdnlBase(block));
             
             /*
             var cells = BagOfCells.DeserializeBoc(new Bits(res.Proof));
@@ -260,13 +269,13 @@ namespace TonSdk.Client
             }
             else transactionId = null;
             
-            ListBlockTransactionsResult blockTransactions = await _liteClient.ListBlockTransactions(blockId, count, transactionId);
+            var blockTransactions = await _liteClient.ListBlockTransactions(blockId, count, transactionId);
 
             result.Transactions = blockTransactions.TransactionIds.Select(tx => 
                 new ShortTransactionsResult()
                 {
                     Account = new Address(workchain, tx.Account).ToString(),
-                    Hash = Convert.ToBase64String(tx.Hash).ToLower(),
+                    Hash = Convert.ToBase64String(tx.Hash),
                     Lt = (ulong)tx.Lt
                 }).ToArray();
             result.Incomplete = blockTransactions.InComplete;
@@ -396,16 +405,17 @@ namespace TonSdk.Client
             }
         }
 
-        internal async Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems)
+        internal async Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems, BlockIdExtended? blockId = null)
         {
             await Init();
             
-            RunGetMethodResult result = new RunGetMethodResult();
+            var result = new RunGetMethodResult();
             byte[] stackBytes = BagOfCells.SerializeBoc(StackUtils.SerializeStack(stackItems)).ToBytes();
-            RunSmcMethodResult smcResult = await _liteClient.RunSmcMethod(address, method, stackBytes, new RunSmcOptions() { Result = true });
+            var smcResult = await _liteClient.RunSmcMethod(address, method, stackBytes, new RunSmcOptions() { Result = true },
+                blockId == null ? null : ConvertBlockIdToAdnlBase(blockId));
             try
             {
-                IStackItem[] resultStack = StackUtils.DeserializeStack(Convert.ToBase64String(smcResult.Result));
+                var resultStack = StackUtils.DeserializeStack(Convert.ToBase64String(smcResult.Result));
                 result.StackItems = resultStack;
                 result.ExitCode = smcResult.ExitCode;
                 return result;
@@ -422,7 +432,6 @@ namespace TonSdk.Client
             
             var result = new ConfigParamResult();
             byte[] configBytes = (await _liteClient.GetConfigParams(new int[] { configId })).ConfigProof;
-            Console.WriteLine(Convert.ToBase64String(configBytes));
             result.Bytes = Cell.From(new Bits(configBytes));
             return result;
         }
@@ -431,7 +440,6 @@ namespace TonSdk.Client
         {
             await Init();
             var result = new EstimateFeeResult();
-            //await _liteClient.SendMessage(messageX.Cell.Bits.ToBytes());
             return result;
         }
 

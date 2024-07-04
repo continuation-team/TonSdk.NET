@@ -73,35 +73,38 @@ namespace TonSdk.Client
         /// Retrieves the balance of the specified address.
         /// </summary>
         /// <param name="address">The address to retrieve the balance for.</param>
+        /// <param name="block">Can be placed to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The task result contains the balance as a Coins instance.</returns>
-        public async Task<Coins> GetBalance(Address address)
+        public async Task<Coins> GetBalance(Address address, BlockIdExtended? block = null)
         {
-            return (await GetAddressInformation(address))?.Balance;
+            return (await GetAddressInformation(address, block))?.Balance;
         }
 
         /// <summary>
         /// Checks if a contract is deployed at the specified address.
         /// </summary>
         /// <param name="address">The address to check.</param>
+        /// <param name="block">Can be placed to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The task result indicates whether a contract is deployed (true) or not (false) at the specified address.</returns>
-        public async Task<bool> IsContractDeployed(Address address)
+        public async Task<bool> IsContractDeployed(Address address, BlockIdExtended? block = null)
         {
-            return (await GetAddressInformation(address))?.State == AccountState.Active;
+            return (await GetAddressInformation(address, block))?.State == AccountState.Active;
         }
 
         /// <summary>
         /// Retrieves the address information for the specified address.
         /// </summary>
         /// <param name="address">The address object to retrieve information for.</param>
+        /// <param name="block">Can be placed to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>An object containing the address information.</returns>
-        public async Task<AddressInformationResult?> GetAddressInformation(Address address)
+        public async Task<AddressInformationResult?> GetAddressInformation(Address address, BlockIdExtended? block = null)
         {
             return _type switch
             {
                 TonClientType.HTTP_TONCENTERAPIV2 => await _httpApi.GetAddressInformation(address),
                 TonClientType.HTTP_TONCENTERAPIV3 => await _httpApiV3.GetAddressInformation(address),
                 TonClientType.HTTP_TONWHALESAPI => await _httpWhales.GetAddressInformation(address),
-                TonClientType.LITECLIENT => await _liteClientApi.GetAddressInformation(address),
+                TonClientType.LITECLIENT => await _liteClientApi.GetAddressInformation(address, block),
                 _ => null
             };
         }
@@ -110,15 +113,16 @@ namespace TonSdk.Client
         /// Retrieves the wallet information for the specified address.
         /// </summary>
         /// <param name="address">The address object to retrieve information for.</param>
+        /// <param name="block">Can be placed to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>An object containing the wallet information.</returns>
-        public async Task<WalletInformationResult?> GetWalletInformation(Address address)
+        public async Task<WalletInformationResult?> GetWalletInformation(Address address, BlockIdExtended? block = null)
         {
             return _type switch
             {
                 TonClientType.HTTP_TONCENTERAPIV2 => await _httpApi.GetWalletInformation(address),
                 TonClientType.HTTP_TONCENTERAPIV3 => await _httpApiV3.GetWalletInformation(address),
                 TonClientType.HTTP_TONWHALESAPI => await _httpWhales.GetWalletInformation(address),
-                TonClientType.LITECLIENT => await _liteClientApi.GetWalletInformation(address),
+                TonClientType.LITECLIENT => await _liteClientApi.GetWalletInformation(address, block),
                 _ => null
             };
         }
@@ -235,15 +239,17 @@ namespace TonSdk.Client
                 _ => null
             };
         }
-        
+
         /// <summary>
         /// Executes a specific method on the specified address.
         /// </summary>
         /// <param name="address">The address object to execute the method on.</param>
         /// <param name="method">The name of the method to execute.</param>
         /// <param name="stackItems">The stack parameters for the method (optional).</param>
+        /// <param name="block">Can be placed to fetch in specific block, requeres LiteClient (optional).</param>
         /// <returns>The result of the executed method.</returns>
-        public async Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems)
+        public async Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems,
+            BlockIdExtended? block = null)
         {
             return _type switch
             {
@@ -253,7 +259,7 @@ namespace TonSdk.Client
                     StackUtils.PackInStringV3(stackItems)),
                 TonClientType.HTTP_TONWHALESAPI => await _httpWhales.RunGetMethod(address, method,
                     StackUtils.PackInString(stackItems)),
-                _ => await _liteClientApi.RunGetMethod(address, method, stackItems)
+                _ => await _liteClientApi.RunGetMethod(address, method, stackItems, block)
             };
         }
         

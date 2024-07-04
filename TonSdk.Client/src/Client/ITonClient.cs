@@ -18,29 +18,33 @@ namespace TonSdk.Client
         /// Retrieves the balance of the specified address.
         /// </summary>
         /// <param name="address">The address to retrieve the balance for.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The task result contains the balance as a Coins instance.</returns>
-        Task<Coins> GetBalance(Address address);
+        Task<Coins> GetBalance(Address address, BlockIdExtended? block = null);
 
         /// <summary>
         /// Checks if a contract is deployed at the specified address.
         /// </summary>
         /// <param name="address">The address to check.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The task result indicates whether a contract is deployed (true) or not (false) at the specified address.</returns>
-        Task<bool> IsContractDeployed(Address address);
+        Task<bool> IsContractDeployed(Address address, BlockIdExtended? block = null);
 
         /// <summary>
         /// Retrieves the address information for the specified address.
         /// </summary>
         /// <param name="address">The address object to retrieve information for.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>An object containing the address information.</returns>
-        Task<AddressInformationResult?> GetAddressInformation(Address address);
+        Task<AddressInformationResult?> GetAddressInformation(Address address, BlockIdExtended? block = null);
 
         /// <summary>
         /// Retrieves the wallet information for the specified address.
         /// </summary>
         /// <param name="address">The address object to retrieve information for.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>An object containing the wallet information.</returns>
-        Task<WalletInformationResult?> GetWalletInformation(Address address);
+        Task<WalletInformationResult?> GetWalletInformation(Address address, BlockIdExtended? block = null);
 
         /// <summary>
         /// Get up-to-date masterchain state.
@@ -105,8 +109,9 @@ namespace TonSdk.Client
         /// <param name="address">The address object to execute the method on.</param>
         /// <param name="method">The name of the method to execute.</param>
         /// <param name="stackItems">The stack parameters for the method (optional).</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The result of the executed method.</returns>
-        Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems);
+        Task<RunGetMethodResult?> RunGetMethod(Address address, string method, IStackItem[] stackItems, BlockIdExtended? block = null);
 
         /// <summary>
         /// Executes a specific method on the specified address.
