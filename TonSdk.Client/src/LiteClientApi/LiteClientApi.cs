@@ -266,7 +266,7 @@ namespace TonSdk.Client
                 new ShortTransactionsResult()
                 {
                     Account = new Address(workchain, tx.Account).ToString(),
-                    Hash = Convert.ToBase64String(tx.Hash).ToLower(),
+                    Hash = Convert.ToBase64String(tx.Hash),
                     Lt = (ulong)tx.Lt
                 }).ToArray();
             result.Incomplete = blockTransactions.InComplete;
