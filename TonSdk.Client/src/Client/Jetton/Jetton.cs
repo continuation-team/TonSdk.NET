@@ -32,9 +32,9 @@ namespace TonSdk.Client
             public Cell JettonWalletCode;
         }
 
-        private async Task<JettonWalletData> GetWalletData(Address jettonWallet)
+        private async Task<JettonWalletData> GetWalletData(Address jettonWallet, BlockIdExtended? block = null)
         {
-            RunGetMethodResult? runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", Array.Empty<IStackItem>(), block);
                 
             if(runGetMethodResult == null) throw new Exception("Cannot retrieve jetton wallet data.");
             if (runGetMethodResult.Value.ExitCode == -13) throw new Exception("Jetton wallet is not deployed");
@@ -63,27 +63,28 @@ namespace TonSdk.Client
             return jettonWalletData;
         }
 
-        private async Task<uint> GetDecimals(Address jettonMasterContract)
+        private async Task<uint> GetDecimals(Address jettonMasterContract, BlockIdExtended? block = null)
         {
-            JettonData jettonData = await GetData(jettonMasterContract);
+            var jettonData = await GetData(jettonMasterContract, block);
             return jettonData.Content.Decimals;
         }
 
-        private async Task<uint> GetDecimalsByWallet(Address jettonWallet)
+        private async Task<uint> GetDecimalsByWallet(Address jettonWallet, BlockIdExtended? block = null)
         {
-            JettonWalletData jettonWalletData = await GetWalletData(jettonWallet);
-            return await GetDecimals(jettonWalletData.JettonMasterAddress);
+            var jettonWalletData = await GetWalletData(jettonWallet, block);
+            return await GetDecimals(jettonWalletData.JettonMasterAddress, block);
         }
 
         /// <summary>
         /// Retrieves the jetton data
         /// </summary>
         /// <param name="jettonMasterContract">Jetton master contract address.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>JettonData object with jetton data.</returns>
         /// <exception cref="Exception">Throws when cannot retrieve jetton data.</exception>
-        public async Task<JettonData> GetData(Address jettonMasterContract)
+        public async Task<JettonData> GetData(Address jettonMasterContract, BlockIdExtended? block = null)
         {
-            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", Array.Empty<IStackItem>(), block);
             
             if(result == null) throw new Exception("Cannot retrieve jetton wallet data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve jetton data.");
@@ -131,11 +132,12 @@ namespace TonSdk.Client
         /// <param name="jettonWallet">The jetton wallet address.</param>
         /// <param name="limit">The maximum number of transactions to retrieve. Defaults to 5.</param>
         /// <param name="decimals">Optional decimals value to parse the transaction amounts. If not provided, it will be fetched from the wallet.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>An array of parsed jetton transactions.</returns>
-        public async Task<IJettonTransaction[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null)
+        public async Task<IJettonTransaction[]> GetTransactions(Address jettonWallet, int limit = 5, uint? decimals = null, BlockIdExtended? block = null)
         {
             TransactionsInformationResult[] transactionsInformationResults = await client.GetTransactions(jettonWallet, (uint)limit);
-            uint jettonDecimals = decimals ?? await GetDecimalsByWallet(jettonWallet);
+            uint jettonDecimals = decimals ?? await GetDecimalsByWallet(jettonWallet, block);
 
             IJettonTransaction[] parsedTransactions = new IJettonTransaction[transactionsInformationResults.Length];
             var j = 0;
@@ -153,10 +155,11 @@ namespace TonSdk.Client
         /// Retrieves the balance of a jetton wallet.
         /// </summary>
         /// <param name="jettonWallet">The jetton wallet address.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The balance of the jetton wallet.</returns>
-        public async Task<Coins> GetBalance(Address jettonWallet)
+        public async Task<Coins> GetBalance(Address jettonWallet, BlockIdExtended? block = null)
         {
-            JettonWalletData jettonWalletData = await GetWalletData(jettonWallet);
+            JettonWalletData jettonWalletData = await GetWalletData(jettonWallet, block);
             return jettonWalletData.Balance;
         }
 
@@ -165,8 +168,9 @@ namespace TonSdk.Client
         /// </summary>
         /// <param name="jettonMasterContract">The jetton master contract address.</param>
         /// <param name="walletOwner">The wallet owner address.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The wallet address.</returns>
-        public async Task<Address> GetWalletAddress(Address jettonMasterContract, Address walletOwner)
+        public async Task<Address> GetWalletAddress(Address jettonMasterContract, Address walletOwner, BlockIdExtended? block = null)
         {
             var stackItems = new List<IStackItem>()
             {
@@ -175,7 +179,7 @@ namespace TonSdk.Client
                     Value = new CellBuilder().StoreAddress(walletOwner).Build().Parse()
                 }
             };
-            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stackItems.ToArray());
+            RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_wallet_address", stackItems.ToArray(), block);
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) Console.WriteLine("error");    
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
                 ? ((Cell)result.Value.Stack[0]).Parse().LoadAddress()! 
