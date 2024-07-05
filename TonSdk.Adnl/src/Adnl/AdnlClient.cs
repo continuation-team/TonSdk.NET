@@ -42,6 +42,8 @@ namespace TonSdk.Adnl
             _port = port;
             _address = new AdnlAddress(peerPublicKey);
             _socket = new TcpClient();
+            _socket.ReceiveBufferSize = 1 * 1024 * 1024; 
+            _socket.SendBufferSize = 1 * 1024 * 1024;
         }
 
         public AdnlClientTcp(int host, int port, string peerPublicKey)
@@ -50,6 +52,8 @@ namespace TonSdk.Adnl
             _port = port;
             _address = new AdnlAddress(peerPublicKey);
             _socket = new TcpClient();
+            _socket.ReceiveBufferSize = 1 * 1024 * 1024; 
+            _socket.SendBufferSize = 1 * 1024 * 1024;
         }
         
         public AdnlClientTcp(string host, int port, byte[] peerPublicKey)
@@ -58,6 +62,8 @@ namespace TonSdk.Adnl
             _port = port;
             _address = new AdnlAddress(peerPublicKey);
             _socket = new TcpClient();
+            _socket.ReceiveBufferSize = 1 * 1024 * 1024; 
+            _socket.SendBufferSize = 1 * 1024 * 1024;
         }
 
         public AdnlClientTcp(string host, int port, string peerPublicKey)
@@ -66,6 +72,8 @@ namespace TonSdk.Adnl
             _port = port;
             _address = new AdnlAddress(peerPublicKey);
             _socket = new TcpClient();
+            _socket.ReceiveBufferSize = 1 * 1024 * 1024; 
+            _socket.SendBufferSize = 1 * 1024 * 1024;
         }
 
         private async Task Handshake()
@@ -98,7 +106,7 @@ namespace TonSdk.Adnl
         {
             try
             {
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[1024 * 1024];
 
                 while (_socket.Connected)
                 {

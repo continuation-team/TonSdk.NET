@@ -45,8 +45,9 @@ namespace TonSdk.Client
         /// </summary>
         /// <param name="collection">The address of the collection.</param>
         /// <param name="index">The index of the item.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The address of the item.</returns>
-        public async Task<Address> GetItemAddress(Address collection, uint index)
+        public async Task<Address> GetItemAddress(Address collection, uint index, BlockIdExtended? block = null)
         {
             var stackItems = new List<IStackItem>()
             {
@@ -55,7 +56,7 @@ namespace TonSdk.Client
                     Value = index
                 }
             };
-            var result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray());
+            var result = await client.RunGetMethod(collection, "get_nft_address_by_index", stackItems.ToArray(), block);
             
             if ( result == null || result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft address.");
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
@@ -67,10 +68,11 @@ namespace TonSdk.Client
         /// Retrieves the royalty parameters of the specified NFT collection.
         /// </summary>
         /// <param name="collection">The address of the NFT collection.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The royalty parameters of the collection.</returns>
-        public async Task<NftRoyaltyParams> GetRoyaltyParams(Address collection)
+        public async Task<NftRoyaltyParams> GetRoyaltyParams(Address collection, BlockIdExtended? block = null)
         {
-            RunGetMethodResult? result = await client.RunGetMethod(collection, "royalty_params", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(collection, "royalty_params", Array.Empty<IStackItem>(), block);
             
             if(result == null) throw new Exception("Cannot retrieve nft collection royalty params.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection royalty params.");
@@ -117,10 +119,11 @@ namespace TonSdk.Client
         /// Retrieves the data of the specified NFT collection.
         /// </summary>
         /// <param name="collection">The address of the NFT collection.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The data of the collection.</returns>
-        public async Task<NftCollectionData> GetCollectionData(Address collection)
+        public async Task<NftCollectionData> GetCollectionData(Address collection, BlockIdExtended? block = null)
         {
-            RunGetMethodResult? result = await client.RunGetMethod(collection, "get_collection_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(collection, "get_collection_data", Array.Empty<IStackItem>(), block);
             
             if(result == null) throw new Exception("Cannot retrieve nft collection data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft collection data.");
@@ -165,10 +168,11 @@ namespace TonSdk.Client
         /// Retrieves the data of the specified NFT item.
         /// </summary>
         /// <param name="itemAddress">The address of the NFT item.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The data of the NFT item.</returns>
-        public async Task<NftItemData> GetNftItemData(Address itemAddress)
+        public async Task<NftItemData> GetNftItemData(Address itemAddress, BlockIdExtended? block = null)
         {
-            RunGetMethodResult? result = await client.RunGetMethod(itemAddress, "get_nft_data", Array.Empty<IStackItem>());
+            RunGetMethodResult? result = await client.RunGetMethod(itemAddress, "get_nft_data", Array.Empty<IStackItem>(), block);
             
             if(result == null) throw new Exception("Cannot retrieve nft item data.");
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve nft item data.");

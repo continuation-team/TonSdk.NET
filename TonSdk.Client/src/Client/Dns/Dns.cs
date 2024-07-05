@@ -16,19 +16,20 @@ namespace TonSdk.Client
         /// Retrieves the wallet address associated with the specified domain.
         /// </summary>
         /// <param name="domain">The domain to resolve the wallet address for.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>
         /// The wallet address associated with the domain, or null if the domain is not associated with a wallet address.
         /// </returns>
-        public async Task<Address> GetWalletAddress(string domain)
+        public async Task<Address> GetWalletAddress(string domain, BlockIdExtended? block = null)
         {
-            var result = await ResolveAsync(domain, DnsUtils.DNS_CATEGORY_WALLET);
+            var result = await ResolveAsync(domain, DnsUtils.DNS_CATEGORY_WALLET, false, block);
             if (!(result is Address)) return null;
             return new Address((Address)result);
         }
 
-        private async Task<object> ResolveAsync(string domain, string category = null, bool oneStep = false)
+        private async Task<object> ResolveAsync(string domain, string category = null, bool oneStep = false, BlockIdExtended? block = null)
         {
-            return await DnsUtils.DnsResolve(client, await GetRootDnsAddress(), domain, category, oneStep);
+            return await DnsUtils.DnsResolve(client, await GetRootDnsAddress(), domain, category, oneStep, block);
         }
 
         /// <summary>

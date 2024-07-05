@@ -18,10 +18,10 @@ namespace TonSdk.Client
         public const string DNS_CATEGORY_WALLET = "wallet";
         public const string DNS_CATEGORY_SITE = "site";
 
-        public static async Task<object> DnsResolve(TonClient client, Address rootDnsAddress, string domain, string category = null, bool? oneStep = null)
+        public static async Task<object> DnsResolve(TonClient client, Address rootDnsAddress, string domain, string category = null, bool? oneStep = null, BlockIdExtended? blockIdExtended = null)
         {
             byte[] domainBuffer = DomainToBuffer(domain);
-            return await DnsResolveImpl(client, rootDnsAddress, domainBuffer, category, oneStep);
+            return await DnsResolveImpl(client, rootDnsAddress, domainBuffer, category, oneStep, blockIdExtended);
         }
 
         public static byte[] DomainToBuffer(string domain)
@@ -31,14 +31,13 @@ namespace TonSdk.Client
 
             string domainLower = domain.ToLower();
 
-            for (int i = 0; i < domainLower.Length; i++)
+            if (domainLower.Where((t, i) => char.ConvertToUtf32(domainLower, i) < 32).Any())
             {
-                if (char.ConvertToUtf32(domainLower, i) < 32) throw new Exception("Bytes in range 0..32 are not allowed in domain names");
+                throw new Exception("Bytes in range 0..32 are not allowed in domain names");
             }
 
-            for (int i = 0; i < domainLower.Length; i++)
+            foreach (char s in domainLower)
             {
-                char s = domainLower[i];
                 for (int c = 127; c <= 159; c++)
                 {
                     if (s == (char)c)
@@ -50,17 +49,15 @@ namespace TonSdk.Client
 
             string[] domainPair = domain.Split('.');
 
-            foreach (string domainPart in domainPair)
-            {
-                if (domain.Length == 0) throw new Exception("Domain name cannot have an empty component");
-            }
+            if (domainPair.Any(domainPart => domain.Length == 0))
+                throw new Exception("Domain name cannot have an empty component");
 
             string rawDomain = string.Join("\0", domainPair.Reverse()) + "\0";
             byte[] buffer = Encoding.UTF8.GetBytes(rawDomain);
             return buffer;
         }
 
-        public static async Task<object> DnsResolveImpl(TonClient client, Address dnsAddress, byte[] domainBytes, string category = null, bool? oneStep = null)
+        private static async Task<object> DnsResolveImpl(TonClient client, Address dnsAddress, byte[] domainBytes, string category = null, bool? oneStep = null, BlockIdExtended? blockIdExtended = null)
         {
             int length = domainBytes.Length * 8;
 
@@ -84,7 +81,7 @@ namespace TonSdk.Client
                     Value = categoryBigInt
                 }
             };
-            var runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stackItems.ToArray());
+            var runGetMethodResult = await client.RunGetMethod(dnsAddress, "dnsresolve", stackItems.ToArray(), blockIdExtended);
             
             if(runGetMethodResult == null) throw new Exception("Cannot retrieve DNS resolve data.");
             if (runGetMethodResult.Value.ExitCode != 0 && runGetMethodResult.Value.ExitCode != 1) throw new Exception("Cannot retrieve DNS resolve data.");
@@ -136,7 +133,7 @@ namespace TonSdk.Client
 
                 byte[] result = new byte[domainBytes.Length - (resultLen / 8)];
                 Array.Copy(domainBytes, resultLen / 8, result, 0, result.Length);
-                return await DnsResolveImpl(client, nextAddress, result, category, false);
+                return await DnsResolveImpl(client, nextAddress, result, category, false, blockIdExtended);
             }
         }
 

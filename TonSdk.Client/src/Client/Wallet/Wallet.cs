@@ -21,10 +21,11 @@ namespace TonSdk.Client
         /// Retrieves the sequence number (seqno) of the specified address.
         /// </summary>
         /// <param name="address">The address for which to retrieve the sequence number.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The sequence number of the address, or null if the retrieval failed or the sequence number is not available.</returns>
-        public async Task<uint?> GetSeqno(Address address)
+        public async Task<uint?> GetSeqno(Address address, BlockIdExtended? block = null)
         {
-            var result = await client.RunGetMethod(address, "seqno", Array.Empty<IStackItem>());
+            var result = await client.RunGetMethod(address, "seqno", Array.Empty<IStackItem>(), block);
             
             if(result == null) return null;
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
@@ -46,10 +47,11 @@ namespace TonSdk.Client
         /// Retrieves the subwallet ID of the specified address.
         /// </summary>
         /// <param name="address">The address for which to retrieve the subwallet ID.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>The subwallet ID of the address, or null if the retrieval failed or the subwallet ID is not available.</returns>
-        public async Task<uint?> GetSubwalletId(Address address)
+        public async Task<uint?> GetSubwalletId(Address address, BlockIdExtended? block = null)
         {
-            var result = await client.RunGetMethod(address, "get_subwallet_id", Array.Empty<IStackItem>());
+            var result = await client.RunGetMethod(address, "get_subwallet_id", Array.Empty<IStackItem>(), block);
             
             if(result == null) return null;
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
@@ -71,12 +73,13 @@ namespace TonSdk.Client
         /// Retrieves the list of plugins associated with the specified address.
         /// </summary>
         /// <param name="address">The address for which to retrieve the plugin list.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>
         /// The list of plugins associated with the address, or null if the retrieval failed or the list is not available.
         /// </returns>
-        public async Task<object[]> GetPluginList(Address address)
+        public async Task<object[]> GetPluginList(Address address, BlockIdExtended? block = null)
         {
-            var result = await client.RunGetMethod(address, "get_plugin_list", Array.Empty<IStackItem>());
+            var result = await client.RunGetMethod(address, "get_plugin_list", Array.Empty<IStackItem>(), block);
             if(result == null) return null;
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
             return client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3
@@ -87,12 +90,13 @@ namespace TonSdk.Client
         /// Retrieves the public key ow the wallet with the specified address.
         /// </summary>
         /// <param name="address">The address for which to retrieve the public key.</param>
+        /// <param name="block">Can be provided to fetch in specific block, requires LiteClient (optional).</param>
         /// <returns>
         /// The public key associated with the address, or empty byte[] if the retrieval failed or wrong contract.
         /// </returns>
-        public async Task<byte[]> GetPublicKey(Address address)
+        public async Task<byte[]> GetPublicKey(Address address, BlockIdExtended? block = null)
         {
-            var result = await client.RunGetMethod(address, "get_public_key", Array.Empty<IStackItem>());
+            var result = await client.RunGetMethod(address, "get_public_key", Array.Empty<IStackItem>(), block);
             if(result == null) return null;
             if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) return null;
             byte[] publicKey = Array.Empty<byte>();
