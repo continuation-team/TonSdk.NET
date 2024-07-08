@@ -198,6 +198,9 @@ namespace TonSdk.Core.Boc {
         protected T StoreVarInt(BigInteger value, int length, bool sgn) {
             int size = (int)Math.Ceiling(Math.Log(length, 2));
             var sizeBytes = (int)Math.Ceiling(BigInteger.Log(value, 2) / 8);
+            if (sizeBytes == 0) {
+                sizeBytes = 1;
+            }
             var sizeBits = sizeBytes * 8;
             CheckBitsOverflow(sizeBits + size);
             return value == 0

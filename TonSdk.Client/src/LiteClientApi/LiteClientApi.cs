@@ -295,48 +295,34 @@ namespace TonSdk.Client
 
                 if (transactions.Length == 0)
                     return result.ToArray();
-
-                // public long Utime;
-                // public Cell Data;
-                // public TransactionId TransactionId;
-                // public Coins Fee;
-                // public Coins StorageFee;
-                // public Coins OtherFee;
-                // public RawMessage InMsg;
-                // public RawMessage[] OutMsgs;
-
-                // Console.WriteLine(new Bits(transactions).ToString("base64"));
-                Cell[] cells = BagOfCells.DeserializeBoc(new Bits(transactions));
-
+                
+                var cells = BagOfCells.DeserializeBoc(new Bits(transactions));
                 foreach (var cell in cells)
                 {
                     var tx = new TransactionsInformationResult();
-
                     var slice = cell.Parse();
-
                     slice.LoadBits(4);
                     slice.LoadBytes(32);
                     tx.TransactionId.Lt = (ulong)slice.LoadUInt(64);
-
                     slice.LoadBytes(32);
                     slice.LoadUInt(64);
 
-                    uint outMsgCount = (uint)slice.LoadUInt(15);
+                    slice.LoadUInt(15);
                     slice.LoadBits(2);
                     slice.LoadBits(2);
 
                     var firstRefSlice = slice.LoadRef().Parse();
-                    var isMsgRef = firstRefSlice.LoadBit();
-                    if (isMsgRef)
+                    var inMsg = firstRefSlice.LoadOptRef();
+                    if (inMsg != null)
                     {
-                        var inMsg = firstRefSlice.LoadRef().Parse();
-                        var msgx = MessageX.Parse(inMsg);
-
+                        var msgx = MessageX.Parse(inMsg.Parse());
                         var cmnMsgInfo = msgx.Data.Info.Cell.Parse();
                         cmnMsgInfo.LoadBit();
                         cmnMsgInfo.LoadBit();
                         cmnMsgInfo.LoadBit();
                         cmnMsgInfo.LoadBit();
+                        tx.InMsg.MsgData.InitState = msgx.Data.StateInit == null ? "" : msgx.Data.StateInit.Cell.ToString("base64");
+                        tx.InMsg.MsgData.Body = msgx.Data.Body;
                         tx.InMsg.Source = cmnMsgInfo.LoadAddress();
                         tx.InMsg.Destination = cmnMsgInfo.LoadAddress();
                         if (cmnMsgInfo.RemainderBits != 2)
@@ -346,10 +332,9 @@ namespace TonSdk.Client
                                 cmnMsgInfo.LoadRef();
                             tx.InMsg.IhrFee = cmnMsgInfo.LoadCoins() ?? new Coins(0);
                             tx.InMsg.FwdFee = cmnMsgInfo.LoadCoins() ?? new Coins(0);
-                            tx.InMsg.CreatedLt = (long)cmnMsgInfo.LoadUInt(64);
+                            tx.InMsg.CreatedLt = (ulong)cmnMsgInfo.LoadUInt(64);
                         }
                     }
-
                     var hmOptions = new HashmapOptions<uint, CellSlice>()
                     {
                         KeySize = 15,
@@ -371,8 +356,12 @@ namespace TonSdk.Client
                     {
                         var rawMessage = new RawMessage();
                         var msg = outMsgsMap.Get(i);
+                        if(msg == null)
+                            continue;
                         var outMsgX = MessageX.Parse(msg.LoadRef().Parse());
                         var cmnMsgInfo = outMsgX.Data.Info.Cell.Parse();
+                        rawMessage.MsgData.InitState = outMsgX.Data.StateInit == null ? "" : outMsgX.Data.StateInit.Cell.ToString("base64");
+                        rawMessage.MsgData.Body = outMsgX.Data.Body;
                         cmnMsgInfo.LoadBit();
                         cmnMsgInfo.LoadBit();
                         cmnMsgInfo.LoadBit();
@@ -386,7 +375,7 @@ namespace TonSdk.Client
                                 cmnMsgInfo.LoadRef();
                             rawMessage.IhrFee = cmnMsgInfo.LoadCoins();
                             rawMessage.FwdFee = cmnMsgInfo.LoadCoins();
-                            rawMessage.CreatedLt = (long)cmnMsgInfo.LoadUInt(64);
+                            rawMessage.CreatedLt = (ulong)cmnMsgInfo.LoadUInt(64);
                         }
 
                         msgsList.Add(rawMessage);

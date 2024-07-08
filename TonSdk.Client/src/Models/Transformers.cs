@@ -448,7 +448,7 @@ namespace TonSdk.Client
             [JsonProperty("value")] public string Value;
             [JsonProperty("fwd_fee")] public string FwdFee;
             [JsonProperty("ihr_fee")] public string IhrFee;
-            [JsonProperty("created_lt")] public long CreaterLt;
+            [JsonProperty("created_lt")] public ulong CreaterLt;
             [JsonProperty("body_hash")] public string BodyHash;
             [JsonProperty("msg_data")] public OutRawMessageData MsgData;
             [JsonProperty("message")] public string Message;
@@ -461,7 +461,7 @@ namespace TonSdk.Client
             [JsonProperty("value")] public string Value;
             [JsonProperty("fwd_fee")] public string FwdFee;
             [JsonProperty("ihr_fee")] public string IhrFee;
-            [JsonProperty("created_lt")] public long CreatedLt;
+            [JsonProperty("created_lt")] public ulong CreatedLt;
             [JsonProperty("message_content")] public OutV3RawMessageData MsgData;
         }
         
@@ -820,7 +820,7 @@ namespace TonSdk.Client
         public Coins Value;
         public Coins FwdFee;
         public Coins IhrFee;
-        public long CreatedLt;
+        public ulong CreatedLt;
         public string BodyHash;
         public RawMessageData MsgData;
         public string Message;
