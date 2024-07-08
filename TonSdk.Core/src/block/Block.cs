@@ -165,7 +165,8 @@ namespace TonSdk.Core.Block
             var _slice = slice.Clone();
             if (!_slice.LoadBit()) return IntMsgInfo.Parse(slice, true);
             if (!_slice.LoadBit()) return ExtInMsgInfo.Parse(slice, true);
-            throw new NotImplementedException("ExtOutMsgInfo is not implemented yet");
+            return ExtOutMsgInfo.Parse(slice, true);
+            //throw new NotImplementedException("ExtOutMsgInfo is not implemented yet");
         }
     }
 
@@ -174,7 +175,7 @@ namespace TonSdk.Core.Block
         public bool Bounce;
         public bool? Bounced;
         public Address? Src;
-        public Address Dest;
+        public Address? Dest;
         public Coins Value;
         public Coins? IhrFee;
         public Coins? FwdFee;
@@ -244,9 +245,10 @@ namespace TonSdk.Core.Block
 
     public struct ExtInMsgInfoOptions {
         public Address? Src;
-        public Address Dest;
+        public Address? Dest;
         public Coins? ImportFee;
     }
+    
 
     public class ExtInMsgInfo : CommonMsgInfo {
         public ExtInMsgInfo(ExtInMsgInfoOptions opt) {
@@ -272,7 +274,6 @@ namespace TonSdk.Core.Block
 
             var src = _slice.LoadAddress();
             var dest = _slice.LoadAddress();
-            if (dest == null) throw new Exception("Invalid dest address");
             var importFee = _slice.LoadCoins();
 
             slice.SkipBits(slice.RemainderBits - _slice.RemainderBits);
@@ -282,6 +283,55 @@ namespace TonSdk.Core.Block
                 Src = src,
                 Dest = dest,
                 ImportFee = importFee
+            });
+        }
+    };
+    
+    public struct ExtOutMsgInfoOptions {
+        public Address Src;
+        public Address? Dest;
+        public ulong CreatedLt;
+        public uint CreatedAt;
+    }
+    
+    public class ExtOutMsgInfo : CommonMsgInfo {
+        public ExtOutMsgInfo(ExtOutMsgInfoOptions opt) {
+            _data = opt;
+            _cell = new CellBuilder()
+                .StoreBit(true).StoreBit(false) // ext_out_msg_info$11
+                .StoreAddress(opt.Src)
+                .StoreAddress(opt.Dest)
+                .StoreUInt(opt.CreatedLt, 64)
+                .StoreUInt(opt.CreatedAt, 32)
+                .Build();
+        }
+
+        public static ExtOutMsgInfo Parse(CellSlice slice, bool skipPrefix = false) {
+            var _slice = slice.Clone();
+            if (!skipPrefix) {
+                var prefix = (byte)_slice.LoadInt(2);
+                if (prefix != 0b11)
+                    throw new ArgumentException("Invalid ExtOutMsgInfo prefix. TLB: `ext_out_msg_info$11`");
+            }
+            else {
+                _slice.SkipBits(2);
+            }
+
+            var src = _slice.LoadAddress();
+            if (src == null) throw new Exception("Invalid src address");
+            var dest = _slice.LoadAddress();
+            //if (dest == null) throw new Exception("Invalid dest address");
+            ulong createdLt = (ulong)_slice.LoadUInt(64);
+            uint createdAt = (uint)_slice.LoadUInt(32);
+
+            slice.SkipBits(slice.RemainderBits - _slice.RemainderBits);
+            slice.SkipRefs(slice.RemainderRefs - _slice.RemainderRefs);
+
+            return new ExtOutMsgInfo(new ExtOutMsgInfoOptions() {
+                Src = src,
+                Dest = dest,
+                CreatedLt = createdLt,
+                CreatedAt = createdAt
             });
         }
     };
