@@ -346,14 +346,29 @@ namespace TonSdk.Core.Block
 
         private bool _signed;
 
+        private Cell _signedCell;
+
         public bool Signed {
             get => _signed;
+        }
+
+        public Cell SignedCell {
+            get => _signedCell;
         }
 
         public MessageX(MessageXOptions opt) {
             _data = opt;
             _cell = buildCell();
             _signed = false;
+        }
+        
+        private Cell signCell(byte[]? privateKey = null, bool eitherSliceRef = false)
+        {
+            var builder = new CellBuilder();
+            var body = KeyPair.Sign(_data.Body, privateKey);
+            builder.StoreBytes(body);
+            builder.StoreCellSlice(_data.Body.Parse());
+            return builder.Build();
         }
 
         private Cell buildCell(byte[]? privateKey = null, bool eitherSliceRef = false) {
@@ -407,6 +422,7 @@ namespace TonSdk.Core.Block
             if (_data.Body == null) throw new Exception("MessageX body is empty");
             if (_signed) throw new Exception("MessageX already signed");
             _cell = buildCell(privateKey, eitherSliceRef);
+            _signedCell = signCell(privateKey, eitherSliceRef);
             _signed = true;
             return this;
         }

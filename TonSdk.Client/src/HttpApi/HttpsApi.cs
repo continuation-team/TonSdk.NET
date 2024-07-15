@@ -190,12 +190,12 @@ namespace TonSdk.Client
         
         internal async Task<EstimateFeeResult> EstimateFee(MessageX message, bool ignoreChksig = true)
         {
-            var dataMsg = message.Data;
+            Cell body = message.SignedCell;
 
             Address address = (message.Data.Info.Data is IntMsgInfoOptions info) ? info.Dest :
                       (message.Data.Info.Data is ExtInMsgInfoOptions info2) ? info2.Dest : null;
 
-            Cell body = dataMsg.Body;
+            var dataMsg = message.Data;
             Cell init_code = dataMsg.StateInit?.Data.Code;
             Cell init_data = dataMsg.StateInit?.Data.Data;
 
@@ -212,7 +212,7 @@ namespace TonSdk.Client
             RootEstimateFee resultRoot = JsonConvert.DeserializeObject<RootEstimateFee>(result);
             EstimateFeeResult outEstimateFee = resultRoot.Result;
             return outEstimateFee;
-        }
+        }   
         
         internal async Task<ConfigParamResult> GetConfigParam(int configId, int? seqno = null)
         {
