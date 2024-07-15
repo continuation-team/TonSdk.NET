@@ -212,7 +212,7 @@ namespace TonSdk.Client
             RootEstimateFee resultRoot = JsonConvert.DeserializeObject<RootEstimateFee>(result);
             EstimateFeeResult outEstimateFee = resultRoot.Result;
             return outEstimateFee;
-        }   
+        }
         
         internal async Task<ConfigParamResult> GetConfigParam(int configId, int? seqno = null)
         {
