@@ -349,6 +349,7 @@ namespace TonSdk.Client
                     return result.ToArray();
                 
                 var cells = BagOfCells.DeserializeBoc(new Bits(transactions));
+                
                 result.AddRange(cells.Select(cell => Parsers.Utils.ParseTransactionCell(cell)));
 
                 return result.ToArray();
