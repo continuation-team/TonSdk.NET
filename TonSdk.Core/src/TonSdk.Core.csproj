@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Core</RootNamespace>
         <PackageId>TonSdk.Core</PackageId>
-        <Version>0.3.8</Version>
+        <Version>0.3.9</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Core library with types and structures for TON Blockchain</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
