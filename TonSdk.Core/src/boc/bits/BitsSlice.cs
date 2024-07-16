@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Numerics;
 using System.Text;
+using TonSdk.Core.Crypto;
 
 namespace TonSdk.Core.Boc {
     public abstract class BitsSliceImpl<T, U> where T : BitsSliceImpl<T, U> {
@@ -216,12 +217,12 @@ namespace TonSdk.Core.Boc {
         }
 
         protected Address? LoadAddress(bool inplace) {
-            var prefix = (byte)ReadUInt(2);
+            byte prefix = (byte)ReadUInt(2);
             switch (prefix) {
                 case 0b10: // addr_std
                     var prefixAndAnycast = (byte)ReadUInt(3);
                     if (prefixAndAnycast == 0b101) {
-                        throw new NotImplementedException("Anycast addresses are not supported");
+                        throw new AddressTypeNotSupportedError("Anycast addresses are not supported");
                     }
 
                     CheckBitsUnderflow(_bits_st + 267);
@@ -235,9 +236,14 @@ namespace TonSdk.Core.Boc {
                         return new Address((int)addrSlice.LoadInt(8), addrSlice.LoadBytes(32));
                     }
                 case 0b01: // addr_extern
-                    throw new NotImplementedException("Extern addresses are not supported");
+                {
+                    int len = (int)LoadInt(9);
+                    var extAddr = LoadBits(len);
+                    var address = new ExternalAddress(len, extAddr);
+                    return null;
+                }
                 case 0b11: // addr_var
-                    throw new NotImplementedException("Var addresses are not supported");
+                    throw new AddressTypeNotSupportedError("Var addresses are not supported");
                 default: // addr_none
                     if (inplace) SkipBits(2);
                     return null;
@@ -313,4 +319,12 @@ namespace TonSdk.Core.Boc {
             return _bits;
         }
     }
+}
+
+public class AddressTypeNotSupportedError : Exception
+{
+    public AddressTypeNotSupportedError() { }
+
+    public AddressTypeNotSupportedError(string message)
+        : base(message) { }
 }
