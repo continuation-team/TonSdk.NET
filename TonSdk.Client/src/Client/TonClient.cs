@@ -215,6 +215,38 @@ namespace TonSdk.Client
         }
         
         /// <summary>
+        /// Get transactions of the given block (extended data).
+        /// </summary>
+        /// <param name="workchain"></param>
+        /// <param name="shard"></param>
+        /// <param name="seqno"></param>
+        /// <param name="rootHash"></param>
+        /// <param name="fileHash"></param>
+        /// <param name="afterLt"></param>
+        /// <param name="afterHash"></param>
+        /// <param name="count"></param>
+        /// <returns>An object containing the shards information.</returns>
+        public async Task<BlockTransactionsResultExtended?> GetBlockTransactionsExtended(
+            int workchain,
+            long shard,
+            long seqno,
+            string rootHash = null,
+            string fileHash = null,
+            ulong? afterLt = null,
+            string afterHash = null,
+            uint count = 10)
+        {
+            return _type switch
+            {
+                TonClientType.HTTP_TONCENTERAPIV2 => throw new Exception("Method not supported by HTTP_TONCENTERAPIV2 client."),
+                TonClientType.HTTP_TONCENTERAPIV3 => throw new Exception("Method not supported by HTTP_TONCENTERAPIV3 client."),
+                TonClientType.LITECLIENT => await _liteClientApi.GetBlockTransactionsExtended(workchain, shard, seqno, rootHash, fileHash, afterLt, afterHash, count),
+                TonClientType.HTTP_TONWHALESAPI => throw new Exception("Method not supported by HTTP_TONWHALESAPI client."),
+                _ => null
+            };
+        }
+        
+        /// <summary>
         /// Retrieves transaction information for the specified address.
         /// </summary>
         /// <param name="address">The address object to retrieve transaction information for.</param>

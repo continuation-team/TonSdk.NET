@@ -217,7 +217,7 @@ namespace TonSdk.Core.Block
             var bounced = _slice.LoadBit();
             var src = _slice.LoadAddress();
             var dest = _slice.LoadAddress();
-            if (dest == null) throw new Exception("Invalid dest address");
+            if (dest == null) throw new Exception("Invalid dest address s");
             var value = _slice.LoadCoins();
             _slice.SkipOptRef();
             var ihrFee = _slice.LoadCoins();
@@ -274,7 +274,15 @@ namespace TonSdk.Core.Block
 
             var src = _slice.LoadAddress();
             var dest = _slice.LoadAddress();
-            var importFee = _slice.LoadCoins();
+            Coins importFee;
+            try
+            {
+                importFee = _slice.LoadCoins();
+            }
+            catch
+            {
+                importFee = new Coins(0);
+            }
 
             slice.SkipBits(slice.RemainderBits - _slice.RemainderBits);
             slice.SkipRefs(slice.RemainderRefs - _slice.RemainderRefs);
@@ -318,9 +326,15 @@ namespace TonSdk.Core.Block
             }
 
             var src = _slice.LoadAddress();
-            if (src == null) throw new Exception("Invalid src address");
+            //if (src == null) throw new Exception("Invalid src address");
             var dest = _slice.LoadAddress();
-            //if (dest == null) throw new Exception("Invalid dest address");
+            if (dest == null) 
+                return new ExtOutMsgInfo(new ExtOutMsgInfoOptions() {
+                Src = src,
+                Dest = null,
+                CreatedLt = 0,
+                CreatedAt = 0
+            });
             ulong createdLt = (ulong)_slice.LoadUInt(64);
             uint createdAt = (uint)_slice.LoadUInt(32);
 
@@ -346,14 +360,29 @@ namespace TonSdk.Core.Block
 
         private bool _signed;
 
+        private Cell _signedCell;
+
         public bool Signed {
             get => _signed;
+        }
+
+        public Cell SignedCell {
+            get => _signedCell;
         }
 
         public MessageX(MessageXOptions opt) {
             _data = opt;
             _cell = buildCell();
             _signed = false;
+        }
+        
+        private Cell signCell(byte[]? privateKey = null, bool eitherSliceRef = false)
+        {
+            var builder = new CellBuilder();
+            var body = KeyPair.Sign(_data.Body, privateKey);
+            builder.StoreBytes(body);
+            builder.StoreCellSlice(_data.Body.Parse());
+            return builder.Build();
         }
 
         private Cell buildCell(byte[]? privateKey = null, bool eitherSliceRef = false) {
@@ -377,7 +406,14 @@ namespace TonSdk.Core.Block
                                  || _data.Body.RefsCount > builder.RemainderRefs;
                 builder.StoreBit(eitherBody);
                 if (!eitherBody) {
-                    builder.StoreCellSlice(body.Parse());
+                    try
+                    {
+                        builder.StoreCellSlice(body.Parse());
+                    }
+                    catch (Exception e)
+                    {
+                        builder.StoreRef(body);
+                    }
                 }
                 else {
                     builder.StoreRef(body);
@@ -407,6 +443,7 @@ namespace TonSdk.Core.Block
             if (_data.Body == null) throw new Exception("MessageX body is empty");
             if (_signed) throw new Exception("MessageX already signed");
             _cell = buildCell(privateKey, eitherSliceRef);
+            _signedCell = signCell(privateKey, eitherSliceRef);
             _signed = true;
             return this;
         }
@@ -416,14 +453,23 @@ namespace TonSdk.Core.Block
             var info = CommonMsgInfo.Parse(_slice);
             var maybeStateInit = _slice.LoadBit();
             var eitherStateInit = maybeStateInit && _slice.LoadBit();
-            var stateInit = maybeStateInit
-                ? eitherStateInit
-                    ? StateInit.Parse(_slice.LoadRef().Parse())
-                    : StateInit.Parse(_slice)
-                : null;
+            StateInit stateInit;
+            try
+            {
+                stateInit = maybeStateInit
+                    ? eitherStateInit
+                        ? StateInit.Parse(_slice.LoadRef().Parse())
+                        : StateInit.Parse(_slice)
+                    : null;
+            }
+            catch (Exception e)
+            {
+                stateInit = null;
+            }
             var eitherBody = _slice.LoadBit();
             var body = eitherBody
-                ? _slice.LoadRef()
+                ? _slice.RemainderRefs > 0 ? _slice.LoadRef() 
+                    : _slice.RestoreRemainder() 
                 : _slice.RestoreRemainder();
 
             slice.SkipBits(slice.RemainderBits - _slice.RemainderBits);

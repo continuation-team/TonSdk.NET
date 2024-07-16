@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Math;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
@@ -362,5 +363,23 @@ namespace TonSdk.Core {
                 return addressBits.Build().ToString("base64");
             }
         }
+    }
+    
+    public class ExternalAddress
+    {
+        public static bool IsAddress(object src) 
+            => src is ExternalAddress;
+
+        private readonly int _len;
+        private readonly Bits _value;
+
+        public ExternalAddress(int len, Bits value)
+        {
+            _value = value;
+            _len = len;
+        }
+
+        public override string ToString() 
+            => $"External<{_len}:{_value.ToString("base64")}>";
     }
 }

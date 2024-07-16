@@ -420,6 +420,7 @@ namespace TonSdk.Client
         
         internal struct OutTransactionsResult
         {
+            [JsonProperty("address")] public OutTxAddress Address;
             [JsonProperty("utime")] public long Utime;
             [JsonProperty("data")] public string Data;
             [JsonProperty("transaction_id")] public TransactionId TransactionId;
@@ -430,13 +431,20 @@ namespace TonSdk.Client
             [JsonProperty("out_msgs")] public OutRawMessage[] OutMsgs;
         }
         
+        internal struct OutTxAddress
+        {
+            [JsonProperty("account_address")] public string AccountAddress;
+        }
+        
         internal struct OutV3TransactionsResult
         {
+            [JsonProperty("account")] public string Account;
             [JsonProperty("now")] public long Now;
             [JsonProperty("lt")] public ulong Lt;
             [JsonProperty("hash")] public string Hash;
             [JsonProperty("total_fees")] public string Fee;
-            
+            [JsonProperty("prev_trans_hash")] public string PrevTransHash;
+            [JsonProperty("prev_trans_lt")] public string PrevTransLt;
             [JsonProperty("in_msg")] public OutV3RawMessage InMsg;
             [JsonProperty("out_msgs")] public OutV3RawMessage[] OutMsgs;
         }
@@ -456,9 +464,11 @@ namespace TonSdk.Client
         
         internal struct OutV3RawMessage
         {
+            [JsonProperty("hash")] public string Hash;
             [JsonProperty("source")] public string Source;
             [JsonProperty("destination")] public string Destination;
             [JsonProperty("value")] public string Value;
+            [JsonProperty("opcode")] public string OpCode;
             [JsonProperty("fwd_fee")] public string FwdFee;
             [JsonProperty("ihr_fee")] public string IhrFee;
             [JsonProperty("created_lt")] public ulong CreatedLt;
@@ -755,18 +765,24 @@ namespace TonSdk.Client
 
     public struct TransactionsInformationResult
     {
-        public long Utime;
+        public Address Address;
+        public uint UTime;
+        public int OutMsgCount;
         public Cell Data;
         public TransactionId TransactionId;
+        public TransactionId PrevTransactionId;
         public Coins Fee;
         public Coins StorageFee;
         public Coins OtherFee;
+        public AccountState OrigAccountStatus;
+        public AccountState EndAccountStatus;
         public RawMessage InMsg;
         public RawMessage[] OutMsgs;
 
         internal TransactionsInformationResult(OutTransactionsResult outTransactionsResult)
         {
-            Utime = outTransactionsResult.Utime;
+            Address = new Address(outTransactionsResult.Address.AccountAddress);
+            UTime = (uint)outTransactionsResult.Utime;
             Data = Cell.From(outTransactionsResult.Data);
             TransactionId = outTransactionsResult.TransactionId;
             Fee = new Coins(outTransactionsResult.Fee, new CoinsOptions(true, 9));
@@ -779,16 +795,27 @@ namespace TonSdk.Client
             {
                 OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
             }
+
+            OrigAccountStatus = AccountState.Active;
+            EndAccountStatus = AccountState.Active;
+            OutMsgCount = OutMsgs.Length;
+            PrevTransactionId = new TransactionId();
         }
         
         internal TransactionsInformationResult(OutV3TransactionsResult outTransactionsResult)
         {
-            Utime = outTransactionsResult.Now;
+            Address = new Address(outTransactionsResult.Account);
+            UTime = (uint)outTransactionsResult.Now;
             Data = null;
             TransactionId = new TransactionId()
             {
                 Hash = outTransactionsResult.Hash,
                 Lt = outTransactionsResult.Lt
+            };
+            PrevTransactionId = new TransactionId()
+            {
+                Hash = outTransactionsResult.PrevTransHash,
+                Lt = ulong.Parse(outTransactionsResult.PrevTransLt)
             };
             Fee = new Coins(outTransactionsResult.Fee, new CoinsOptions(true, 9));
             StorageFee = null;
@@ -800,6 +827,10 @@ namespace TonSdk.Client
             {
                 OutMsgs[i] = new RawMessage(outTransactionsResult.OutMsgs[i]);
             }
+            
+            OrigAccountStatus = AccountState.Active;
+            EndAccountStatus = AccountState.Active;
+            OutMsgCount = OutMsgs.Length;
         }
     }
 
@@ -815,12 +846,14 @@ namespace TonSdk.Client
 
     public struct RawMessage
     {
+        public string Hash;
         public Address Source;
         public Address Destination;
         public Coins Value;
         public Coins FwdFee;
         public Coins IhrFee;
         public ulong CreatedLt;
+        public string OpCode;
         public string BodyHash;
         public RawMessageData MsgData;
         public string Message;
@@ -840,11 +873,15 @@ namespace TonSdk.Client
             BodyHash = outRawMessage.BodyHash;
             MsgData = new RawMessageData(outRawMessage.MsgData);
             Message = outRawMessage.Message;
+            Hash = "";
+            OpCode = MsgData.Body != null && MsgData.Body.BitsCount >= 32
+                ? $"0x{MsgData.Body.Parse().LoadUInt(32).ToString("X")}"
+                : "";
         }
         
         internal RawMessage(OutV3RawMessage outRawMessage)
         {
-            Source = outRawMessage.Source != null && outRawMessage.Source.Length != 0
+            Source = !string.IsNullOrEmpty(outRawMessage.Source)
                 ? new Address(outRawMessage.Source)
                 : null;
             Destination = new Address(outRawMessage.Destination);
@@ -855,6 +892,8 @@ namespace TonSdk.Client
             BodyHash = outRawMessage.MsgData.BodyHash;
             MsgData = new RawMessageData(outRawMessage.MsgData);
             Message = null;
+            Hash = outRawMessage.Hash;
+            OpCode = outRawMessage.OpCode ?? "";
         }
     }
 
