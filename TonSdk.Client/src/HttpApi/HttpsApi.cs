@@ -185,6 +185,7 @@ namespace TonSdk.Client
             var result = await new TonRequest(new RequestParameters("sendBoc", requestBody), _httpClient).Call();
             RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
             SendBocResult outSendBoc = resultRoot.Result;
+            outSendBoc.Hash = boc.Hash.ToString();
             return outSendBoc;
         }
         
