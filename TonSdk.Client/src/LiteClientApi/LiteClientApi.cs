@@ -215,7 +215,7 @@ namespace TonSdk.Client
         {
             await Init();
             var data = await _liteClient.SendMessage(BagOfCells.SerializeBoc(boc).ToBytes());
-            return new SendBocResult() { Type = data.ToString() };
+            return new SendBocResult() { Type = data.ToString(), Hash = boc.Hash.ToString()};
         }
 
         internal async Task<BlockIdExtended> LookUpBlock(int workchain, long shard, long? seqno = null, ulong? lt = null, ulong? unixTime = null)
