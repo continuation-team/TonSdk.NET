@@ -46,11 +46,39 @@ namespace TonSdk.DeFi.DeDust
             try
             {
                 var result = await client.RunGetMethod(_address, "get_reserves", Array.Empty<IStackItem>());
-                return new []{ (BigInteger)result.Value.Stack[0], (BigInteger)result.Value.Stack[1]};
+                return client.GetClientType() == TonClientType.LITECLIENT 
+                    ? new []{ (BigInteger)((VmStackTinyInt)result.Value.StackItems[0]).Value, ((VmStackTinyInt)result.Value.StackItems[1]).Value} 
+                    : new []{ (BigInteger)result.Value.Stack[0], (BigInteger)result.Value.Stack[1]};
             }
             catch (Exception e)
             {
                 return await GetReserves(client);
+            }
+            
+        }
+        
+        public async Task<DeDustAsset[]> GetAssets(ITonClient client)
+        {
+            try
+            {
+                var result = await client.RunGetMethod(_address, "get_assets", Array.Empty<IStackItem>());
+                if (client.GetClientType() == TonClientType.LITECLIENT)
+                {
+                    var asset1 = ((VmStackSlice)result.Value.StackItems[0]).Value;
+                    var asset2 = ((VmStackSlice)result.Value.StackItems[1]).Value;
+                    return new []{ DeDustAsset.FromSlice(asset1), DeDustAsset.FromSlice(asset2)};
+                }
+                else
+                {
+                    var asset1 = (Cell)result.Value.Stack[0];
+                    var asset2 = (Cell)result.Value.Stack[1];
+                    return new []{ DeDustAsset.FromSlice(asset1.Parse()), DeDustAsset.FromSlice(asset2.Parse())};
+                }
+                
+            }
+            catch (Exception e)
+            {
+                return await GetAssets(client);
             }
             
         }

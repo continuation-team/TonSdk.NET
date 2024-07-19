@@ -38,7 +38,10 @@ namespace TonSdk.DeFi.DeDust
                     new VmStackSlice(assets[0].ToCell().Parse()),
                     new VmStackSlice(assets[1].ToCell().Parse())
                 });
-            return ((Cell)result.Value.Stack[0]).Parse().ReadAddress();
+            
+            return client.GetClientType() == TonClientType.LITECLIENT ? 
+                ((VmStackSlice)result.Value.StackItems[0]).Value.ReadAddress() : 
+                ((Cell)result.Value.Stack[0]).Parse().ReadAddress();
         }
         catch
         {
@@ -66,7 +69,9 @@ namespace TonSdk.DeFi.DeDust
                         Value = asset.ToCell().Parse()
                     } 
                 });
-            return ((Cell)result.Value.Stack[0]).Parse().ReadAddress();
+            return client.GetClientType() == TonClientType.LITECLIENT ? 
+                ((VmStackSlice)result.Value.StackItems[0]).Value.ReadAddress() : 
+                ((Cell)result.Value.Stack[0]).Parse().ReadAddress();
         }
         catch (Exception e)
         {

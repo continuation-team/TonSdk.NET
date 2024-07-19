@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.DeFi</RootNamespace>
         <PackageId>TonSdk.DeFi</PackageId>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Library for work with popular TON DeFis.</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
@@ -25,9 +25,9 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="TonSdk.Client" Version="0.3.4" />
+        <PackageReference Include="TonSdk.Client" Version="0.3.10" />
         <PackageReference Include="TonSdk.Contracts" Version="0.3.1" />
-        <PackageReference Include="TonSdk.Core" Version="0.3.3" />
+        <PackageReference Include="TonSdk.Core" Version="0.3.9" />
     </ItemGroup>
 
 </Project>

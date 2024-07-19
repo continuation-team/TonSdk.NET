@@ -1,4 +1,5 @@
-﻿using TonSdk.Core;
+﻿using System;
+using TonSdk.Core;
 using TonSdk.Core.Boc;
 
 namespace TonSdk.DeFi.DeDust
@@ -35,9 +36,32 @@ namespace TonSdk.DeFi.DeDust
                         .StoreInt(_address.GetWorkchain(), 8)
                         .StoreBytes(_address.GetHash());
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return builder.Build();
+        }
+        
+        public override string ToString()
+        {
+            return _type switch
+            {
+                DeDustAssetType.Native => "native",
+                DeDustAssetType.Jetton => $"jetton:{_address?.ToString(AddressType.Raw)}",
+                _ => throw new Exception("Asset not supported")
+            };
+        }
+        
+        public static DeDustAsset FromSlice(CellSlice slice)
+        {
+            uint type = (uint)slice.LoadUInt(4);
+            return type switch
+            {
+                0b0000 => Native(),
+                0b0001 => Jetton(new Address((int)slice.LoadInt(8), slice.LoadBytes(32))),
+                _ => throw new Exception("Asset not supported")
+            };
         }
 
     }
