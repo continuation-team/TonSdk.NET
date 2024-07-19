@@ -34,8 +34,12 @@ namespace TonSdk.DeFi.DeDust.Vault
                     return DeDustReadinessStatus.NotDeployed;
         
                 var result = await client.RunGetMethod(_address, "is_ready", new IStackItem[] { });
-                return (int)(BigInteger)result.Value.Stack[0] == 0 
-                    ? DeDustReadinessStatus.NotReady 
+                return client.GetClientType() == TonClientType.LITECLIENT ? 
+                ((VmStackTinyInt)result.Value.StackItems[0]).Value == 0
+                    ? DeDustReadinessStatus.NotReady
+                    : DeDustReadinessStatus.Ready 
+                : (int)(BigInteger)result.Value.Stack[0] == 0
+                    ? DeDustReadinessStatus.NotReady
                     : DeDustReadinessStatus.Ready;
             }
             catch (Exception e)
