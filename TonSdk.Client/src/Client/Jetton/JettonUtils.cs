@@ -109,7 +109,7 @@ namespace TonSdk.Client
             }
 
             JettonContent jettonContent = new JettonContent(dataDict);
-            if (jettonContent.Uri != null) jettonContent = await ParseOffChainUri(jettonContent);
+            if (!string.IsNullOrEmpty(jettonContent.Uri)) jettonContent = await ParseOffChainUri(jettonContent);
             return jettonContent;
         }
 
