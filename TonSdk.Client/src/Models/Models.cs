@@ -16,6 +16,14 @@ namespace TonSdk.Client
         
     }
     
+    public enum ProxyType
+    {
+        Socks5,
+        Socks4,
+        HTTP,
+        HTTPS
+    }
+    
     public interface ITonClientOptions {}
 
     public class HttpParameters : ITonClientOptions
@@ -23,6 +31,7 @@ namespace TonSdk.Client
         public string Endpoint { get; set; }
         public int? Timeout { get; set; }
         public string ApiKey { get; set; }
+        public Proxy? Proxy { get; set; }
     }
     
     public class LiteClientParameters : ITonClientOptions
@@ -37,5 +46,14 @@ namespace TonSdk.Client
             Port = port;
             PeerPublicKey = peerPublicKey;
         }
+    }
+    
+    public class Proxy : ITonClientOptions
+    {
+        public string Ip { get; set; }
+        public string Port { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public ProxyType ProxyType { get; set; }
     }
 }
