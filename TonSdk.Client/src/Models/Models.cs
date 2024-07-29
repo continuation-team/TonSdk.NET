@@ -48,7 +48,7 @@ namespace TonSdk.Client
         }
     }
     
-    public class Proxy : ITonClientOptions
+    public partial class Proxy : ITonClientOptions
     {
         public string Ip { get; set; }
         public string Port { get; set; }

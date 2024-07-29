@@ -17,9 +17,7 @@ namespace TonSdk.Client
         public int? Timeout { get; set; }
         public string ApiKey { get; set; }
     }
-
     
-
     public class HttpApi : IDisposable
     {
         private readonly HttpClient _httpClient;
