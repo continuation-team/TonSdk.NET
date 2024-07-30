@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Numerics;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -226,31 +227,31 @@ public class ClientTest
     {
         Proxy proxy1 = new Proxy
         {
-            Ip = "1.1.1.1",
-            Port = "22222",
+            Ip = IPAddress.Parse("1.1.1.1"),
+            Port = 22222,
             UserName = "WhoIsIt?",
             Password = "54321"
         };
         
         Proxy proxy2 = new Proxy
         {
-            Ip = "1.1.1.1",
-            Port = "22222",
+            Ip = IPAddress.Parse("1.1.1.1"),
+            Port = 22222,
             UserName = "WhoIsIt?",
             Password = "54321"
         };
         
         Proxy proxy3 = new Proxy
         {
-            Ip = "123.123.123.123",
-            Port = "33333",
+            Ip = IPAddress.Parse("123.123.123.123"),
+            Port = 33333,
             UserName = "ItsMe,Mario",
             Password = "51423"
         };
         
-        Assert.That(proxy1.GetHashCode(), Is.EqualTo(1272649444));
-        Assert.That(proxy2.GetHashCode(), Is.EqualTo(1730258271));
-        Assert.That(proxy3.GetHashCode(), Is.EqualTo(581039570));
+        Assert.That(proxy1.GetHashCode(), Is.EqualTo(-1512725739));
+        Assert.That(proxy2.GetHashCode(), Is.EqualTo(-1512725739));
+        Assert.That(proxy3.GetHashCode(), Is.EqualTo(168523034));
         
         Assert.That(proxy1.Equals(proxy2), Is.True);
         Assert.That(proxy1.Equals(proxy3), Is.False);
