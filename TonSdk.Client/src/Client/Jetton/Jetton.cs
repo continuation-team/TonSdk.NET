@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using TonSdk.Client.Stack;
 using TonSdk.Core;
