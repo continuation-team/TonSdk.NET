@@ -59,6 +59,9 @@ namespace TonSdk.Client
             });
 
             StringContent content = new StringContent(data, System.Text.Encoding.UTF8, "application/json");
+
+            Console.Write("running http call method", _params.MethodName, _params.RequestBody);
+
             HttpResponseMessage response = await _httpClient.PostAsync(string.Empty, content);
             
             if (!response.IsSuccessStatusCode)

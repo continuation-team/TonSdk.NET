@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using TonSdk.Client.Stack;
 using TonSdk.Core;
@@ -16,6 +17,14 @@ namespace TonSdk.Client
         public Cell JettonWalletCode;
     }
 
+    public struct JettonWalletData
+    {
+        public Coins Balance;
+        public Address OwnerAddress;
+        public Address JettonMasterAddress;
+        public Cell JettonWalletCode;
+    }
+
     public class Jetton
     {
         private readonly TonClient client;
@@ -24,15 +33,8 @@ namespace TonSdk.Client
             this.client = client;
         }
 
-        private struct JettonWalletData
-        {
-            public Coins Balance;
-            public Address OwnerAddress;
-            public Address JettonMasterAddress;
-            public Cell JettonWalletCode;
-        }
-
-        private async Task<JettonWalletData> GetWalletData(Address jettonWallet, BlockIdExtended? block = null)
+        // It's better to be public to get all info in one request
+        public async Task<JettonWalletData> GetWalletData(Address jettonWallet, BlockIdExtended? block = null)
         {
             RunGetMethodResult? runGetMethodResult = await client.RunGetMethod(jettonWallet, "get_wallet_data", Array.Empty<IStackItem>(), block);
                 
@@ -87,7 +89,7 @@ namespace TonSdk.Client
             RunGetMethodResult? result = await client.RunGetMethod(jettonMasterContract, "get_jetton_data", Array.Empty<IStackItem>(), block);
             
             if(result == null) throw new Exception("Cannot retrieve jetton wallet data.");
-            if (result.Value.ExitCode != 0 && result.Value.ExitCode != 1) throw new Exception("Cannot retrieve jetton data.");
+            if (!(result.Value.ExitCode == 0 || result.Value.ExitCode == 1)) throw new Exception("Cannot retrieve jetton data.");
             
             Address admin;
             var totalSupply = new Coins(0);
@@ -111,18 +113,25 @@ namespace TonSdk.Client
                     admin = null;
                 }
             }
-            
+
+            // Better readabilty for debugging
+            var content = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
+                    await JettonUtils.ParseMetadata((Cell)result.Value.Stack[3]!) :
+                    await JettonUtils.ParseMetadata(((VmStackCell)result.Value.StackItems[3]).Value);
+
+            var walletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI || client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
+                    (Cell)result.Value.Stack[4]! :
+                    ((VmStackCell)result.Value.StackItems[4]).Value;
+
+
             var jettonData = new JettonData()
             {
                 TotalSupply = totalSupply,
                 AdminAddress = admin,
-                Content = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ? 
-                    await JettonUtils.ParseMetadata((Cell)result.Value.Stack[3]!) :
-                    await JettonUtils.ParseMetadata(((VmStackCell)result.Value.StackItems[3]).Value),
-                JettonWalletCode = client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV2 || client.GetClientType() == TonClientType.HTTP_TONWHALESAPI|| client.GetClientType() == TonClientType.HTTP_TONCENTERAPIV3 ?
-                    (Cell)result.Value.Stack[4]! :
-                    ((VmStackCell)result.Value.StackItems[4]).Value
+                Content = content,
+                JettonWalletCode = walletCode
             };
+
             return jettonData;
         }
 

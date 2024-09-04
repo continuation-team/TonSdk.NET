@@ -170,6 +170,9 @@ namespace TonSdk.Client
                 method = method,
                 stack = stack ?? Array.Empty<string[]>()
             };
+
+            
+
             var result = await new TonRequest(new RequestParameters("runGetMethod", requestBody), _httpClient).Call();
             RootRunGetMethod resultRoot = JsonConvert.DeserializeObject<RootRunGetMethod>(result);
             RunGetMethodResult outRunGetMethod = new RunGetMethodResult(resultRoot.Result);
