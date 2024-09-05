@@ -59,12 +59,19 @@ namespace TonSdk.Adnl.TL
         public void WriteInt256(BigInteger val)
         {
             EnsureSize(32);
-            byte[] bytes = val.ToByteArray();
-            if (bytes.Length != 32)
+            Span<byte> buffer = stackalloc byte[32];
+            buffer.Clear();
+            if (!val.TryWriteBytes(buffer, out var bytesWritten))
             {
                 throw new Exception("Invalid int256 length");
             }
-            _writer.Write(bytes);
+            if (val < 0 && bytesWritten < 32)
+            {
+                // two's complement representation
+                buffer[bytesWritten..].Fill(0xFF);
+            }
+
+            _writer.Write(buffer);
         }
 
         public void WriteBytes(byte[] data, int size)
