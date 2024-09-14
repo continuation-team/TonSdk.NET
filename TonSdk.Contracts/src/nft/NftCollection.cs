@@ -26,6 +26,8 @@ namespace TonSdk.Contracts.nft
         public Address ItemOwnerAddress { get; set; }
         public string ItemContentUri { get; set; }
         public ulong? QueryId { get; set; }
+        
+        public Address? Authority { get; set; }
     }
     
     public struct NftEditContentOptions
@@ -63,22 +65,28 @@ namespace TonSdk.Contracts.nft
             _address = new Address(options.Workchain ?? 0, _stateInit);
         }
         
-        public static Cell CreateMintRequest(NftMintOptions opt)
+        public static Cell CreateMintRequest(NftMintOptions opt, bool isSoulBound = false)
         {
             var body = new CellBuilder()
                 .StoreUInt(1, 32)
                 .StoreUInt(opt.QueryId ?? SmcUtils.GenerateQueryId(60), 64)
                 .StoreUInt(opt.ItemIndex, 64)
                 .StoreCoins(opt.Amount);
-            
+
             var nftItemContent = new CellBuilder()
                 .StoreAddress(opt.ItemOwnerAddress)
                 .StoreRef(new CellBuilder()
                     .StoreString(opt.ItemContentUri)
-                    .Build())
-                .Build();
+                    .Build());
+
+            if (isSoulBound)
+            {
+                if (opt.Authority == null)
+                    throw new Exception("Authority address must be passed if isSoulBound true.");
+                nftItemContent.StoreAddress(opt.Authority);
+            }
             
-            body.StoreRef(nftItemContent);
+            body.StoreRef(nftItemContent.Build());
             return body.Build();
         }
         

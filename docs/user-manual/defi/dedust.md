@@ -104,14 +104,14 @@ DeDustAsset jettonAsset = DeDustAsset.Jetton(jettonAddress);
 DeDustPool pool = await factory.GetPool(tonClient, DeDustPoolType.Volatile, new[] { nativeAsset, jettonAsset });
 
 // check if vault of Jetton exists
-if (await jettonVault.GetReadinessStatus(Core.TonSecondClient) != DeDustReadinessStatus.Ready)
+if (await jettonVault.GetReadinessStatus(tonClient) != DeDustReadinessStatus.Ready)
 {
     Console.WriteLine("[Jetton To Ton] Vault (TON) does not exist.");
     return;
 }
 
 // check if pool of swap pair exists
-if (await pool.GetReadinessStatus(Core.TonSecondClient) != DeDustReadinessStatus.Ready)
+if (await pool.GetReadinessStatus(tonClient) != DeDustReadinessStatus.Ready)
 {
     Console.WriteLine("[Jetton To Ton] Pool (TON, Jetton) does not exist.");
     return;
