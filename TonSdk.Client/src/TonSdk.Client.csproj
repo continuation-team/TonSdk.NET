@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="TonSdk.Adnl" Version="0.2.2" />
+        <PackageReference Include="TonSdk.Adnl" Version="0.2.4" />
         <PackageReference Include="TonSdk.Core" Version="0.3.9" />
     </ItemGroup>
 
