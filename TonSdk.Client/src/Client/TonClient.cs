@@ -327,6 +327,20 @@ namespace TonSdk.Client
         } 
         
         /// <summary>
+        /// Sends a Bag of Cells (BoC) to the network.
+        /// </summary>
+        /// <param name="boc">The Cell object representing the Bag of Cells.</param>
+        /// <returns>The result of sending the Bag of Cells.</returns>
+        public async Task<SendBocResult?> SendBocReturnHash(Cell boc)
+        {
+            return _type switch
+            {
+                TonClientType.HTTP_TONCENTERAPIV2 => await _httpApi.SendBocReturnHash(boc),
+                _ => null
+            };
+        } 
+        
+        /// <summary>
         /// Retrieves a configuration parameter by its ID.
         /// </summary>
         /// <param name="configId">The ID of the configuration parameter to retrieve.</param>
