@@ -866,9 +866,15 @@ namespace TonSdk.Client
             Destination = outRawMessage.Destination != null && outRawMessage.Destination.Length != 0
                 ? new Address(outRawMessage.Destination)
                 : null;
-            Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
-            FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
-            IhrFee = new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9));
+            Value = !string.IsNullOrEmpty(outRawMessage.Value) 
+                ? new Coins(outRawMessage.Value, new CoinsOptions(true, 9))
+                : null;
+            FwdFee = !string.IsNullOrEmpty(outRawMessage.FwdFee)
+                ? new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9))
+                : null;
+            IhrFee = !string.IsNullOrEmpty(outRawMessage.IhrFee)
+                ? new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9))
+                : null;
             CreatedLt = outRawMessage.CreaterLt;
             BodyHash = outRawMessage.BodyHash;
             MsgData = new RawMessageData(outRawMessage.MsgData);
@@ -885,9 +891,15 @@ namespace TonSdk.Client
                 ? new Address(outRawMessage.Source)
                 : null;
             Destination = new Address(outRawMessage.Destination);
-            Value = new Coins(outRawMessage.Value, new CoinsOptions(true, 9));
-            FwdFee = new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9));
-            IhrFee = new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9));
+            Value = !string.IsNullOrEmpty(outRawMessage.Value) 
+                ? new Coins(outRawMessage.Value, new CoinsOptions(true, 9))
+                : null;
+            FwdFee = !string.IsNullOrEmpty(outRawMessage.FwdFee)
+                ? new Coins(outRawMessage.FwdFee, new CoinsOptions(true, 9))
+                : null;
+            IhrFee = !string.IsNullOrEmpty(outRawMessage.IhrFee)
+                ? new Coins(outRawMessage.IhrFee, new CoinsOptions(true, 9))
+                : null;
             CreatedLt = outRawMessage.CreatedLt;
             BodyHash = outRawMessage.MsgData.BodyHash;
             MsgData = new RawMessageData(outRawMessage.MsgData);
@@ -1250,5 +1262,11 @@ namespace TonSdk.Client
         Frozen,
         Uninit,
         NonExist
+    }
+
+    public enum MessageDirection
+    {
+        In,
+        Out
     }
 }

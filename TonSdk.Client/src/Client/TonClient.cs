@@ -271,6 +271,31 @@ namespace TonSdk.Client
                 _ => null
             };
         }
+        
+        /// <summary>
+        /// Retrieves transaction information for the specified parameters.
+        /// </summary>
+        /// <param name="msgHash">Message hash of transaction.</param>
+        /// <param name="bodyHash">Body hash of transaction.</param>
+        /// <param name="opcode">Opcode of message in hex or signed 32-bit decimal form.</param>
+        /// <param name="direction">Direction of message.</param>
+        /// <param name="offset">Skip first N rows. Use with limit to batch read.</param>
+        /// <param name="count">Limit number of queried rows. Use with offset to batch read.</param>
+        /// <returns>An array of transaction information results.</returns>
+        public Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash, string bodyHash, string opcode, MessageDirection? direction = null, int? offset = null, int? count = 10)
+        {
+            if (string.IsNullOrEmpty(msgHash) && string.IsNullOrEmpty(bodyHash) && string.IsNullOrEmpty(opcode)) 
+                throw new ArgumentException("At least one of msgHash, bodyHash, opcode should be specified");
+            
+            if(_type != TonClientType.HTTP_TONCENTERAPIV3)
+                throw new NotSupportedException($"Method not supported for type {_type}");
+            
+            return _type switch
+            {
+                TonClientType.HTTP_TONCENTERAPIV3 => _httpApiV3.GetTransactionsByMessage(msgHash, bodyHash, opcode, direction, offset, count),
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Executes a specific method on the specified address.
