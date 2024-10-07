@@ -150,5 +150,12 @@ namespace TonSdk.Client
         /// <param name="message">The message for which you need to calculate the fees</param>
         /// <returns>The result of estimation fees.</returns>
         Task<IEstimateFeeResult> EstimateFee(MessageX message, bool ignoreChksig = true);
+
+        /// <summary>
+        /// Sends a Bag of Cells (BoC) to the network.
+        /// </summary>
+        /// <param name="boc">The Cell object representing the Bag of Cells.</param>
+        /// <returns>The result of sending the Bag of Cells.</returns>
+        Task<SendBocResult?> SendBocReturnHash(Cell boc);
     }
 }
