@@ -204,6 +204,37 @@ namespace TonSdk.Client
             
         }
         
+        internal async Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash, string bodyHash, string opcode, MessageDirection? direction = null, int? offset = null, int? count = null)
+        {
+            var dict = new Dictionary<string, object>();
+                
+            if (!string.IsNullOrEmpty(msgHash)) 
+                dict.Add("msg_hash", msgHash);
+                
+            if (!string.IsNullOrEmpty(bodyHash)) 
+                dict.Add("body_hash", bodyHash);
+                
+            if (!string.IsNullOrEmpty(opcode)) 
+                dict.Add("opcode", opcode);
+            
+            if (direction != null) 
+                dict.Add("direction", direction.ToString());
+
+            if (offset != null) 
+                dict.Add("offset", offset);
+            
+            if (count != null) 
+                dict.Add("limit", count);
+            
+            string result = await new TonRequestV3(new RequestParametersV3("transactionsByMessage", dict), _httpClient).CallGet();
+            
+            var data = JsonConvert.DeserializeObject<RootTransactions>(result, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            }).Transactions;
+            return data.Select(t => new TransactionsInformationResult(t)).ToArray();
+        }
+        
         internal async Task<SendBocResult> SendBoc(Cell boc)
         {
             string result = await new TonRequestV3(new RequestParametersV3("message", new Dictionary<string, object>()

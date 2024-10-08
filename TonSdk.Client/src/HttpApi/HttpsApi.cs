@@ -189,6 +189,17 @@ namespace TonSdk.Client
             return outSendBoc;
         }
         
+        internal async Task<SendBocResult> SendBocReturnHash(Cell boc)
+        {
+            InSendBocBody requestBody = new InSendBocBody()
+            {
+                boc = boc.ToString("base64")
+            };
+            var result = await new TonRequest(new RequestParameters("sendBocReturnHash", requestBody), _httpClient).Call();
+            RootSendBoc resultRoot = JsonConvert.DeserializeObject<RootSendBoc>(result);
+            return resultRoot.Result;
+        }
+        
         internal async Task<EstimateFeeResult> EstimateFee(MessageX message, bool ignoreChksig = true)
         {
             Cell body = message.SignedCell;
