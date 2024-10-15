@@ -113,7 +113,7 @@ namespace TonSdk.Client
         /// <param name="offset">Skip first N rows. Use with limit to batch read.</param>
         /// <param name="count">Limit number of queried rows. Use with offset to batch read.</param>
         /// <returns>An array of transaction information results.</returns>
-        Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash, string bodyHash, string opcode, MessageDirection? direction = null, int? offset = null, int? count = 10);
+        Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash = null, string bodyHash = null, string opcode = null, MessageDirection? direction = null, int? offset = null, int? count = 10);
 
         /// <summary>
         /// Executes a specific method on the specified address.
