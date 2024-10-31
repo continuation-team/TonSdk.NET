@@ -115,31 +115,46 @@ namespace TonSdk.Client
         internal async Task<TransactionsInformationResult[]> GetTransactions(Address address, uint limit = 10,
             ulong? lt = null, string hash = null, ulong? to_lt = null, bool? archival = null)
         {
-            var dict = new Dictionary<string, object>()
-            {
-                {
-                    "account", address.ToString()
-                },
-                {
-                    "offset", "0"
-                },
-                {
-                    "limit", limit.ToString()
-                },
-                {
-                    "sort", "desc"
-                }
-            };
-
-            if (lt != null) 
-                dict.Add("start_lt", lt.ToString());
-            if (to_lt != null) 
-                dict.Add("end_lt", to_lt.ToString());
-
-            string result = await new TonRequestV3(new RequestParametersV3("transactions", dict), _httpClient).CallGet();
+            var addresses = address is null ? null : new[] { address };
+            var result = await GetTransactionsInternal(addresses: addresses, hash: hash, startLt: lt, endLt: to_lt, limit: limit);
             
             var data = JsonConvert.DeserializeObject<RootTransactions>(result).Transactions;
             return data.Select(t => new TransactionsInformationResult(t)).ToArray();
+        }
+
+        internal Task<string> GetTransactionsInternal(
+            int? workchain = null,
+            long? shard = null,
+            long? seqno = null,
+            IEnumerable<Address> addresses = null, 
+            string hash = null,
+            ulong? startLt = null,
+            ulong? endLt = null,
+            uint limit = 10,
+            int offset = 0,
+            SortDirection sort = SortDirection.DESC)
+        {
+            var dict = new Dictionary<string, object>
+            {
+                { "offset", offset.ToString() },
+                { "limit", limit.ToString() },
+                { "sort", sort.ToString().ToLower() }
+            };
+
+            if (workchain.HasValue) dict.Add("workchain", workchain.ToString());
+            if (shard.HasValue) dict.Add("shard", shard.Value.ToString("X"));
+            if (seqno.HasValue) dict.Add("seqno", seqno.ToString());
+
+            if (addresses != null)
+                foreach (var address in addresses)
+                    dict.Add("account", address.ToString(AddressType.Raw));
+
+            if (!string.IsNullOrEmpty(hash)) dict.Add("hash", hash);
+            
+            if (startLt != null) dict.Add("start_lt", startLt.ToString());
+            if (endLt != null) dict.Add("end_lt", endLt.ToString());
+
+            return new TonRequestV3(new RequestParametersV3("transactions", dict), _httpClient).CallGet();
         }
         
         internal async Task<BlockTransactionsResult> GetBlockTransactions(
@@ -152,56 +167,22 @@ namespace TonSdk.Client
             string afterHash = null,
             uint? count = null)
         {
-            try
-            {
-                var dict = new Dictionary<string, object>()
-                {
-                    {
-                        "workchain", workchain.ToString()
-                    },
-                    {
-                        "shard", shard.ToString("X")
-                    },
-                    {
-                        "seqno", seqno.ToString()
-                    },
-                    {
-                        "offset", "0"
-                    },
-                    {
-                        "limit", count != null ? count.ToString() : "10"
-                    },
-                    {
-                        "sort", "desc"
-                    }
-                };
-
-                if (afterLt != null) 
-                    dict.Add("start_lt", afterLt.ToString());
-
-                string result = await new TonRequestV3(new RequestParametersV3("transactions", dict), _httpClient).CallGet();
+            var result = await GetTransactionsInternal(workchain: workchain, shard: shard, seqno: seqno, startLt: afterLt, limit: count ?? 10);
             
-                var data = JsonConvert.DeserializeObject<RootBlockTransactions>(result).Transactions;
-                var transactions = data.Select(item => new ShortTransactionsResult() { Account = item.Account, Hash = item.Hash, Lt = item.Lt, Mode = item.Description.ComputePh.Mode }).ToList();
-                return new BlockTransactionsResult()
-                {
-                    Id = new BlockIdExtended()
-                    {
-                        Seqno = seqno,
-                        Workchain = workchain,
-                        Shard = shard
-                    },
-                    ReqCount = count != null ? (int)count : 10,
-                    Incomplete = false,
-                    Transactions = transactions.ToArray()
-                };
-            }
-            catch (Exception e)
+            var data = JsonConvert.DeserializeObject<RootBlockTransactions>(result).Transactions;
+            var transactions = data.Select(item => new ShortTransactionsResult() { Account = item.Account, Hash = item.Hash, Lt = item.Lt, Mode = item.Description.ComputePh.Mode }).ToList();
+            return new BlockTransactionsResult()
             {
-                Console.WriteLine(e);
-                throw;
-            }
-            
+                Id = new BlockIdExtended()
+                {
+                    Seqno = seqno,
+                    Workchain = workchain,
+                    Shard = shard
+                },
+                ReqCount = count != null ? (int)count : 10,
+                Incomplete = false,
+                Transactions = transactions.ToArray()
+            };
         }
         
         internal async Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash, string bodyHash, string opcode, MessageDirection? direction = null, int? offset = null, int? count = null)
@@ -217,13 +198,13 @@ namespace TonSdk.Client
             if (!string.IsNullOrEmpty(opcode)) 
                 dict.Add("opcode", opcode);
             
-            if (direction != null) 
-                dict.Add("direction", direction.ToString());
+            if (direction.HasValue) 
+                dict.Add("direction", direction.Value.ToString().ToLower());
 
-            if (offset != null) 
+            if (offset.HasValue) 
                 dict.Add("offset", offset);
             
-            if (count != null) 
+            if (count.HasValue) 
                 dict.Add("limit", count);
             
             string result = await new TonRequestV3(new RequestParametersV3("transactionsByMessage", dict), _httpClient).CallGet();
