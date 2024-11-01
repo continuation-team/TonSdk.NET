@@ -116,13 +116,13 @@ namespace TonSdk.Client
             ulong? lt = null, string hash = null, ulong? to_lt = null, bool? archival = null)
         {
             var addresses = address is null ? null : new[] { address };
-            var result = await GetTransactionsInternal(addresses: addresses, hash: hash, startLt: lt, endLt: to_lt, limit: limit);
+            var result = await GetTransactions(addresses: addresses, hash: hash, startLt: lt, endLt: to_lt, limit: limit);
             
             var data = JsonConvert.DeserializeObject<RootTransactions>(result).Transactions;
             return data.Select(t => new TransactionsInformationResult(t)).ToArray();
         }
 
-        internal Task<string> GetTransactionsInternal(
+        internal Task<string> GetTransactions(
             int? workchain = null,
             long? shard = null,
             long? seqno = null,
@@ -167,7 +167,7 @@ namespace TonSdk.Client
             string afterHash = null,
             uint? count = null)
         {
-            var result = await GetTransactionsInternal(workchain: workchain, shard: shard, seqno: seqno, startLt: afterLt, limit: count ?? 10);
+            var result = await GetTransactions(workchain: workchain, shard: shard, seqno: seqno, startLt: afterLt, limit: count ?? 10);
             
             var data = JsonConvert.DeserializeObject<RootBlockTransactions>(result).Transactions;
             var transactions = data.Select(item => new ShortTransactionsResult() { Account = item.Account, Hash = item.Hash, Lt = item.Lt, Mode = item.Description.ComputePh.Mode }).ToList();
