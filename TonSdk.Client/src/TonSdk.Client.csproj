@@ -6,7 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>TonSdk.Client</RootNamespace>
         <PackageId>TonSdk.Client</PackageId>
-        <Version>0.3.13</Version>
+        <Version>0.3.11</Version>
         <Authors>Continuation Team</Authors>
         <PackageDescription>Ton Client library for work with HTTP API and Lite Servers.</PackageDescription>
         <RepositoryUrl>https://github.com/continuation-team/TonSdk.NET</RepositoryUrl>
