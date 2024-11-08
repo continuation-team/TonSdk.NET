@@ -217,13 +217,13 @@ namespace TonSdk.Client
             if (!string.IsNullOrEmpty(opcode)) 
                 dict.Add("opcode", opcode);
             
-            if (direction != null) 
-                dict.Add("direction", direction.ToString());
+            if (direction.HasValue) 
+                dict.Add("direction", direction.Value.ToString().ToLower());
 
-            if (offset != null) 
+            if (offset.HasValue) 
                 dict.Add("offset", offset);
             
-            if (count != null) 
+            if (count.HasValue) 
                 dict.Add("limit", count);
             
             string result = await new TonRequestV3(new RequestParametersV3("transactionsByMessage", dict), _httpClient).CallGet();
