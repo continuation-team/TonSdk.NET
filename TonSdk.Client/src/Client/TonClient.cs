@@ -282,7 +282,7 @@ namespace TonSdk.Client
         /// <param name="offset">Skip first N rows. Use with limit to batch read.</param>
         /// <param name="count">Limit number of queried rows. Use with offset to batch read.</param>
         /// <returns>An array of transaction information results.</returns>
-        public Task<TransactionsInformationResult[]> GetTransactionsByMessage(string msgHash = null, string bodyHash = null, string opcode = null, MessageDirection? direction = null, int? offset = null, int? count = 10)
+        public Task<TransactionsInformationResultExtended[]> GetTransactionsByMessage(string msgHash = null, string bodyHash = null, string opcode = null, MessageDirection? direction = null, int? offset = null, int? count = 10)
         {
             if (string.IsNullOrEmpty(msgHash) && string.IsNullOrEmpty(bodyHash) && string.IsNullOrEmpty(opcode)) 
                 throw new ArgumentException("At least one of msgHash, bodyHash, opcode should be specified");
