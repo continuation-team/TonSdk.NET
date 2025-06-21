@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -19,6 +19,7 @@ namespace TonSdk.Connect
     {
         private readonly int DISCONNECT_TIMEOUT = 600;
         private readonly string STANDART_UNIVERSAL_URL = "tc://";
+        private readonly int PENDING_REQUEST_TIMEOUT = 10000;
 
         private WalletConfig? _wallet;
         private BridgeSession _session;
@@ -102,14 +103,29 @@ namespace TonSdk.Connect
             request.id = id.ToString();
             string encryptedRequest = _session.CryptedSessionInfo.Encrypt(JsonConvert.SerializeObject(request), _session.WalletPublicKey);
 
-            await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
-            
             TaskCompletionSource<JObject> resolve = new TaskCompletionSource<JObject>();
             _pendingRequests.Add(id.ToString(), resolve);
+            try
+            {
+                await _gateway.Send(Encoding.UTF8.GetBytes(encryptedRequest), _session.WalletPublicKey, request.method);
 
-            JObject result = await resolve.Task.ConfigureAwait(false);
-            onRequestSent?.Invoke();
-            return result;
+                var timeoutTask = Task.Delay(PENDING_REQUEST_TIMEOUT);
+                var completeTask = await Task.WhenAny(resolve.Task, timeoutTask).ConfigureAwait(false);
+                if (completeTask == timeoutTask)
+                {
+                    _pendingRequests.Remove(id.ToString());
+                    throw new TimeoutException($"Request with id {id} timed out.");
+                }
+                
+                JObject result = await resolve.Task.ConfigureAwait(false);
+                onRequestSent?.Invoke();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _pendingRequests.Remove(id.ToString());
+                throw;
+            }
         }
 
         public async Task Disconnect()
