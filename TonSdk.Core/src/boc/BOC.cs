@@ -277,8 +277,9 @@ namespace TonSdk.Core.Boc {
             }
 
             var dataBits = dataBuilder.Build();
-            var offsetBytes = Math.Max((dataBits.Length.bitLength() + 7) / 8, 1);
-
+            var dataBytesSize = Math.Max((dataBits.Length + 7) / 8, 1) ; 
+            var offsetBytes = Math.Max((dataBytesSize.bitLength() + 7) / 8, 1);
+            
             /*
               serialized_boc#b5ee9c72 has_idx:(## 1) has_crc32c:(## 1)
                                       has_cache_bits:(## 1) flags:(## 2) { flags = 0 }
