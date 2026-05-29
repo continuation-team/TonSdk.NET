@@ -28,10 +28,11 @@ namespace TonSdk.Client
             _httpClient.Timeout = TimeSpan.FromMilliseconds(Convert.ToDouble(httpApiParameters.Timeout ?? 30000));
             
             _httpClient.DefaultRequestHeaders.Accept.Clear();
-           
-            
+
             if (!string.IsNullOrEmpty(httpApiParameters.ApiKey))
                 _httpClient.DefaultRequestHeaders.Add("X-API-Key", httpApiParameters.ApiKey);
+            else if (!string.IsNullOrEmpty(httpApiParameters.BearerToken))
+                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", httpApiParameters.BearerToken);
 
             _httpClient.BaseAddress = new Uri(httpApiParameters.Endpoint);
         }
