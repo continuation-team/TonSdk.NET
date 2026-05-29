@@ -23,6 +23,7 @@ namespace TonSdk.Client
         public string Endpoint { get; set; }
         public int? Timeout { get; set; }
         public string ApiKey { get; set; }
+        public string BearerToken { get; set; }
     }
     
     public class LiteClientParameters : ITonClientOptions
